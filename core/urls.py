@@ -22,4 +22,5 @@ urlpatterns = [
     path('', default_urlconf, name='home'),
     path('admin/', admin.site.urls),
     path('produto/', include("produto.urls")),
+    path('servico/', include("servico.urls")),
 ]

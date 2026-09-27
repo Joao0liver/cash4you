@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container-fluid">
+    <!-- Título da página -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+            <h1 class="h3 mb-1">Serviços</h1>
+            <p class="text-muted mb-0">
+                Lista de serviços cadastrados.
+            </p>
+        </div>
+
+        <a href="#" class="btn btn-primary">
+            + Novo serviço
+        </a>
+
+    </div>
+
+    <!-- Tabela de serviços -->
+    {% if servicos %}
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th scope="col">Código</th>
+                            <th scope="col">Descrição</th>
+                            <th scope="col">Preço</th>
+                            <th scope="col" class="text-end">Ações</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for servico in servicos %}
+                        <tr>
+                            <td>{{ servico.id }}</td>
+                            <td><strong>{{ servico.descricao }}</strong></td>
+                            <td>{{ servico.preco_venda }}</td>
+                            <td class="text-end">
+                                <a href="#" class="btn btn-sm btn-outline-primary">Editar</a>
+                                <a href="#" class="btn btn-sm btn-outline-secondary">Excluir</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-warning" role="alert">
+        Nenhum serviço cadastrado ainda.
+        <a href="" class="alert-link">Cadastre o primeiro!</a>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}
