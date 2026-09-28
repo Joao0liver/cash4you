@@ -1,0 +1,64 @@
+{% extends '../base.html' %}
+
+{% block content %}
+
+<div class="dashboard-heading">
+    <h1>Dashboard</h1>
+    <p>Visão geral do sistema</p>
+</div>
+
+<section class="dashboard-cards">
+    <div class="dashboard-card">
+        <span class="card-label">
+            Usuários
+        </span>
+
+        <strong class="card-value">
+            {{ total_usuarios }}
+        </strong>
+    </div>
+
+    <div class="dashboard-card">
+        <span class="card-label">
+            Clientes
+        </span>
+
+        <strong class="card-value">
+            {{ total_clientes }}
+        </strong>
+    </div>
+
+    <div class="dashboard-card">
+        <span class="card-label">
+            Operações
+        </span>
+
+        <strong class="card-value">
+            {{ total_operacoes }}
+        </strong>
+    </div>
+</section>
+
+<section class="dashboard-content">
+    <div class="dashboard-panel">
+        <h2>Resumo</h2>
+
+        <p>
+            Os indicadores da dashboard serão disponibilizados
+            aqui conforme os módulos do sistema forem implementados.
+        </p>
+    </div>
+
+
+    <div class="dashboard-panel">
+        <h2>Acesso rápido</h2>
+
+        <div class="quick-actions">
+            <a href="#">
+                Administração
+            </a>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

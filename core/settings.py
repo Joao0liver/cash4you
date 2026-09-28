@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'servico',
     'cliente',
     'usuario',
+    'dashboard',
 ]
 
 MIDDLEWARE = [

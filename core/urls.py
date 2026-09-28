@@ -19,7 +19,7 @@ from django.urls import path, include
 from django.views.debug import default_urlconf
 
 urlpatterns = [
-    path('', default_urlconf, name='home'),
+    path('', include("dashboard.urls")),
     path('admin/', admin.site.urls),
     path('produto/', include("produto.urls")),
     path('servico/', include("servico.urls")),
