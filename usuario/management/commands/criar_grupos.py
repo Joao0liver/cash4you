@@ -60,7 +60,6 @@ class Command(BaseCommand):
                 ]
             )
         )
-
         # Remove permissões de exclusão do Gerente
         gerente.permissions.remove(
             *Permission.objects.filter(
