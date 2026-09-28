@@ -2,63 +2,103 @@
 
 {% block content %}
 
-<div class="dashboard-heading">
-    <h1>Dashboard</h1>
-    <p>Visão geral do sistema</p>
-</div>
-
-<section class="dashboard-cards">
-    <div class="dashboard-card">
-        <span class="card-label">
-            Usuários
-        </span>
-
-        <strong class="card-value">
-            {{ total_usuarios }}
-        </strong>
-    </div>
-
-    <div class="dashboard-card">
-        <span class="card-label">
-            Clientes
-        </span>
-
-        <strong class="card-value">
-            {{ total_clientes }}
-        </strong>
-    </div>
-
-    <div class="dashboard-card">
-        <span class="card-label">
-            Operações
-        </span>
-
-        <strong class="card-value">
-            {{ total_operacoes }}
-        </strong>
-    </div>
-</section>
-
-<section class="dashboard-content">
-    <div class="dashboard-panel">
-        <h2>Resumo</h2>
-
-        <p>
-            Os indicadores da dashboard serão disponibilizados
-            aqui conforme os módulos do sistema forem implementados.
+<div class="container-fluid py-4">
+    
+    <!-- Cabeçalho -->
+    <div class="mb-4">
+        <h1 class="h2 mb-1">Dashboard</h1>
+        <p class="text-body-secondary mb-0">
+            Visão geral do sistema
         </p>
     </div>
 
+    <!-- Indicadores -->
+    <div class="row g-4 mb-4">
 
-    <div class="dashboard-panel">
-        <h2>Acesso rápido</h2>
+        <!-- Usuários -->
+        <div class="col-12 col-md-6 col-xl-4">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-body-secondary">
+                        Usuários
+                    </h6>
 
-        <div class="quick-actions">
-            <a href="#">
-                Administração
-            </a>
+                    <h2 class="card-title mb-0">
+                        {{ total_usuarios }}
+                    </h2>
+                </div>
+            </div>
+        </div>
+
+        <!-- Clientes -->
+        <div class="col-12 col-md-6 col-xl-4">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-body-secondary">
+                        Clientes
+                    </h6>
+
+                    <h2 class="card-title mb-0">
+                        {{ total_clientes }}
+                    </h2>
+                </div>
+            </div>
+        </div>
+
+        <!-- Operações -->
+        <div class="col-12 col-md-6 col-xl-4">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-body-secondary">
+                        Operações
+                    </h6>
+
+                    <h2 class="card-title mb-0">
+                        {{ total_operacoes }}
+                    </h2>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Conteúdo -->
+    <div class="row g-4">
+
+        <!-- Resumo -->
+        <div class="col-12 col-xl-8">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body">
+                    <h2 class="h5 card-title">
+                        Resumo
+                    </h2>
+
+                    <p class="card-text text-body-secondary">
+                        Os indicadores da dashboard serão disponibilizados
+                        aqui conforme os módulos do sistema forem implementados.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Acesso rápido -->
+        <div class="col-12 col-xl-4">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body">
+                    <h2 class="h5 card-title">
+                        Acesso rápido
+                    </h2>
+
+                    <div class="d-grid gap-2">
+                        <a href="#" class="btn btn-primary">
+                            Administração
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-</section>
+
+</div>
 
 {% endblock %}
