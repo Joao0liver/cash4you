@@ -3,7 +3,7 @@
 {% block content %}
 
 <div class="container-fluid py-4">
-    
+
     <!-- Cabeçalho -->
     <div class="mb-4">
         <h1 class="h2 mb-1">Dashboard</h1>
@@ -20,21 +20,6 @@
             <div class="card h-100 shadow-sm border-0">
                 <div class="card-body">
                     <h6 class="card-subtitle mb-2 text-body-secondary">
-                        Usuários
-                    </h6>
-
-                    <h2 class="card-title mb-0">
-                        {{ total_usuarios }}
-                    </h2>
-                </div>
-            </div>
-        </div>
-
-        <!-- Clientes -->
-        <div class="col-12 col-md-6 col-xl-4">
-            <div class="card h-100 shadow-sm border-0">
-                <div class="card-body">
-                    <h6 class="card-subtitle mb-2 text-body-secondary">
                         Clientes
                     </h6>
 
@@ -45,16 +30,31 @@
             </div>
         </div>
 
+        <!-- Clientes -->
+        <div class="col-12 col-md-6 col-xl-4">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-body-secondary">
+                        Produtos
+                    </h6>
+
+                    <h2 class="card-title mb-0">
+                        {{ total_produtos }}
+                    </h2>
+                </div>
+            </div>
+        </div>
+
         <!-- Operações -->
         <div class="col-12 col-md-6 col-xl-4">
             <div class="card h-100 shadow-sm border-0">
                 <div class="card-body">
                     <h6 class="card-subtitle mb-2 text-body-secondary">
-                        Operações
+                        Vendas
                     </h6>
 
                     <h2 class="card-title mb-0">
-                        {{ total_operacoes }}
+                        {{ total_vendas }}
                     </h2>
                 </div>
             </div>
@@ -91,7 +91,7 @@
 
                     <div class="d-grid gap-2">
                         <a href="#" class="btn btn-primary">
-                            Administração
+                            Grupo
                         </a>
                     </div>
                 </div>
