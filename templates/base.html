@@ -29,14 +29,20 @@
                 <ul class="nav nav-pills flex-column gap-1">
 
                     <li class="nav-item">
-                        <a href="#" class="nav-link text-white">
+                        <a href="{% url 'home' %}" class="nav-link text-white">
                             Dashboard
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a href="#" class="nav-link text-white">
-                            Catálogo
+                        <a href="{% url 'listar_produto' %}" class="nav-link text-white">
+                            Produtos
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a href="{% url 'listar_servico' %}" class="nav-link text-white">
+                            Serviços
                         </a>
                     </li>
 
