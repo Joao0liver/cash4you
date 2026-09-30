@@ -1,2 +1,2 @@
-# cash4you
-Sistema backend do cash4you. Uma evolução do Cashly
+# Cash4You 💸
+Sistema backend do Cash4You. Uma evolução do Cashly.
