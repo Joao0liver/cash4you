@@ -21,7 +21,6 @@ from django.views.debug import default_urlconf
 urlpatterns = [
     path('', include("dashboard.urls")),
     path('admin/', admin.site.urls),
-    path('produto/', include("produto.urls")),
-    path('servico/', include("servico.urls")),
     path('cliente/', include("cliente.urls")),
+    path('catalogo/', include("catalogo.urls")),
 ]
