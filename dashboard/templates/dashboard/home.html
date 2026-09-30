@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container-fluid py-4">
+
+    <!-- Cabeçalho -->
+    <div class="mb-4">
+        <h1 class="h2 mb-1">Dashboard</h1>
+        <p class="text-body-secondary mb-0">
+            Visão geral do sistema
+        </p>
+    </div>
+
+    <!-- Indicadores -->
+    <div class="row g-4 mb-4">
+
+        <!-- Usuários -->
+        <div class="col-12 col-md-6 col-xl-4">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-body-secondary">
+                        Clientes
+                    </h6>
+
+                    <h2 class="card-title mb-0">
+                        {{ total_clientes }}
+                    </h2>
+                </div>
+            </div>
+        </div>
+
+        <!-- Clientes -->
+        <div class="col-12 col-md-6 col-xl-4">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-body-secondary">
+                        Produtos
+                    </h6>
+
+                    <h2 class="card-title mb-0">
+                        {{ total_produtos }}
+                    </h2>
+                </div>
+            </div>
+        </div>
+
+        <!-- Operações -->
+        <div class="col-12 col-md-6 col-xl-4">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-body-secondary">
+                        Vendas
+                    </h6>
+
+                    <h2 class="card-title mb-0">
+                        {{ total_vendas }}
+                    </h2>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Conteúdo -->
+    <div class="row g-4">
+
+        <!-- Resumo -->
+        <div class="col-12 col-xl-8">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body">
+                    <h2 class="h5 card-title">
+                        Resumo
+                    </h2>
+
+                    <p class="card-text text-body-secondary">
+                        Os indicadores da dashboard serão disponibilizados
+                        aqui conforme os módulos do sistema forem implementados.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Acesso rápido -->
+        <div class="col-12 col-xl-4">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body">
+                    <h2 class="h5 card-title">
+                        Acesso rápido
+                    </h2>
+
+                    <div class="d-grid gap-2">
+                        <a href="#" class="btn btn-primary">
+                            Grupo
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}
