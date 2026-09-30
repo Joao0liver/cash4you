@@ -44,11 +44,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     # Apps do projeto
-    'produto',
-    'servico',
     'cliente',
     'usuario',
     'dashboard',
+    'catalogo',
 ]
 
 MIDDLEWARE = [

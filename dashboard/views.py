@@ -2,7 +2,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 
 from cliente.models import Cliente
-from produto.models import Produto
+from catalogo.models import Produto
 
 # @login_required
 def dashboard(request):
