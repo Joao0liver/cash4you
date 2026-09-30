@@ -1,3 +1,12 @@
 from django.contrib import admin
 
-# Register your models here.
+from .models import VendaItem
+
+@admin.register(VendaItem)
+class ProdutoAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "item",
+        "quantidade",
+        "valor",
+    )
