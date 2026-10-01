@@ -16,12 +16,18 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from django.views.debug import default_urlconf
+from . import views
 
 urlpatterns = [
-    path('', default_urlconf, name='home'),
+    path('cadastrar/', views.cadastros, name='listar_cadastros'),
+    path('cadastrar/precificar/', views.precificar, name='precificar'),
+    path('relatorios/caixa/', views.relatorio_caixa, name='relatorio_caixa'),
+    path('relatorios/estoque/', views.relatorio_estoque, name='relatorio_estoque'),
+    path('', views.dashboard, name='home'),
     path('admin/', admin.site.urls),
     path('produto/', include("produto.urls")),
     path('servico/', include("servico.urls")),
     path('cliente/', include("cliente.urls")),
+    path('agenda/', include("agenda.urls")),
+    path('vendas/', include("venda.urls")),
 ]

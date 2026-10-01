@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block title %}Excluir cliente | Cash4You{% endblock %}
+
+{% block content %}
+
+<style>
+    .c4y-card { background: var(--c4y-panel); border: 1px solid var(--c4y-line) !important; }
+</style>
+
+<div class="container-fluid">
+    <h1 class="h3 mb-4">Excluir cliente</h1>
+
+    <div class="card c4y-card shadow-sm">
+        <div class="card-body">
+            <div class="alert alert-warning" role="alert">
+                Tem certeza de que deseja excluir o cliente <strong>{{ cliente.nome }}</strong>?
+                Esta ação não pode ser desfeita.
+            </div>
+
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">Confirmar exclusão</button>
+                <a href="{% url 'listar_cliente' %}" class="btn btn-outline-secondary">Cancelar</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,6 +1,20 @@
 {% extends 'base.html' %}
 
+{% block title %}Produtos | Cash4You{% endblock %}
+
 {% block content %}
+
+<style>
+    .c4y-card { background: var(--c4y-panel); border: 1px solid var(--c4y-line) !important; }
+    .c4y-card thead th {
+        background: var(--c4y-panel); color: var(--c4y-ink-soft);
+        border-bottom: 1px solid var(--c4y-line); font-weight: 600; font-size: 0.78rem;
+    }
+    .c4y-card tbody td { color: var(--c4y-ink); border-color: var(--c4y-line); vertical-align: middle; }
+    .c4y-card tbody tr:hover { background: rgba(255,255,255,0.03); }
+    .c4y-summary { background: var(--c4y-panel); border: 1px solid var(--c4y-line); color: var(--c4y-ink); }
+    .c4y-summary .label { color: var(--c4y-ink-soft); font-size: 0.85rem; }
+</style>
 
 <div class="container-fluid">
     <!-- Título da página -->
@@ -8,45 +22,131 @@
 
         <div>
             <h1 class="h3 mb-1">Produtos</h1>
-            <p class="text-muted mb-0">
+            <p class="mb-0" style="color: var(--c4y-ink-soft);">
                 Lista de produtos cadastrados.
             </p>
         </div>
 
-        <a href="#" class="btn btn-primary">
+        <a href="{% url 'criar_produto' %}" class="btn btn-primary">
             + Novo produto
         </a>
 
     </div>
 
+    <form method="get" class="row g-2 mb-4" role="search">
+        <div class="col">
+            <label for="busca-produto" class="visually-hidden">Buscar produto</label>
+            <input
+                type="search"
+                id="busca-produto"
+                name="q"
+                class="form-control"
+                placeholder="Buscar por descrição, preço ou quantidade"
+                value="{{ busca }}"
+            >
+        </div>
+        <div class="col-auto">
+            <label for="ordenar-produto" class="visually-hidden">Ordenar produtos</label>
+            <select id="ordenar-produto" name="ordenar" class="form-select" onchange="this.form.submit()">
+                <option value="descricao_asc" {% if ordenar == "descricao_asc" %}selected{% endif %}>Descrição: A–Z</option>
+                <option value="descricao_desc" {% if ordenar == "descricao_desc" %}selected{% endif %}>Descrição: Z–A</option>
+                <option value="quantidade_asc" {% if ordenar == "quantidade_asc" %}selected{% endif %}>Quantidade: menor–maior</option>
+                <option value="quantidade_desc" {% if ordenar == "quantidade_desc" %}selected{% endif %}>Quantidade: maior–menor</option>
+            </select>
+        </div>
+        <div class="col-auto">
+            {% if busca %}
+            <a href="{% url 'listar_produto' %}" class="btn btn-outline-secondary">Limpar</a>
+            {% endif %}
+        </div>
+    </form>
+
     <!-- Tabela de produtos -->
     {% if produtos %}
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-md-4">
+            <div class="card c4y-summary h-100">
+                <div class="card-body">
+                    <div class="label">Unidades em estoque</div>
+                    <div class="h4 mb-0">{{ quantidade_total }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="card c4y-summary h-100">
+                <div class="card-body">
+                    <div class="label">Valor do estoque a preço de venda</div>
+                    <div class="h4 mb-0">R$ {{ valor_estoque_total|floatformat:2 }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="card c4y-summary h-100">
+                <div class="card-body">
+                    <div class="label">Lucro líquido potencial do estoque</div>
+                    <div class="h4 mb-0">R$ {{ lucro_estoque_total|floatformat:2 }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% if produtos_sem_despesas_cadastradas %}
+    <div class="alert alert-info" role="note">
+        O lucro não foi calculado para {{ produtos_sem_despesas_cadastradas }} produto(s) sem percentual de despesas variáveis cadastrado.
+        Edite esses produtos para informar esse percentual e incluir seus lucros no total.
+    </div>
+    {% endif %}
     <div class="card shadow-sm border-0">
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
+                    <thead>
                         <tr>
-                            <th scope="col">Código</th>
-                            <th scope="col">Descrição</th>
-                            <th scope="col">Preço Custo</th>
-                            <th scope="col">Preço Venda</th>
-                            <th scope="col">Quantidade</th>
-                            <th scope="col" class="text-end">Ações</th>
+                            <th scope="col" class="text-center" title="Identificador único do produto no sistema.">Código</th>
+                            <th scope="col" title="Nome usado para identificar o produto.">Descrição</th>
+                            <th scope="col" class="text-center" title="Valor pago para adquirir ou produzir uma unidade do produto.">Custo direto</th>
+                            <th scope="col" class="text-center" title="Percentual de impostos, taxas, comissões e outras despesas variáveis sobre o preço de venda.">Despesas variáveis</th>
+                            <th scope="col" class="text-center" title="Percentual de lucro líquido desejado usado como referência na precificação.">Lucro desejado</th>
+                            <th scope="col" class="text-center" title="Preço final de venda definido para uma unidade do produto.">Preço Venda</th>
+                            <th scope="col" class="text-center" title="Preço de venda menos custo direto e despesas variáveis, por unidade.">Lucro líquido/un.</th>
+                            <th scope="col" class="text-center" title="Número de unidades disponíveis em estoque.">Quantidade</th>
+                            <th scope="col" class="text-center" title="Valor total das unidades em estoque calculado pelo preço de venda: preço × quantidade.">Estoque (R$)</th>
+                            <th scope="col" class="text-center" title="Lucro líquido estimado se todas as unidades atuais forem vendidas.">Lucro potencial (R$)</th>
+                            <th scope="col" class="text-end" title="Ações disponíveis para este produto.">Ações</th>
                         </tr>
                     </thead>
 
                     <tbody>
                         {% for produto in produtos %}
                         <tr>
-                            <td>{{ produto.id }}</td>
+                            <td class="text-center">{{ produto.id }}</td>
                             <td><strong>{{ produto.descricao }}</strong></td>
-                            <td class="text-muted">{{ produto.preco_custo }}</td>
-                            <td>{{ produto.preco_venda }}</td>
-                            <td>{{ produto.quantidade }}</td>
+                            <td class="text-center">R$ {{ produto.preco_custo|floatformat:2 }}</td>
+                            <td class="text-center">
+                                {% if produto.despesas_variaveis_percentual is not None %}
+                                {{ produto.despesas_variaveis_percentual|floatformat:2 }}%
+                                {% else %}—{% endif %}
+                            </td>
+                            <td class="text-center">
+                                {% if produto.lucro_desejado_percentual is not None %}
+                                {{ produto.lucro_desejado_percentual|floatformat:2 }}%
+                                {% else %}—{% endif %}
+                            </td>
+                            <td class="text-center">R$ {{ produto.preco_venda|floatformat:2 }}</td>
+                            <td class="text-center">
+                                {% if produto.lucro_liquido_unitario is not None %}
+                                R$ {{ produto.lucro_liquido_unitario|floatformat:2 }}
+                                {% else %}—{% endif %}
+                            </td>
+                            <td class="text-center">{{ produto.quantidade }}</td>
+                            <td class="text-center">R$ {{ produto.valor_estoque|floatformat:2 }}</td>
+                            <td class="text-center">
+                                {% if produto.lucro_liquido_estoque is not None %}
+                                R$ {{ produto.lucro_liquido_estoque|floatformat:2 }}
+                                {% else %}—{% endif %}
+                            </td>
                             <td class="text-end">
-                                <a href="#" class="btn btn-sm btn-outline-primary">Editar</a>
-                                <a href="#" class="btn btn-sm btn-outline-secondary">Excluir</a>
+                                <a href="{% url 'editar_produto' produto.pk %}" class="btn btn-sm btn-outline-primary">Editar</a>
+                                <a href="{% url 'excluir_produto' produto.pk %}" class="btn btn-sm btn-outline-danger">Excluir</a>
                             </td>
                         </tr>
                         {% endfor %}
@@ -57,8 +157,12 @@
     </div>
     {% else %}
     <div class="alert alert-warning" role="alert">
+        {% if busca %}
+        Nenhum produto encontrado para "{{ busca }}".
+        {% else %}
         Nenhum produto cadastrado ainda.
-        <a href="" class="alert-link">Cadastre o primeiro!</a>
+        <a href="{% url 'criar_produto' %}" class="alert-link">Cadastre o primeiro!</a>
+        {% endif %}
     </div>
     {% endif %}
 </div>

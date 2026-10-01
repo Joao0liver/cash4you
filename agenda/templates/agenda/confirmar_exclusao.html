@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}Excluir agendamento | Cash4You{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h1 class="h3 mb-3">Excluir agendamento</h1>
+    <p>Confirma a exclusão do agendamento de <strong>{{ agendamento.nome }}</strong> em {{ agendamento.data|date:"d/m/Y" }}?</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Confirmar exclusão</button>
+        <a href="{% url 'listar_agendamentos' %}" class="btn btn-outline-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

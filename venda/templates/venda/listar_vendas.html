@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Histórico de vendas | Cash4You{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1">Histórico de vendas</h1>
+            <p class="text-muted mb-0">Vendas finalizadas no caixa.</p>
+        </div>
+        <a href="{% url 'caixa' %}" class="btn btn-primary">+ Nova venda</a>
+    </div>
+
+    {% if vendas %}
+    <div class="card shadow-sm border-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Venda</th>
+                        <th>Data e hora</th>
+                        <th>Itens</th>
+                        <th>Pagamento</th>
+                        <th class="text-end">Total</th>
+                        <th class="text-end">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for venda in vendas %}
+                    <tr>
+                        <td>#{{ venda.pk }}</td>
+                        <td>{{ venda.criada_em|date:"d/m/Y H:i" }}</td>
+                        <td>{{ venda.itens.count }}</td>
+                        <td>{{ venda.get_forma_pagamento_display }}</td>
+                        <td class="text-end">R$ {{ venda.total|floatformat:2 }}</td>
+                        <td class="text-end text-nowrap">
+                            <a href="{% url 'detalhe_venda' venda.pk %}" class="btn btn-sm btn-outline-secondary">Visualizar</a>
+                            <a href="{% url 'editar_venda' venda.pk %}" class="btn btn-sm btn-outline-primary">Editar</a>
+                            <a href="{% url 'excluir_venda' venda.pk %}" class="btn btn-sm btn-outline-danger">Excluir</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-info">Nenhuma venda finalizada ainda.</div>
+    {% endif %}
+</div>
+{% endblock %}

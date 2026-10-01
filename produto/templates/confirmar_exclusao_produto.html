@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block title %}Excluir produto | Cash4You{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h1 class="h3 mb-4">Excluir produto</h1>
+
+    <div class="alert alert-warning" role="alert">
+        Tem certeza de que deseja excluir o produto
+        <strong>{{ produto.descricao }}</strong>?
+        Esta ação não pode ser desfeita.
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Confirmar exclusão</button>
+        <a href="{% url 'listar_produto' %}" class="btn btn-outline-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

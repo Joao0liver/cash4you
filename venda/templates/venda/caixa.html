@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+
+{% block title %}Caixa | Cash4You{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1">Caixa</h1>
+            <p class="text-muted mb-0">Adicione produtos e serviços para iniciar uma venda.</p>
+        </div>
+        <a href="{% url 'listar_vendas' %}" class="btn btn-outline-secondary">Histórico de vendas</a>
+    </div>
+
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags|default:'info' }}" role="alert">{{ message }}</div>
+    {% endfor %}
+    {% endif %}
+
+    <div class="row g-4">
+        <div class="col-12 col-xl-5">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <h2 class="h5 mb-3">Adicionar item</h2>
+                    <form method="post" class="mb-4">
+                        {% csrf_token %}
+                        <input type="hidden" name="acao" value="adicionar">
+                        <input type="hidden" name="tipo" value="produto">
+                        <label for="produto-selecionado" class="form-label">Produto</label>
+                        <div class="input-group">
+                            <select id="produto-selecionado" name="item_id" class="form-select" required>
+                                <option value="">Selecione um produto</option>
+                                {% for produto in produtos %}
+                                <option value="{{ produto.pk }}" {% if produto.quantidade < 1 %}disabled{% endif %}>
+                                    {{ produto.descricao }} — R$ {{ produto.preco_venda|floatformat:2 }} (estoque: {{ produto.quantidade }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <button class="btn btn-outline-primary" type="submit">Adicionar</button>
+                        </div>
+                    </form>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="acao" value="adicionar">
+                        <input type="hidden" name="tipo" value="servico">
+                        <label for="servico-selecionado" class="form-label">Serviço</label>
+                        <div class="input-group">
+                            <select id="servico-selecionado" name="item_id" class="form-select" required>
+                                <option value="">Selecione um serviço</option>
+                                {% for servico in servicos %}
+                                <option value="{{ servico.pk }}">
+                                    {{ servico.descricao }} — R$ {{ servico.preco_venda|floatformat:2 }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <button class="btn btn-outline-primary" type="submit">Adicionar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-xl-7">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h2 class="h5 mb-3">Lista de compras</h2>
+                    {% if linhas %}
+                    <div class="table-responsive">
+                        <table class="table align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th class="text-end">Preço unitário</th>
+                                    <th class="text-center">Quantidade</th>
+                                    <th class="text-end">Subtotal</th>
+                                    <th>Ação</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for linha in linhas %}
+                                <tr>
+                                    <td>
+                                        {{ linha.descricao }}
+                                        {% if linha.tipo == "produto" %}<small class="d-block text-muted">Produto · estoque: {{ linha.estoque }}</small>{% endif %}
+                                        {% if linha.tipo == "servico" %}<small class="d-block text-muted">Serviço</small>{% endif %}
+                                    </td>
+                                    <td class="text-end">{% if linha.disponivel %}R$ {{ linha.preco_unitario|floatformat:2 }}{% else %}—{% endif %}</td>
+                                    <td class="text-center">
+                                        {% if linha.disponivel %}
+                                        <form method="post" class="d-flex gap-1 justify-content-center">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="acao" value="atualizar">
+                                            <input type="hidden" name="chave" value="{{ linha.chave }}">
+                                            <input type="number" min="1" {% if linha.estoque != None %}max="{{ linha.estoque }}"{% endif %} name="quantidade" value="{{ linha.quantidade }}" class="form-control form-control-sm" style="width: 82px" aria-label="Quantidade de {{ linha.descricao }}">
+                                            <button type="submit" class="btn btn-sm btn-outline-secondary" aria-label="Atualizar quantidade">Atualizar</button>
+                                        </form>
+                                        {% else %}
+                                        {{ linha.quantidade }}
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">{% if linha.disponivel %}R$ {{ linha.subtotal|floatformat:2 }}{% else %}—{% endif %}</td>
+                                    <td>
+                                        <form method="post">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="acao" value="remover">
+                                            <input type="hidden" name="chave" value="{{ linha.chave }}">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">Excluir</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th colspan="3" class="text-end">Total</th>
+                                    <th class="text-end">R$ {{ total|floatformat:2 }}</th>
+                                    <th></th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info mb-0">A lista de compras está vazia. Adicione pelo menos um produto ou serviço para iniciar uma venda.</div>
+                    {% endif %}
+
+                    <hr>
+                    <h2 class="h5 mb-3">Pagamento</h2>
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="acao" value="finalizar">
+                        <div class="row g-3">
+                            <div class="col-12 col-md-6">
+                                <label for="{{ form.forma_pagamento.id_for_label }}" class="form-label">{{ form.forma_pagamento.label }}</label>
+                                {{ form.forma_pagamento }}
+                                {% if form.forma_pagamento.errors %}<div class="text-danger">{{ form.forma_pagamento.errors }}</div>{% endif %}
+                            </div>
+                            <div class="col-12 col-md-6" id="campo-dinheiro">
+                                <label for="{{ form.valor_recebido.id_for_label }}" class="form-label">{{ form.valor_recebido.label }}</label>
+                                {{ form.valor_recebido }}
+                                {% if form.valor_recebido.errors %}<div class="text-danger">{{ form.valor_recebido.errors }}</div>{% endif %}
+                                <small class="form-text text-muted">Troco estimado: <span id="troco-estimado">R$ 0,00</span></small>
+                            </div>
+                            <div class="col-12">
+                                <label for="{{ form.telefone_whatsapp.id_for_label }}" class="form-label">{{ form.telefone_whatsapp.label }}</label>
+                                {{ form.telefone_whatsapp }}
+                                {% if form.telefone_whatsapp.errors %}<div class="text-danger">{{ form.telefone_whatsapp.errors }}</div>{% endif %}
+                                <small class="form-text text-muted">Após finalizar, você poderá abrir o WhatsApp com o resumo da venda preenchido. O envio é opcional.</small>
+                            </div>
+                        </div>
+                        <div class="mt-4 d-flex flex-wrap gap-2">
+                            <button type="submit" class="btn btn-primary" {% if not linhas or invalido %}disabled{% endif %}>Finalizar pagamento</button>
+                            <a href="{% url 'caixa' %}" class="btn btn-outline-secondary">Continuar comprando</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function () {
+        const pagamento = document.getElementById("forma-pagamento");
+        const campoDinheiro = document.getElementById("campo-dinheiro");
+        const recebido = document.getElementById("valor-recebido");
+        const troco = document.getElementById("troco-estimado");
+        const total = Number("{{ total|floatformat:2 }}".replace(",", "."));
+
+        function atualizarPagamento() {
+            const dinheiro = pagamento.value === "dinheiro";
+            campoDinheiro.hidden = !dinheiro;
+            recebido.required = dinheiro;
+            const entrada = Number((recebido.value || "0").replace(",", "."));
+            const valorTroco = Math.max(0, entrada - total);
+            troco.textContent = new Intl.NumberFormat("pt-BR", {
+                style: "currency",
+                currency: "BRL"
+            }).format(valorTroco);
+        }
+
+        pagamento.addEventListener("change", atualizarPagamento);
+        recebido.addEventListener("input", atualizarPagamento);
+        atualizarPagamento();
+    })();
+</script>
+{% endblock %}

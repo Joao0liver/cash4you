@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Relatório de estoque | Cash4You{% endblock %}
+
+{% block content %}
+<style>
+    @media print {
+        body { overflow: visible !important; background: #fff !important; color: #000 !important; }
+        .c4y-sidebar, .c4y-header, .c4y-footer, .no-print { display: none !important; }
+        .c4y-layout, .c4y-page, main.c4y-main { display: block !important; height: auto !important; overflow: visible !important; }
+        main.c4y-main { padding: 0 !important; }
+        .card { border: 1px solid #aaa !important; box-shadow: none !important; break-inside: avoid; }
+        .table { color: #000 !important; }
+    }
+</style>
+<div class="container-fluid">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div>
+            <h1 class="h3 mb-1">Relatório de estoque</h1>
+            <p class="text-muted mb-0">Posição atual, incluindo produtos com estoque baixo ou em falta.</p>
+        </div>
+        <button type="button" class="btn btn-outline-primary no-print" onclick="window.print()">Imprimir relatório</button>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-md-4"><div class="card shadow-sm border-0"><div class="card-body"><div class="text-muted">Produtos cadastrados</div><div class="h4 mb-0">{{ total_produtos }}</div></div></div></div>
+        <div class="col-12 col-md-4"><div class="card shadow-sm border-0"><div class="card-body"><div class="text-muted">Estoque baixo (1–5)</div><div class="h4 mb-0">{{ produtos_em_baixa }}</div></div></div></div>
+        <div class="col-12 col-md-4"><div class="card shadow-sm border-0"><div class="card-body"><div class="text-muted">Em falta (0)</div><div class="h4 mb-0">{{ produtos_em_falta }}</div></div></div></div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead><tr><th>Código</th><th>Produto</th><th class="text-center">Quantidade</th><th class="text-end">Preço de custo</th><th class="text-end">Preço de venda</th><th>Status</th></tr></thead>
+                <tbody>
+                    {% for produto in produtos %}
+                    <tr{% if produto.quantidade <= 5 %} class="table-warning"{% endif %}>
+                        <td>{{ produto.pk }}</td>
+                        <td>{{ produto.descricao }}</td>
+                        <td class="text-center">{{ produto.quantidade }}</td>
+                        <td class="text-end">R$ {{ produto.preco_custo|floatformat:2 }}</td>
+                        <td class="text-end">R$ {{ produto.preco_venda|floatformat:2 }}</td>
+                        <td>
+                            {% if produto.status_estoque == "Em falta" %}<span class="badge text-bg-danger">Em falta</span>
+                            {% elif produto.status_estoque == "Baixo" %}<span class="badge text-bg-warning">Baixo</span>
+                            {% else %}<span class="badge text-bg-success">Adequado</span>{% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="6" class="text-center text-muted py-4">Nenhum produto cadastrado.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

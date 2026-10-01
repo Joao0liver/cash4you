@@ -1,6 +1,19 @@
 {% extends 'base.html' %}
 
+{% block title %}Serviços | Cash4You{% endblock %}
+
 {% block content %}
+
+<style>
+    .c4y-card { background: var(--c4y-panel); border: 1px solid var(--c4y-line) !important; }
+    .c4y-card thead th {
+        background: var(--c4y-panel); color: var(--c4y-ink-soft);
+        border-bottom: 1px solid var(--c4y-line); font-weight: 600; font-size: 0.78rem;
+    }
+    .c4y-card tbody td { color: var(--c4y-ink); border-color: var(--c4y-line); vertical-align: middle; }
+    .c4y-card tbody tr:hover { background: rgba(255,255,255,0.03); }
+    .c4y-muted { color: var(--c4y-ink-soft) !important; }
+</style>
 
 <div class="container-fluid">
     <!-- Título da página -->
@@ -13,36 +26,92 @@
             </p>
         </div>
 
-        <a href="#" class="btn btn-primary">
+        <a href="{% url 'criar_servico' %}" class="btn btn-primary">
             + Novo serviço
         </a>
 
     </div>
 
+    <form method="get" class="row g-2 mb-4" role="search">
+        <div class="col">
+            <label for="busca-servico" class="visually-hidden">Buscar serviço</label>
+            <input
+                type="search"
+                id="busca-servico"
+                name="q"
+                class="form-control"
+                placeholder="Buscar por descrição ou preço"
+                value="{{ busca }}"
+            >
+        </div>
+        <div class="col-auto">
+            <label for="ordenar-servico" class="visually-hidden">Ordenar serviços</label>
+            <select id="ordenar-servico" name="ordenar" class="form-select" onchange="this.form.submit()">
+                <option value="descricao_asc" {% if ordenar == "descricao_asc" %}selected{% endif %}>Descrição: A–Z</option>
+                <option value="descricao_desc" {% if ordenar == "descricao_desc" %}selected{% endif %}>Descrição: Z–A</option>
+            </select>
+        </div>
+        <div class="col-auto">
+            {% if busca %}
+            <a href="{% url 'listar_servico' %}" class="btn btn-outline-secondary">Limpar</a>
+            {% endif %}
+        </div>
+    </form>
+
     <!-- Tabela de serviços -->
     {% if servicos %}
+    {% if servicos_sem_dados_para_lucro %}
+    <div class="alert alert-info" role="note">
+        O lucro não foi calculado para {{ servicos_sem_dados_para_lucro }} serviço(s) sem custo direto ou percentual de despesas variáveis cadastrado.
+        Edite esses serviços para informar os dados e calcular o lucro líquido.
+    </div>
+    {% endif %}
     <div class="card shadow-sm border-0">
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
+                    <thead>
                         <tr>
-                            <th scope="col">Código</th>
-                            <th scope="col">Descrição</th>
-                            <th scope="col">Preço</th>
-                            <th scope="col" class="text-end">Ações</th>
+                            <th scope="col" class="text-center" title="Identificador único do serviço no sistema.">Código</th>
+                            <th scope="col" title="Nome usado para identificar o serviço.">Descrição</th>
+                            <th scope="col" class="text-center" title="Valor dos materiais, insumos e demais custos diretos para realizar o serviço.">Custo direto</th>
+                            <th scope="col" class="text-center" title="Percentual de impostos, taxas, comissões e outras despesas variáveis sobre o preço de venda.">Despesas variáveis</th>
+                            <th scope="col" class="text-center" title="Percentual de lucro líquido desejado usado como referência na precificação.">Lucro desejado</th>
+                            <th scope="col" class="text-center" title="Preço final de venda definido para a realização do serviço.">Preço de venda</th>
+                            <th scope="col" class="text-center" title="Preço de venda menos custo direto e despesas variáveis, por realização do serviço.">Lucro líquido</th>
+                            <th scope="col" class="text-end" title="Ações disponíveis para este serviço.">Ações</th>
                         </tr>
                     </thead>
 
                     <tbody>
                         {% for servico in servicos %}
                         <tr>
-                            <td>{{ servico.id }}</td>
+                            <td class="text-center">{{ servico.id }}</td>
                             <td><strong>{{ servico.descricao }}</strong></td>
-                            <td>{{ servico.preco_venda }}</td>
+                            <td class="text-center">
+                                {% if servico.custo_direto is not None %}
+                                R$ {{ servico.custo_direto|floatformat:2 }}
+                                {% else %}—{% endif %}
+                            </td>
+                            <td class="text-center">
+                                {% if servico.despesas_variaveis_percentual is not None %}
+                                {{ servico.despesas_variaveis_percentual|floatformat:2 }}%
+                                {% else %}—{% endif %}
+                            </td>
+                            <td class="text-center">
+                                {% if servico.lucro_desejado_percentual is not None %}
+                                {{ servico.lucro_desejado_percentual|floatformat:2 }}%
+                                {% else %}—{% endif %}
+                            </td>
+                            <td class="text-center">R$ {{ servico.preco_venda|floatformat:2 }}</td>
+                            <td class="text-center">
+                                {% if servico.lucro_liquido is not None %}
+                                R$ {{ servico.lucro_liquido|floatformat:2 }}
+                                {% else %}—{% endif %}
+                            </td>
                             <td class="text-end">
-                                <a href="#" class="btn btn-sm btn-outline-primary">Editar</a>
-                                <a href="#" class="btn btn-sm btn-outline-secondary">Excluir</a>
+                                <a href="{% url 'editar_servico' servico.pk %}" class="btn btn-sm btn-outline-primary">Editar</a>
+                                <a href="{% url 'excluir_servico' servico.pk %}" class="btn btn-sm btn-outline-danger">Excluir</a>
                             </td>
                         </tr>
                         {% endfor %}
@@ -53,8 +122,12 @@
     </div>
     {% else %}
     <div class="alert alert-warning" role="alert">
+        {% if busca %}
+        Nenhum serviço encontrado para "{{ busca }}".
+        {% else %}
         Nenhum serviço cadastrado ainda.
-        <a href="" class="alert-link">Cadastre o primeiro!</a>
+        <a href="{% url 'criar_servico' %}" class="alert-link">Cadastre o primeiro!</a>
+        {% endif %}
     </div>
     {% endif %}
 </div>

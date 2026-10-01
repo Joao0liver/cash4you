@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}Excluir venda #{{ venda.pk }} | Cash4You{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h1 class="h3 mb-3">Excluir venda #{{ venda.pk }}</h1>
+    <p>Confirma a exclusão da venda de <strong>R$ {{ venda.total|floatformat:2 }}</strong>, realizada em {{ venda.criada_em|date:"d/m/Y H:i" }}?</p>
+    <p class="text-muted">Os produtos desta venda serão repostos ao estoque.</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Confirmar exclusão</button>
+        <a href="{% url 'detalhe_venda' venda.pk %}" class="btn btn-outline-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

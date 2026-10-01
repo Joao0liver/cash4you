@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block title %}Excluir serviço | Cash4You{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h1 class="h3 mb-4">Excluir serviço</h1>
+
+    <div class="alert alert-warning" role="alert">
+        Tem certeza de que deseja excluir o serviço
+        <strong>{{ servico.descricao }}</strong>?
+        Esta ação não pode ser desfeita.
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Confirmar exclusão</button>
+        <a href="{% url 'listar_servico' %}" class="btn btn-outline-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

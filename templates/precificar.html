@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}Precificar | Cash4You{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="mb-4">
+        <h1 class="h3 mb-1">Precificar</h1>
+        <p class="text-secondary mb-0">
+            Use o método de markup para cobrir custos e despesas e obter lucro real.
+        </p>
+    </div>
+
+    <section class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+            <h2 class="h5">Os três pilares do preço</h2>
+            <ol class="mb-0">
+                <li class="mb-2">
+                    <strong>Custo variável direto (CV):</strong>
+                    custo para adquirir ou produzir uma unidade do produto, ou custo direto de realizar um serviço.
+                </li>
+                <li class="mb-2">
+                    <strong>Despesas variáveis (DV%):</strong>
+                    impostos, taxas de cartão, comissões e frete relacionado à venda, informados como percentual do preço final.
+                </li>
+                <li>
+                    <strong>Lucro desejado:</strong>
+                    percentual de lucro líquido pretendido sobre o preço final cobrado.
+                </li>
+            </ol>
+        </div>
+    </section>
+
+    <section class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+            <h2 class="h5">Fórmula do markup</h2>
+            <p class="fs-5 text-center my-4" aria-label="Preço de venda é igual ao custo variável direto dividido por um menos a soma das despesas variáveis percentuais e do lucro desejado percentual">
+                <strong>Preço de venda = CV ÷ [1 − (DV% + Lucro%) ÷ 100]</strong>
+            </p>
+            <p class="text-secondary mb-0">
+                DV% e Lucro% são percentuais do preço final. A parte restante do preço precisa cobrir o custo direto;
+                por isso, a soma dos dois deve ser menor que 100%.
+            </p>
+            <div class="alert alert-info mt-3 mb-0" role="note">
+                <h3 class="h6">Por que a soma precisa ser menor que 100%?</h3>
+                <p class="mb-2">
+                    O denominador da fórmula representa a parcela do preço que sobra para pagar o custo direto.
+                    Se as despesas e o lucro somarem 100%, essa parcela será zero e a fórmula dividirá por zero.
+                    Se passarem de 100%, o denominador será negativo e o preço calculado não terá sentido.
+                </p>
+                <p class="mb-0">
+                    <strong>Exemplo:</strong> com custo direto de R$ 80,00, despesas de 10% e lucro de 20%,
+                    sobram 70% do preço para cobrir o custo. O preço fica
+                    R$ 80,00 ÷ 0,70 = <strong>R$ 114,29</strong>.
+                </p>
+            </div>
+            <p class="text-secondary mt-3 mb-0">
+                Ao cadastrar ou editar um produto ou serviço, o sistema calcula o preço automaticamente
+                e arredonda o resultado para centavos.
+            </p>
+        </div>
+    </section>
+
+    <section class="card shadow-sm border-0">
+        <div class="card-body">
+            <h2 class="h5">Como usar no cadastro</h2>
+            <p>
+                Em cada cadastro, informe o custo direto, as despesas variáveis e o lucro desejado.
+                O preço de venda será calculado automaticamente pela fórmula do markup.
+            </p>
+            <div class="d-flex flex-wrap gap-2">
+                <a href="{% url 'criar_produto' %}" class="btn btn-primary">Cadastrar produto</a>
+                <a href="{% url 'criar_servico' %}" class="btn btn-outline-primary">Cadastrar serviço</a>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Cadastrar | Cash4You{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="mb-4">
+        <h1 class="h3 mb-1">Cadastrar</h1>
+        <p class="text-secondary mb-0">Escolha o tipo de cadastro que deseja acessar.</p>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-12 col-md-6 col-xl-4">
+            <a href="{% url 'listar_produto' %}" class="card h-100 text-decoration-none">
+                <div class="card-body">
+                    <h2 class="h5 card-title">Produtos</h2>
+                    <p class="card-text text-secondary mb-0">Acessar a lista de produtos cadastrados.</p>
+                </div>
+            </a>
+        </div>
+        <div class="col-12 col-md-6 col-xl-4">
+            <a href="{% url 'listar_servico' %}" class="card h-100 text-decoration-none">
+                <div class="card-body">
+                    <h2 class="h5 card-title">Serviços</h2>
+                    <p class="card-text text-secondary mb-0">Acessar a lista de serviços cadastrados.</p>
+                </div>
+            </a>
+        </div>
+        <div class="col-12 col-md-6 col-xl-4">
+            <a href="{% url 'listar_cliente' %}" class="card h-100 text-decoration-none">
+                <div class="card-body">
+                    <h2 class="h5 card-title">Clientes</h2>
+                    <p class="card-text text-secondary mb-0">Acessar a lista de clientes cadastrados.</p>
+                </div>
+            </a>
+        </div>
+        <div class="col-12 col-md-6 col-xl-4">
+            <a href="{% url 'precificar' %}" class="card h-100 text-decoration-none">
+                <div class="card-body">
+                    <h2 class="h5 card-title">Precificar</h2>
+                    <p class="card-text text-secondary mb-0">Conheça o método de markup e como o sistema calcula os preços.</p>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Venda #{{ venda.pk }} | Cash4You{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1">Venda #{{ venda.pk }}</h1>
+            <p class="text-muted mb-0">{{ venda.criada_em|date:"d/m/Y H:i" }}</p>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <a href="{% url 'editar_venda' venda.pk %}" class="btn btn-outline-primary">Editar venda</a>
+            <a href="{% url 'excluir_venda' venda.pk %}" class="btn btn-outline-danger">Excluir venda</a>
+            <a href="{% url 'listar_vendas' %}" class="btn btn-outline-secondary">Voltar ao histórico</a>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Tipo</th>
+                            <th class="text-end">Preço unitário</th>
+                            <th class="text-center">Quantidade</th>
+                            <th class="text-end">Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in venda.itens.all %}
+                        <tr>
+                            <td>{{ item.descricao }}</td>
+                            <td>{{ item.get_tipo_display }}</td>
+                            <td class="text-end">R$ {{ item.preco_unitario|floatformat:2 }}</td>
+                            <td class="text-center">{{ item.quantidade }}</td>
+                            <td class="text-end">R$ {{ item.subtotal|floatformat:2 }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th colspan="4" class="text-end">Total</th>
+                            <th class="text-end">R$ {{ venda.total|floatformat:2 }}</th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+            <p class="mb-1"><strong>Forma de pagamento:</strong> {{ venda.get_forma_pagamento_display }}</p>
+            {% if venda.valor_recebido is not None %}
+            <p class="mb-1"><strong>Valor recebido:</strong> R$ {{ venda.valor_recebido|floatformat:2 }}</p>
+            <p class="mb-1"><strong>Troco:</strong> R$ {{ venda.troco|floatformat:2 }}</p>
+            {% endif %}
+            {% if venda.telefone_whatsapp %}
+            <p class="mb-3"><strong>Telefone:</strong> {{ venda.telefone_whatsapp }}</p>
+            <a href="{{ whatsapp_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-success">
+                Abrir resumo no WhatsApp
+            </a>
+            <p class="form-text text-muted mt-2">O WhatsApp abrirá com a mensagem pronta. Confirme o envio no aplicativo.</p>
+            {% else %}
+            <p class="text-muted mb-0">Nenhum telefone foi informado; não há resumo disponível para envio via WhatsApp.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

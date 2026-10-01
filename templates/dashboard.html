@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboards | Cash4You{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div>
+            <h1 class="h3 mb-1">Dashboards</h1>
+            <p class="text-muted mb-0">Resumo de vendas, pagamentos e estoque.</p>
+        </div>
+        <a href="{% url 'caixa' %}" class="btn btn-primary">Abrir caixa</a>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-xl-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <h2 class="h5">Produtos mais vendidos</h2>
+                    <p class="text-muted small">Classificação pela quantidade de unidades vendidas.</p>
+                    <div style="height: 280px"><canvas id="produtos-chart" aria-label="Gráfico dos três produtos mais vendidos"></canvas></div>
+                    {% if not produtos_mais_vendidos %}<p class="text-muted mb-0">Ainda não há produtos vendidos.</p>{% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-xl-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <h2 class="h5">Serviços mais prestados</h2>
+                    <p class="text-muted small">Classificação pela quantidade de serviços vendidos.</p>
+                    <div style="height: 280px"><canvas id="servicos-chart" aria-label="Gráfico dos três serviços mais prestados"></canvas></div>
+                    {% if not servicos_mais_vendidos %}<p class="text-muted mb-0">Ainda não há serviços vendidos.</p>{% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-xl-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <h2 class="h5">Principais formas de pagamento</h2>
+                    <p class="text-muted small">As três formas com maior valor total de vendas.</p>
+                    <div style="height: 280px"><canvas id="pagamentos-chart" aria-label="Gráfico das três principais formas de pagamento"></canvas></div>
+                    {% if not pagamentos_labels %}<p class="text-muted mb-0">Ainda não há pagamentos registrados.</p>{% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-xl-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <h2 class="h5">Status do estoque</h2>
+                    <p class="text-muted small">Produtos com menos de 5 unidades são considerados com estoque baixo.</p>
+                    <div style="height: 220px"><canvas id="estoque-chart" aria-label="Gráfico do status do estoque de produtos"></canvas></div>
+                    {% if produtos_baixo_estoque %}
+                    <div class="alert alert-warning mt-3 mb-0">
+                        <strong>Repor estoque:</strong>
+                        <ul class="mb-0 mt-2">
+                            {% for produto in produtos_baixo_estoque %}
+                            <li>{{ produto.descricao }} — {{ produto.quantidade }} unidade(s)</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% else %}
+                    <p class="text-success mb-0">Nenhum produto com estoque abaixo de 5 unidades.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+                        <div>
+                            <h2 class="h5 mb-1">Comparativo de valores do caixa</h2>
+                            <p class="text-muted small mb-0">Total de vendas concluídas em cada período.</p>
+                        </div>
+                        <form method="get">
+                            <label for="periodo" class="visually-hidden">Período do comparativo</label>
+                            <select id="periodo" name="periodo" class="form-select" onchange="this.form.submit()">
+                                <option value="dias" {% if periodo == "dias" %}selected{% endif %}>Últimos 3 dias</option>
+                                <option value="semanas" {% if periodo == "semanas" %}selected{% endif %}>Últimas 3 semanas</option>
+                                <option value="meses" {% if periodo == "meses" %}selected{% endif %}>Últimos 3 meses</option>
+                            </select>
+                        </form>
+                    </div>
+                    <div style="height: 320px"><canvas id="caixa-chart" aria-label="Gráfico comparativo dos valores do caixa"></canvas></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{ produtos_mais_vendidos|json_script:"produtos-mais-vendidos-data" }}
+{{ servicos_mais_vendidos|json_script:"servicos-mais-vendidos-data" }}
+{{ pagamentos_labels|json_script:"pagamentos-labels-data" }}
+{{ pagamentos_valores|json_script:"pagamentos-valores-data" }}
+{{ quantidade_estoque_baixo|json_script:"estoque-baixo-data" }}
+{{ quantidade_estoque_normal|json_script:"estoque-normal-data" }}
+{{ periodo_labels|json_script:"periodo-labels-data" }}
+{{ periodo_valores|json_script:"periodo-valores-data" }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    (function () {
+        const lerDados = function (id) {
+            return JSON.parse(document.getElementById(id).textContent);
+        };
+        const paleta = ["#3B82F6", "#22C55E", "#F59E0B"];
+        const opcoesBarras = {
+            responsive: true,
+            maintainAspectRatio: false,
+            indexAxis: "y",
+            plugins: { legend: { display: false } },
+            scales: { x: { beginAtZero: true, ticks: { precision: 0 } } }
+        };
+
+        function criarGraficoBarras(id, labels, valores, legenda) {
+            new Chart(document.getElementById(id), {
+                type: "bar",
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: legenda,
+                        data: valores,
+                        backgroundColor: paleta,
+                        borderRadius: 5
+                    }]
+                },
+                options: opcoesBarras
+            });
+        }
+
+        const produtos = lerDados("produtos-mais-vendidos-data");
+        const servicos = lerDados("servicos-mais-vendidos-data");
+        const pagamentosLabels = lerDados("pagamentos-labels-data");
+        const pagamentosValores = lerDados("pagamentos-valores-data");
+        const estoqueBaixo = lerDados("estoque-baixo-data");
+        const estoqueNormal = lerDados("estoque-normal-data");
+        const periodoLabels = lerDados("periodo-labels-data");
+        const periodoValores = lerDados("periodo-valores-data");
+
+        criarGraficoBarras(
+            "produtos-chart",
+            produtos.map(function (item) { return item.descricao; }),
+            produtos.map(function (item) { return item.quantidade; }),
+            "Unidades vendidas"
+        );
+        criarGraficoBarras(
+            "servicos-chart",
+            servicos.map(function (item) { return item.descricao; }),
+            servicos.map(function (item) { return item.quantidade; }),
+            "Serviços vendidos"
+        );
+
+        new Chart(document.getElementById("pagamentos-chart"), {
+            type: "doughnut",
+            data: {
+                labels: pagamentosLabels,
+                datasets: [{ data: pagamentosValores, backgroundColor: paleta }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: "bottom" },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                return context.label + ": " + new Intl.NumberFormat("pt-BR", {
+                                    style: "currency", currency: "BRL"
+                                }).format(context.raw);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        new Chart(document.getElementById("estoque-chart"), {
+            type: "doughnut",
+            data: {
+                labels: ["Abaixo de 5 unidades", "Estoque adequado"],
+                datasets: [{
+                    data: [estoqueBaixo, estoqueNormal],
+                    backgroundColor: ["#EF4444", "#22C55E"]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: "bottom" } }
+            }
+        });
+
+        new Chart(document.getElementById("caixa-chart"), {
+            type: "bar",
+            data: {
+                labels: periodoLabels,
+                datasets: [{
+                    label: "Vendas (R$)",
+                    data: periodoValores,
+                    backgroundColor: "#3B82F6",
+                    borderRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                return new Intl.NumberFormat("pt-BR", {
+                                    style: "currency", currency: "BRL"
+                                }).format(context.raw);
+                            }
+                        }
+                    }
+                },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+    })();
+</script>
+{% endblock %}

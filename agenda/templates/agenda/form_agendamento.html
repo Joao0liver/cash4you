@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}{{ titulo }} | Cash4You{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="mb-4">
+        <h1 class="h3 mb-1">{{ titulo }}</h1>
+        <p class="text-muted mb-0">Os horários funcionam em blocos de 30 minutos, todos os dias, das 07:00 às 23:00.</p>
+    </div>
+
+    <form method="get" class="mb-4">
+        <label for="data-calendario" class="form-label">Selecione a data</label>
+        <input
+            type="date"
+            id="data-calendario"
+            name="data"
+            class="form-control"
+            value="{{ data_selecionada|date:'Y-m-d' }}"
+            onchange="this.form.submit()"
+        >
+    </form>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.data }}
+        {% if form.data.errors %}<div class="text-danger mb-3">{{ form.data.errors }}</div>{% endif %}
+        {{ form.non_field_errors }}
+
+        <div class="mb-4">
+            <h2 class="h5">Horários disponíveis</h2>
+            <p class="text-muted">Selecione um ou mais blocos. Horários indisponíveis aparecem riscados.</p>
+            {% if form.horarios.errors %}<div class="alert alert-danger">{{ form.horarios.errors }}</div>{% endif %}
+            <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6 g-2">
+                {% for horario in horarios %}
+                <div class="col">
+                    {% if horario.disponivel %}
+                    <label class="form-check border rounded p-2 d-flex gap-2 align-items-center h-100">
+                        <input
+                            class="form-check-input mt-0"
+                            type="checkbox"
+                            name="horarios"
+                            value="{{ horario.valor }}"
+                            {% if horario.selecionado %}checked{% endif %}
+                        >
+                        <span>{{ horario.rotulo }}</span>
+                    </label>
+                    {% else %}
+                    <div class="border rounded p-2 text-muted text-decoration-line-through" aria-label="{{ horario.rotulo }} indisponível">
+                        {{ horario.rotulo }}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="mb-4">
+            <h2 class="h5">Serviços (opcional)</h2>
+            {% if form.servicos.errors %}<div class="text-danger">{{ form.servicos.errors }}</div>{% endif %}
+            <div class="d-flex flex-wrap gap-3">
+                {% for checkbox in form.servicos %}
+                <div class="form-check">
+                    {{ checkbox.tag }}
+                    <label class="form-check-label" for="{{ checkbox.id_for_label }}">{{ checkbox.choice_label }}</label>
+                </div>
+                {% empty %}
+                <p class="text-muted mb-0">Nenhum serviço cadastrado.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-12 col-md-6">
+                <label for="{{ form.nome.id_for_label }}" class="form-label">{{ form.nome.label }}</label>
+                {{ form.nome }}
+                {% if form.nome.errors %}<div class="text-danger">{{ form.nome.errors }}</div>{% endif %}
+            </div>
+            <div class="col-12 col-md-6">
+                <label for="{{ form.telefone.id_for_label }}" class="form-label">{{ form.telefone.label }}</label>
+                {{ form.telefone }}
+                {% if form.telefone.errors %}<div class="text-danger">{{ form.telefone.errors }}</div>{% endif %}
+            </div>
+            <div class="col-12 col-md-6">
+                <label for="{{ form.email.id_for_label }}" class="form-label">{{ form.email.label }}</label>
+                {{ form.email }}
+                {% if form.email.errors %}<div class="text-danger">{{ form.email.errors }}</div>{% endif %}
+            </div>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">{{ botao }}</button>
+            <a href="{% url 'listar_agendamentos' %}" class="btn btn-outline-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

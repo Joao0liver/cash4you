@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% load venda_fields %}
+
+{% block title %}Relatório de caixa | Cash4You{% endblock %}
+
+{% block content %}
+<style>
+    @media print {
+        body { overflow: visible !important; background: #fff !important; color: #000 !important; }
+        .c4y-sidebar, .c4y-header, .c4y-footer, .no-print { display: none !important; }
+        .c4y-layout, .c4y-page, main.c4y-main { display: block !important; height: auto !important; overflow: visible !important; }
+        main.c4y-main { padding: 0 !important; }
+        .card { border: 1px solid #aaa !important; box-shadow: none !important; break-inside: avoid; }
+        .table { color: #000 !important; }
+    }
+</style>
+<div class="container-fluid">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div>
+            <h1 class="h3 mb-1">Relatório de caixa</h1>
+            <p class="text-muted mb-0">Vendas finalizadas na data selecionada.</p>
+        </div>
+        <button type="button" class="btn btn-outline-primary no-print" onclick="window.print()">Imprimir relatório</button>
+    </div>
+
+    <form method="get" class="row g-2 align-items-end mb-4 no-print">
+        <div class="col-auto">
+            <label for="{{ form.data.id_for_label }}" class="form-label">Data do relatório</label>
+            {{ form.data }}
+        </div>
+        <div class="col-auto"><button type="submit" class="btn btn-primary">Visualizar</button></div>
+        {% if form.data.errors %}<div class="col-12 text-danger">{{ form.data.errors }}</div>{% endif %}
+    </form>
+
+    {% if data_selecionada %}
+    <h2 class="h5 mb-3">Caixa de {{ data_selecionada|date:"d/m/Y" }}</h2>
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-md-4">
+            <div class="card shadow-sm border-0"><div class="card-body">
+                <div class="text-muted">Vendas</div>
+                <div class="h4 mb-0">{{ vendas|length }}</div>
+            </div></div>
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="card shadow-sm border-0"><div class="card-body">
+                <div class="text-muted">Total recebido em vendas</div>
+                <div class="h4 mb-0">R$ {{ total|floatformat:2 }}</div>
+            </div></div>
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="card shadow-sm border-0"><div class="card-body">
+                <div class="text-muted">Formas de pagamento</div>
+                {% for pagamento in pagamentos %}
+                <div>{{ forma_pagamento_labels|get_item:pagamento.forma_pagamento }}: R$ {{ pagamento.total|floatformat:2 }}</div>
+                {% empty %}<div class="text-muted">Sem vendas no período.</div>{% endfor %}
+            </div></div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead><tr><th>Venda</th><th>Horário</th><th>Itens</th><th>Pagamento</th><th class="text-end">Total</th></tr></thead>
+                <tbody>
+                    {% for venda in vendas %}
+                    <tr>
+                        <td>#{{ venda.pk }}</td>
+                        <td>{{ venda.criada_em|date:"H:i" }}</td>
+                        <td>{% for item in venda.itens.all %}{{ item.descricao }} × {{ item.quantidade }}{% if not forloop.last %}; {% endif %}{% empty %}—{% endfor %}</td>
+                        <td>{{ venda.get_forma_pagamento_display }}</td>
+                        <td class="text-end">R$ {{ venda.total|floatformat:2 }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" class="text-center text-muted py-4">Nenhuma venda nesta data.</td></tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot><tr><th colspan="4" class="text-end">Total do dia</th><th class="text-end">R$ {{ total|floatformat:2 }}</th></tr></tfoot>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
