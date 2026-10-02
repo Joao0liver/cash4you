@@ -139,7 +139,7 @@ class AgendaCRUDTests(TestCase):
         self.assertContains(response, "Novo agendamento")
         self.assertContains(
             response,
-            '<button type="button" class="nav-link text-white w-100 text-start" data-nav-toggle aria-expanded="false" aria-controls="menu-agenda">',
+            '<button type="button" class="nav-link text-white w-100 text-start" data-nav-toggle data-nav-paths="/agenda/" aria-expanded="false" aria-controls="menu-agenda">',
         )
         self.assertContains(
             response,

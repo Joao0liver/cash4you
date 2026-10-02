@@ -1,12 +1,14 @@
 from decimal import Decimal
+from urllib.parse import parse_qs, urlparse
 
 from django.test import TestCase
 from django.urls import reverse
+from django.utils.formats import date_format
 
 from produto.models import Produto
 from servico.models import Servico
 
-from .models import ItemVenda, Venda
+from .models import DadosEstabelecimento, ItemVenda, Venda
 
 
 class CaixaTests(TestCase):
@@ -41,6 +43,40 @@ class CaixaTests(TestCase):
         self.assertContains(response, "Shampoo")
         self.assertContains(response, "Corte")
         self.assertContains(response, "Lista de compras")
+        self.assertContains(response, "Últimas vendas")
+        self.assertContains(response, "Ainda não há vendas registradas.")
+
+    def test_cashier_shows_only_three_most_recent_sales(self):
+        vendas = []
+        for indice in range(4):
+            venda = Venda.objects.create(
+                forma_pagamento=Venda.FormaPagamento.PIX,
+                nome_cliente=f"Cliente {indice}",
+                total=Decimal("25.00"),
+            )
+            ItemVenda.objects.create(
+                venda=venda,
+                tipo=ItemVenda.Tipo.PRODUTO,
+                produto=self.produto,
+                descricao=f"Produto {indice}",
+                preco_unitario=Decimal("25.00"),
+                quantidade=1,
+                subtotal=Decimal("25.00"),
+            )
+            vendas.append(venda)
+
+        response = self.client.get(reverse("caixa"))
+
+        self.assertEqual(
+            list(response.context["vendas_recentes"]),
+            list(reversed(vendas[-3:])),
+        )
+        for venda in vendas[-3:]:
+            self.assertContains(response, f"Venda #{venda.pk}")
+            self.assertContains(response, venda.nome_cliente)
+            self.assertContains(response, f"Produto {int(venda.nome_cliente[-1])}")
+            self.assertContains(response, reverse("detalhe_venda", args=[venda.pk]))
+        self.assertNotContains(response, "Cliente 0")
 
     def test_payment_controls_remain_visible_when_cart_is_empty(self):
         response = self.client.get(reverse("caixa"))
@@ -48,10 +84,37 @@ class CaixaTests(TestCase):
         self.assertContains(response, 'id="forma-pagamento"')
         self.assertContains(response, 'id="valor-recebido"')
         self.assertContains(response, 'name="telefone_whatsapp"')
+        self.assertContains(response, 'name="nome_cliente"')
+        self.assertContains(response, reverse("configurar_estabelecimento"))
+        self.assertContains(response, "bi-gear")
+        self.assertNotContains(response, 'name="horario_funcionamento"')
+        self.assertNotContains(response, 'name="endereco"')
         self.assertContains(
             response,
             '<button type="submit" class="btn btn-primary" disabled>Finalizar pagamento</button>',
         )
+
+    def test_establishment_details_can_be_saved_and_reused(self):
+        response = self.client.post(
+            reverse("configurar_estabelecimento"),
+            {
+                "nome": "Ateliê Cash4You",
+                "horario_funcionamento": "Segunda a sexta, 9h às 18h",
+                "endereco": "Rua Central, 123, Itajubá",
+            },
+        )
+
+        self.assertRedirects(response, reverse("configurar_estabelecimento"))
+        dados = DadosEstabelecimento.objects.get(pk=1)
+        self.assertEqual(dados.nome, "Ateliê Cash4You")
+        self.assertEqual(dados.horario_funcionamento, "Segunda a sexta, 9h às 18h")
+        self.assertEqual(dados.endereco, "Rua Central, 123, Itajubá")
+
+        configuracoes = self.client.get(reverse("configurar_estabelecimento"))
+        self.assertContains(configuracoes, 'value="Ateliê Cash4You"')
+        self.assertContains(configuracoes, 'value="Segunda a sexta, 9h às 18h"')
+        self.assertContains(configuracoes, 'value="Rua Central, 123, Itajubá"')
+        self.assertContains(configuracoes, reverse("caixa"))
 
     def test_can_add_product_and_service_and_update_quantities(self):
         self.adicionar("produto", self.produto)
@@ -176,14 +239,63 @@ class CaixaTests(TestCase):
 
     def test_sale_detail_has_optional_whatsapp_message(self):
         self.adicionar("produto", self.produto)
-        response = self.finalizar(telefone_whatsapp="11999998888")
+        self.finalizar(
+            telefone_whatsapp="11999998888",
+            nome_cliente="Ana Souza",
+        )
         sale = Venda.objects.get()
 
         detail = self.client.get(reverse("detalhe_venda", args=[sale.pk]))
+        mensagem = parse_qs(urlparse(detail.context["whatsapp_url"]).query)["text"][0]
 
         self.assertContains(detail, "Abrir resumo no WhatsApp")
         self.assertContains(detail, "https://wa.me/5511999998888")
         self.assertContains(detail, "Shampoo")
+        self.assertEqual(sale.nome_cliente, "Ana Souza")
+        self.assertIn("Olá Ana Souza,", mensagem)
+        self.assertIn("Segue o comprovante de pagamento solicitado:", mensagem)
+        data_completa = date_format(sale.criada_em, r"l, j \d\e F \d\e Y")
+        self.assertIn(
+            f"Data: {data_completa}",
+            mensagem,
+        )
+        self.assertIn("Shampoo x 1 — R$ 25,00", mensagem)
+        self.assertIn("Valor total: R$ 25,00", mensagem)
+        self.assertIn("Pagamento: Pix", mensagem)
+        self.assertIn("Agradecemos por sua preferência!", mensagem)
+        self.assertIn("É um prazer tê-lo como nosso cliente 🤩", mensagem)
+        self.assertNotIn("Troco:", mensagem)
+
+    def test_receipt_message_includes_saved_establishment_details_and_cash_change(self):
+        self.client.post(
+            reverse("configurar_estabelecimento"),
+            {
+                "nome": "Ateliê Cash4You",
+                "horario_funcionamento": "Segunda a sexta, 9h às 18h",
+                "endereco": "Rua Central, 123, Itajubá",
+            },
+        )
+        self.adicionar("produto", self.produto)
+        self.finalizar(
+            forma_pagamento="dinheiro",
+            valor_recebido="30.00",
+            telefone_whatsapp="11999998888",
+            nome_cliente="Ana Souza",
+        )
+        venda = Venda.objects.get()
+
+        detalhe = self.client.get(reverse("detalhe_venda", args=[venda.pk]))
+        mensagem = parse_qs(urlparse(detalhe.context["whatsapp_url"]).query)["text"][0]
+
+        self.assertIn("ATELIÊ CASH4YOU", mensagem)
+        self.assertIn("Ateliê Cash4You", mensagem)
+        self.assertIn("Segunda a sexta, 9h às 18h", mensagem)
+        self.assertIn("Rua Central, 123, Itajubá", mensagem)
+        self.assertIn("Pagamento: Dinheiro", mensagem)
+        self.assertIn("Troco: R$ 5,00", mensagem)
+        self.assertEqual(venda.nome_estabelecimento, "Ateliê Cash4You")
+        self.assertEqual(venda.horario_funcionamento, "Segunda a sexta, 9h às 18h")
+        self.assertEqual(venda.endereco_estabelecimento, "Rua Central, 123, Itajubá")
 
     def test_sale_without_phone_has_no_whatsapp_link(self):
         self.adicionar("produto", self.produto)

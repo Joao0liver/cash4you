@@ -6,6 +6,7 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
+from cliente.models import Cliente
 from produto.models import Produto
 from venda.models import ItemVenda, Venda
 
@@ -14,13 +15,41 @@ class PricingPageTests(TestCase):
     def test_navigation_groups_start_collapsed_and_support_single_open_menu(self):
         response = self.client.get(reverse("listar_cadastros"))
 
-        for menu_id in ("menu-cadastrar", "menu-vendas", "menu-agenda"):
+        for menu_id in ("menu-cadastrar", "menu-vendas", "menu-agenda", "menu-relatorios"):
             self.assertContains(
                 response,
                 f'<ul id="{menu_id}" class="nav nav-pills flex-column gap-1 nav-tree" hidden>',
             )
-        self.assertContains(response, 'data-nav-toggle aria-expanded="false"')
+        self.assertContains(response, 'aria-expanded="false"')
         self.assertContains(response, "fecharMenus(toggle)")
+        self.assertContains(response, "function abrirMenu(toggle)")
+        self.assertContains(response, "const caminhoAtual = window.location.pathname")
+
+    def test_cadastrar_opens_the_form_choices_without_a_legacy_overview_link(self):
+        response = self.client.get(reverse("listar_cadastros"))
+
+        self.assertContains(response, f'href="{reverse("listar_cadastros")}"')
+        self.assertNotContains(response, ">Visão geral<")
+        for label in ("Produtos", "Serviços", "Clientes", "Precificar"):
+            self.assertContains(response, label)
+
+    def test_vendas_link_opens_cashier_and_keeps_sales_menu_expanded(self):
+        response = self.client.get(reverse("caixa"))
+
+        self.assertRegex(
+            response.content.decode(),
+            rf'<a href="{reverse("caixa")}" class="nav-link text-white flex-grow-1">\s*Vendas\s*</a>',
+        )
+        self.assertContains(
+            response,
+            f'<a href="{reverse("caixa")}" class="nav-link active">\n                                    Caixa',
+        )
+        self.assertContains(
+            response,
+            'data-nav-paths="/vendas/" aria-label="Abrir menu Vendas" aria-expanded="false" aria-controls="menu-vendas"',
+        )
+        self.assertContains(response, "const caminhoAtual = window.location.pathname")
+        self.assertContains(response, "if (menuAtual) abrirMenu(menuAtual)")
 
     def test_precificar_is_available_from_cadastros_page(self):
         response = self.client.get(reverse("listar_cadastros"))
@@ -66,6 +95,40 @@ class DashboardTests(TestCase):
             )
         return venda
 
+    def test_dashboard_indicators_link_to_destinations_with_access_tooltips(self):
+        response = self.client.get(reverse("home"))
+
+        self.assertContains(
+            response,
+            f'href="{reverse("listar_vendas")}" class="card shadow-sm border-0 h-100 text-decoration-none" data-bs-toggle="tooltip"',
+        )
+        self.assertContains(
+            response,
+            f'href="{reverse("listar_cliente")}" class="card shadow-sm border-0 h-100 text-decoration-none" data-bs-toggle="tooltip"',
+        )
+        self.assertContains(
+            response,
+            f'href="{reverse("listar_produto")}" class="card shadow-sm border-warning h-100 text-decoration-none" data-bs-toggle="tooltip"',
+        )
+        self.assertContains(response, "Acesse o histórico para consultar as vendas e seus detalhes.")
+        self.assertContains(response, "Acesse o histórico para consultar a quantidade e os detalhes das vendas.")
+        self.assertContains(response, "Acesse Cadastrar → Clientes")
+        self.assertContains(response, "Acesse Cadastrar → Produtos")
+
+    def test_dashboard_chart_initialization_is_independent_of_tooltips(self):
+        response = self.client.get(reverse("home"))
+        conteudo = response.content.decode()
+
+        self.assertLess(
+            conteudo.index('new Chart(document.getElementById("caixa-chart")'),
+            conteudo.index("if (window.bootstrap && window.bootstrap.Tooltip)"),
+        )
+        self.assertContains(response, 'id="produtos-chart"')
+        self.assertContains(response, 'id="servicos-chart"')
+        self.assertContains(response, 'id="pagamentos-chart"')
+        self.assertContains(response, 'id="estoque-chart"')
+        self.assertContains(response, 'id="caixa-chart"')
+
     @patch("core.views.timezone.localdate", return_value=date(2026, 10, 1))
     def test_dashboard_shows_top_sellers_payments_and_low_stock(self, _localdate):
         self.criar_venda(
@@ -98,10 +161,32 @@ class DashboardTests(TestCase):
             preco_venda="10.00",
             quantidade=5,
         )
+        Cliente.objects.create(
+            nome="Ana Souza",
+            cpf="52998224725",
+            telefone="11999998888",
+        )
 
         response = self.client.get(reverse("home"))
 
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["total_vendas_hoje"], Decimal("150.00"))
+        self.assertEqual(response.context["vendas_hoje"], 2)
+        self.assertEqual(response.context["total_clientes"], 1)
+        self.assertEqual(
+            [
+                (item["descricao"], item["quantidade"])
+                for item in response.context["produtos_mais_vendidos_hoje"]
+            ],
+            [("Shampoo", 4), ("Condicionador", 2)],
+        )
+        self.assertEqual(
+            [
+                (item["forma"], item["total"])
+                for item in response.context["formas_pagamento_hoje"]
+            ],
+            [("Pix", Decimal("100.00")), ("Dinheiro", Decimal("50.00"))],
+        )
         self.assertEqual(
             [(item["descricao"], item["quantidade"]) for item in response.context["produtos_mais_vendidos"]],
             [("Shampoo", 4), ("Condicionador", 2)],
@@ -123,6 +208,12 @@ class DashboardTests(TestCase):
             [{"descricao": "Shampoo", "quantidade": 3}],
         )
         self.assertContains(response, "Dashboards")
+        self.assertContains(response, "Vendas hoje")
+        self.assertContains(response, "Nº de vendas")
+        self.assertContains(response, "Clientes")
+        self.assertContains(response, "Produtos mais vendidos hoje")
+        self.assertContains(response, "Formas de pagamento (hoje)")
+        self.assertContains(response, "Repor estoque (abaixo de 5 un.)")
         self.assertContains(response, "menos de 5 unidades")
         self.assertContains(response, 'id="produtos-chart"')
         self.assertContains(response, 'id="servicos-chart"')
@@ -157,6 +248,29 @@ class DashboardTests(TestCase):
 
         self.assertEqual(len(response.context["produtos_mais_vendidos"]), 3)
         self.assertEqual(len(response.context["servicos_mais_vendidos"]), 3)
+
+    @patch("core.views.timezone.localdate", return_value=date(2026, 10, 1))
+    def test_daily_dashboard_indicators_exclude_other_days_and_handle_zero_payments(
+        self,
+        _localdate,
+    ):
+        self.criar_venda(
+            date(2026, 9, 30),
+            Venda.FormaPagamento.DINHEIRO,
+            "150.00",
+            [(ItemVenda.Tipo.PRODUTO, "Produto de ontem", 2)],
+        )
+        self.criar_venda(date(2026, 10, 1), Venda.FormaPagamento.PIX, "0.00")
+
+        response = self.client.get(reverse("home"))
+
+        self.assertEqual(response.context["total_vendas_hoje"], Decimal("0.00"))
+        self.assertEqual(response.context["vendas_hoje"], 1)
+        self.assertEqual(response.context["produtos_mais_vendidos_hoje"], [])
+        self.assertEqual(
+            response.context["formas_pagamento_hoje"],
+            [{"forma": "Pix", "total": Decimal("0.00"), "percentual": 0}],
+        )
 
     @patch("core.views.timezone.localdate", return_value=date(2026, 10, 1))
     def test_cash_comparison_selects_three_days_weeks_or_months(self, _localdate):
@@ -229,6 +343,11 @@ class ReportsTests(TestCase):
         self.assertEqual(hoje_response.context["total"], Decimal("120.50"))
         self.assertContains(hoje_response, "Imprimir relatório")
         self.assertContains(hoje_response, "Shampoo")
+        self.assertContains(
+            hoje_response,
+            "Produto: Shampoo × 1 — R$ 120,50 cada (R$ 120,50)",
+        )
+        self.assertContains(hoje_response, "font-size: 7.5pt")
         self.assertEqual(ontem_response.context["total"], Decimal("25.00"))
         self.assertEqual(ontem_response.context["vendas"].count(), 1)
 
@@ -268,6 +387,7 @@ class ReportsTests(TestCase):
         self.assertEqual(produtos["Estoque baixo"].status_estoque, "Baixo")
         self.assertEqual(produtos["Adequado"].status_estoque, "Adequado")
         self.assertContains(response, "Imprimir relatório")
+        self.assertContains(response, "font-size: 7.5pt")
 
     def test_reports_are_available_from_navigation(self):
         response = self.client.get(reverse("home"))

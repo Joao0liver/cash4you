@@ -49,6 +49,7 @@
                 </table>
             </div>
             <p class="mb-1"><strong>Forma de pagamento:</strong> {{ venda.get_forma_pagamento_display }}</p>
+            {% if venda.nome_cliente %}<p class="mb-1"><strong>Cliente:</strong> {{ venda.nome_cliente }}</p>{% endif %}
             {% if venda.valor_recebido is not None %}
             <p class="mb-1"><strong>Valor recebido:</strong> R$ {{ venda.valor_recebido|floatformat:2 }}</p>
             <p class="mb-1"><strong>Troco:</strong> R$ {{ venda.troco|floatformat:2 }}</p>

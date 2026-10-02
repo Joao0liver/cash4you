@@ -74,17 +74,22 @@
             <div class="card-body">
                 <h2 class="h5">Pagamento e contato</h2>
                 <div class="row g-3">
-                    <div class="col-12 col-md-4">
+                    <div class="col-12 col-md-3">
                         <label for="{{ form.forma_pagamento.id_for_label }}" class="form-label">{{ form.forma_pagamento.label }}</label>
                         {{ form.forma_pagamento }}
                         {% if form.forma_pagamento.errors %}<div class="text-danger">{{ form.forma_pagamento.errors }}</div>{% endif %}
                     </div>
-                    <div class="col-12 col-md-4">
+                    <div class="col-12 col-md-3">
                         <label for="{{ form.valor_recebido.id_for_label }}" class="form-label">{{ form.valor_recebido.label }}</label>
                         {{ form.valor_recebido }}
                         {% if form.valor_recebido.errors %}<div class="text-danger">{{ form.valor_recebido.errors }}</div>{% endif %}
                     </div>
-                    <div class="col-12 col-md-4">
+                    <div class="col-12 col-md-3">
+                        <label for="{{ form.nome_cliente.id_for_label }}" class="form-label">{{ form.nome_cliente.label }}</label>
+                        {{ form.nome_cliente }}
+                        {% if form.nome_cliente.errors %}<div class="text-danger">{{ form.nome_cliente.errors }}</div>{% endif %}
+                    </div>
+                    <div class="col-12 col-md-3">
                         <label for="{{ form.telefone_whatsapp.id_for_label }}" class="form-label">{{ form.telefone_whatsapp.label }}</label>
                         {{ form.telefone_whatsapp }}
                         {% if form.telefone_whatsapp.errors %}<div class="text-danger">{{ form.telefone_whatsapp.errors }}</div>{% endif %}

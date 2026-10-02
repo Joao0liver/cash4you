@@ -5,7 +5,7 @@ from django import forms
 from produto.models import Produto
 from servico.models import Servico
 
-from .models import Venda
+from .models import DadosEstabelecimento, Venda
 
 
 class ValorMoedaField(forms.CharField):
@@ -53,6 +53,18 @@ class FinalizarVendaForm(forms.Form):
             }
         ),
     )
+    nome_cliente = forms.CharField(
+        required=False,
+        max_length=120,
+        label="Nome do cliente",
+        widget=forms.TextInput(
+            attrs={
+                "class": "form-control",
+                "autocomplete": "name",
+                "placeholder": "Nome do cliente",
+            }
+        ),
+    )
 
     def __init__(self, *args, total, **kwargs):
         self.total = total
@@ -94,6 +106,39 @@ class FinalizarVendaForm(forms.Form):
         return cleaned_data
 
 
+class DadosEstabelecimentoForm(forms.ModelForm):
+    class Meta:
+        model = DadosEstabelecimento
+        fields = ("nome", "horario_funcionamento", "endereco")
+        labels = {
+            "nome": "Nome do estabelecimento",
+            "horario_funcionamento": "Horário de funcionamento",
+            "endereco": "Endereço do estabelecimento",
+        }
+        widgets = {
+            "nome": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "Nome do estabelecimento",
+                    "autocomplete": "organization",
+                }
+            ),
+            "horario_funcionamento": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "Ex.: Seg. a sex., das 9h às 18h",
+                }
+            ),
+            "endereco": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "Rua, número, bairro e cidade",
+                    "autocomplete": "street-address",
+                }
+            ),
+        }
+
+
 class EditarVendaForm(FinalizarVendaForm):
     def __init__(self, *args, venda, **kwargs):
         self.venda = venda
@@ -117,6 +162,7 @@ class EditarVendaForm(FinalizarVendaForm):
                 "forma_pagamento": venda.forma_pagamento,
                 "valor_recebido": venda.valor_recebido,
                 "telefone_whatsapp": venda.telefone_whatsapp,
+                "nome_cliente": venda.nome_cliente,
             },
         )
         super().__init__(*args, total=Decimal("0.00"), **kwargs)

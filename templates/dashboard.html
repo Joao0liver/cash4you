@@ -1,24 +1,117 @@
 {% extends "base.html" %}
 
-{% block title %}Dashboards | Cash4You{% endblock %}
+{% block title %}Dashboard | Cash4You{% endblock %}
 
 {% block content %}
 <div class="container-fluid">
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
         <div>
-            <h1 class="h3 mb-1">Dashboards</h1>
-            <p class="text-muted mb-0">Resumo de vendas, pagamentos e estoque.</p>
+            <h1 class="h3 mb-1">Dashboard</h1>
+            <p class="text-muted mb-0">Indicadores do dia e acompanhamento do negócio.</p>
         </div>
         <a href="{% url 'caixa' %}" class="btn btn-primary">Abrir caixa</a>
+    </div>
+
+    <div class="row g-3 mb-3">
+        <div class="col-6 col-xl-3">
+            <a href="{% url 'listar_vendas' %}" class="card shadow-sm border-0 h-100 text-decoration-none" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Acesse o histórico para consultar as vendas e seus detalhes.">
+                <div class="card-body py-3">
+                    <div class="small text-muted">Vendas hoje</div>
+                    <div class="h5 mb-0 mt-1">R$ {{ total_vendas_hoje|floatformat:2 }}</div>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-xl-3">
+            <a href="{% url 'listar_vendas' %}" class="card shadow-sm border-0 h-100 text-decoration-none" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Acesse o histórico para consultar a quantidade e os detalhes das vendas.">
+                <div class="card-body py-3">
+                    <div class="small text-muted">Nº de vendas hoje</div>
+                    <div class="h5 mb-0 mt-1">{{ vendas_hoje }}</div>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-xl-3">
+            <a href="{% url 'listar_cliente' %}" class="card shadow-sm border-0 h-100 text-decoration-none" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Acesse Cadastrar → Clientes para consultar e gerenciar os clientes.">
+                <div class="card-body py-3">
+                    <div class="small text-muted">Clientes</div>
+                    <div class="h5 mb-0 mt-1">{{ total_clientes }}</div>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-xl-3">
+            <a href="{% url 'listar_produto' %}" class="card shadow-sm border-warning h-100 text-decoration-none" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Acesse Cadastrar → Produtos para consultar e atualizar o estoque.">
+                <div class="card-body py-3">
+                    <div class="small text-muted">Estoque baixo</div>
+                    <div class="h5 mb-0 mt-1">{{ quantidade_estoque_baixo }} produto(s)</div>
+                </div>
+            </a>
+        </div>
     </div>
 
     <div class="row g-3 mb-4">
         <div class="col-12 col-xl-6">
             <div class="card shadow-sm border-0 h-100">
                 <div class="card-body">
-                    <h2 class="h5">Produtos mais vendidos</h2>
-                    <p class="text-muted small">Classificação pela quantidade de unidades vendidas.</p>
-                    <div style="height: 280px"><canvas id="produtos-chart" aria-label="Gráfico dos três produtos mais vendidos"></canvas></div>
+                    <h2 class="h6 mb-3">Produtos mais vendidos hoje</h2>
+                    {% for produto in produtos_mais_vendidos_hoje %}
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <span class="small text-truncate flex-shrink-0" style="width: 28%">{{ produto.descricao }}</span>
+                        <div class="progress flex-grow-1" role="progressbar" aria-label="{{ produto.descricao }}" aria-valuenow="{{ produto.percentual }}" aria-valuemin="0" aria-valuemax="100" style="height: 12px">
+                            <div class="progress-bar" style="width: {{ produto.percentual }}%"></div>
+                        </div>
+                        <span class="small text-muted text-nowrap">{{ produto.quantidade }} un.</span>
+                    </div>
+                    {% empty %}
+                    <p class="small text-muted mb-0">Nenhum produto vendido hoje.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-xl-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <h2 class="h6 mb-3">Formas de pagamento (hoje)</h2>
+                    {% for pagamento in formas_pagamento_hoje %}
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <span class="small text-truncate flex-shrink-0" style="width: 22%">{{ pagamento.forma }}</span>
+                        <div class="progress flex-grow-1" role="progressbar" aria-label="{{ pagamento.forma }}" aria-valuenow="{{ pagamento.percentual }}" aria-valuemin="0" aria-valuemax="100" style="height: 12px">
+                            <div class="progress-bar" style="width: {{ pagamento.percentual }}%"></div>
+                        </div>
+                        <span class="small text-muted text-nowrap">R$ {{ pagamento.total|floatformat:2 }}</span>
+                    </div>
+                    {% empty %}
+                    <p class="small text-muted mb-0">Nenhum pagamento registrado hoje.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <div class="col-12">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    {% if produtos_baixo_estoque %}
+                    <div class="alert alert-warning mb-0 py-2">
+                        <strong>Repor estoque (abaixo de 5 un.):</strong>
+                        <span class="ms-md-2">
+                            {% for produto in produtos_baixo_estoque %}
+                            {{ produto.descricao }}: {{ produto.quantidade }} un.{% if not forloop.last %} · {% endif %}
+                            {% endfor %}
+                        </span>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-success mb-0 py-2">Nenhum produto com estoque abaixo de 5 unidades.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h2 class="h5 mb-3">Análises detalhadas</h2>
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-xl-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <h3 class="h6">Produtos mais vendidos (geral)</h3>
+                    <p class="text-muted small">Classificação pela quantidade total de unidades vendidas.</p>
+                    <div style="height: 240px"><canvas id="produtos-chart" aria-label="Gráfico dos três produtos mais vendidos"></canvas></div>
                     {% if not produtos_mais_vendidos %}<p class="text-muted mb-0">Ainda não há produtos vendidos.</p>{% endif %}
                 </div>
             </div>
@@ -26,9 +119,9 @@
         <div class="col-12 col-xl-6">
             <div class="card shadow-sm border-0 h-100">
                 <div class="card-body">
-                    <h2 class="h5">Serviços mais prestados</h2>
-                    <p class="text-muted small">Classificação pela quantidade de serviços vendidos.</p>
-                    <div style="height: 280px"><canvas id="servicos-chart" aria-label="Gráfico dos três serviços mais prestados"></canvas></div>
+                    <h3 class="h6">Serviços mais prestados</h3>
+                    <p class="text-muted small">Classificação pela quantidade total de serviços vendidos.</p>
+                    <div style="height: 240px"><canvas id="servicos-chart" aria-label="Gráfico dos três serviços mais prestados"></canvas></div>
                     {% if not servicos_mais_vendidos %}<p class="text-muted mb-0">Ainda não há serviços vendidos.</p>{% endif %}
                 </div>
             </div>
@@ -36,9 +129,9 @@
         <div class="col-12 col-xl-6">
             <div class="card shadow-sm border-0 h-100">
                 <div class="card-body">
-                    <h2 class="h5">Principais formas de pagamento</h2>
+                    <h3 class="h6">Principais formas de pagamento (geral)</h3>
                     <p class="text-muted small">As três formas com maior valor total de vendas.</p>
-                    <div style="height: 280px"><canvas id="pagamentos-chart" aria-label="Gráfico das três principais formas de pagamento"></canvas></div>
+                    <div style="height: 240px"><canvas id="pagamentos-chart" aria-label="Gráfico das três principais formas de pagamento"></canvas></div>
                     {% if not pagamentos_labels %}<p class="text-muted mb-0">Ainda não há pagamentos registrados.</p>{% endif %}
                 </div>
             </div>
@@ -46,21 +139,9 @@
         <div class="col-12 col-xl-6">
             <div class="card shadow-sm border-0 h-100">
                 <div class="card-body">
-                    <h2 class="h5">Status do estoque</h2>
+                    <h3 class="h6">Status do estoque</h3>
                     <p class="text-muted small">Produtos com menos de 5 unidades são considerados com estoque baixo.</p>
-                    <div style="height: 220px"><canvas id="estoque-chart" aria-label="Gráfico do status do estoque de produtos"></canvas></div>
-                    {% if produtos_baixo_estoque %}
-                    <div class="alert alert-warning mt-3 mb-0">
-                        <strong>Repor estoque:</strong>
-                        <ul class="mb-0 mt-2">
-                            {% for produto in produtos_baixo_estoque %}
-                            <li>{{ produto.descricao }} — {{ produto.quantidade }} unidade(s)</li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                    {% else %}
-                    <p class="text-success mb-0">Nenhum produto com estoque abaixo de 5 unidades.</p>
-                    {% endif %}
+                    <div style="height: 200px"><canvas id="estoque-chart" aria-label="Gráfico do status do estoque de produtos"></canvas></div>
                 </div>
             </div>
         </div>
@@ -219,5 +300,12 @@
             }
         });
     })();
+</script>
+<script>
+    if (window.bootstrap && window.bootstrap.Tooltip) {
+        document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (elemento) {
+            new window.bootstrap.Tooltip(elemento);
+        });
+    }
 </script>
 {% endblock %}

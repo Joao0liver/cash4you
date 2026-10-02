@@ -6,6 +6,7 @@ from django.shortcuts import render
 from django.utils import timezone
 from django import forms
 
+from cliente.models import Cliente
 from produto.models import Produto
 from venda.models import ItemVenda, Venda
 
@@ -77,6 +78,13 @@ def dashboard(request):
     hoje = timezone.localdate()
     periodos = _periodos_comparacao(periodo, hoje)
     vendas = Venda.objects.all()
+    inicio_hoje = _inicio_fuso(hoje)
+    inicio_amanha = _inicio_fuso(hoje + timedelta(days=1))
+    vendas_hoje = vendas.filter(
+        criada_em__gte=inicio_hoje,
+        criada_em__lt=inicio_amanha,
+    )
+    total_vendas_hoje = vendas_hoje.aggregate(total=Sum("total"))["total"] or Decimal("0.00")
 
     def mais_vendidos(tipo):
         return list(
@@ -95,6 +103,45 @@ def dashboard(request):
         .order_by("-total", "forma_pagamento")[:3]
     )
     forma_pagamento_labels = dict(Venda.FormaPagamento.choices)
+
+    produtos_mais_vendidos_hoje = list(
+        ItemVenda.objects.filter(
+            tipo=ItemVenda.Tipo.PRODUTO,
+            venda__criada_em__gte=inicio_hoje,
+            venda__criada_em__lt=inicio_amanha,
+        )
+        .values("descricao")
+        .annotate(quantidade=Sum("quantidade"))
+        .order_by("-quantidade", "descricao")[:3]
+    )
+    maior_quantidade_produto_hoje = max(
+        (item["quantidade"] for item in produtos_mais_vendidos_hoje),
+        default=0,
+    )
+    for item in produtos_mais_vendidos_hoje:
+        item["percentual"] = round(item["quantidade"] / maior_quantidade_produto_hoje * 100)
+
+    pagamentos_hoje = list(
+        vendas_hoje.values("forma_pagamento")
+        .annotate(total=Sum("total"))
+        .order_by("-total", "forma_pagamento")[:3]
+    )
+    maior_pagamento_hoje = max(
+        (item["total"] for item in pagamentos_hoje),
+        default=Decimal("0.00"),
+    )
+    formas_pagamento_hoje = [
+        {
+            "forma": forma_pagamento_labels[item["forma_pagamento"]],
+            "total": item["total"],
+            "percentual": (
+                round(item["total"] / maior_pagamento_hoje * 100)
+                if maior_pagamento_hoje
+                else 0
+            ),
+        }
+        for item in pagamentos_hoje
+    ]
 
     produtos_baixo_estoque = list(
         Produto.objects.filter(quantidade__lt=5)
@@ -129,6 +176,11 @@ def dashboard(request):
         "dashboard.html",
         {
             "periodo": periodo,
+            "vendas_hoje": vendas_hoje.count(),
+            "total_vendas_hoje": total_vendas_hoje,
+            "total_clientes": Cliente.objects.count(),
+            "produtos_mais_vendidos_hoje": produtos_mais_vendidos_hoje,
+            "formas_pagamento_hoje": formas_pagamento_hoje,
             "produtos_mais_vendidos": produtos_mais_vendidos,
             "servicos_mais_vendidos": servicos_mais_vendidos,
             "pagamentos_labels": [

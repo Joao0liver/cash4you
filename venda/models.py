@@ -11,7 +11,11 @@ class Venda(models.Model):
 
     criada_em = models.DateTimeField(auto_now_add=True)
     forma_pagamento = models.CharField(max_length=10, choices=FormaPagamento.choices)
+    nome_cliente = models.CharField(max_length=120, blank=True, default="")
     telefone_whatsapp = models.CharField(max_length=20, blank=True)
+    nome_estabelecimento = models.CharField(max_length=120, blank=True, default="")
+    horario_funcionamento = models.CharField(max_length=120, blank=True, default="")
+    endereco_estabelecimento = models.CharField(max_length=255, blank=True, default="")
     total = models.DecimalField(
         max_digits=12,
         decimal_places=2,
@@ -36,6 +40,15 @@ class Venda(models.Model):
 
     def __str__(self):
         return f"Venda #{self.pk} - R$ {self.total}"
+
+
+class DadosEstabelecimento(models.Model):
+    nome = models.CharField(max_length=120, blank=True, default="")
+    horario_funcionamento = models.CharField(max_length=120, blank=True, default="")
+    endereco = models.CharField(max_length=255, blank=True, default="")
+
+    def __str__(self):
+        return self.nome or "Dados do estabelecimento"
 
 
 class ItemVenda(models.Model):

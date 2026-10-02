@@ -5,13 +5,31 @@
 
 {% block content %}
 <style>
+    .item-detalhe { display: block; }
+
     @media print {
+        @page { margin: 10mm; }
         body { overflow: visible !important; background: #fff !important; color: #000 !important; }
         .c4y-sidebar, .c4y-header, .c4y-footer, .no-print { display: none !important; }
         .c4y-layout, .c4y-page, main.c4y-main { display: block !important; height: auto !important; overflow: visible !important; }
-        main.c4y-main { padding: 0 !important; }
+        main.c4y-main { padding: 0 !important; font-size: 8pt; }
+        .container-fluid { padding: 0 !important; }
+        h1.h3 { font-size: 14pt; margin-bottom: 2pt !important; }
+        h2.h5 { font-size: 10pt; margin-bottom: 5pt !important; }
+        p, .text-muted { color: #333 !important; }
+        .mb-4 { margin-bottom: 8pt !important; }
+        .g-3 { --bs-gutter-x: 6pt; --bs-gutter-y: 6pt; }
         .card { border: 1px solid #aaa !important; box-shadow: none !important; break-inside: avoid; }
-        .table { color: #000 !important; }
+        .card-body { padding: 6pt !important; }
+        .row > .col-12 { width: 33.333333%; }
+        .table-responsive { overflow: visible !important; }
+        .table { width: 100%; color: #000 !important; font-size: 7.5pt; margin-bottom: 0 !important; }
+        .table th, .table td { padding: 3pt 4pt !important; vertical-align: top; }
+        .table thead { display: table-header-group; }
+        .table tr { break-inside: avoid; }
+        .item-detalhe { line-height: 1.25; }
+        .text-end { white-space: nowrap; }
+        * { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
     }
 </style>
 <div class="container-fluid">
@@ -66,7 +84,7 @@
                     <tr>
                         <td>#{{ venda.pk }}</td>
                         <td>{{ venda.criada_em|date:"H:i" }}</td>
-                        <td>{% for item in venda.itens.all %}{{ item.descricao }} × {{ item.quantidade }}{% if not forloop.last %}; {% endif %}{% empty %}—{% endfor %}</td>
+                        <td>{% for item in venda.itens.all %}<span class="item-detalhe">{{ item.get_tipo_display }}: {{ item.descricao }} × {{ item.quantidade }} — R$ {{ item.preco_unitario|floatformat:2 }} cada (R$ {{ item.subtotal|floatformat:2 }})</span>{% empty %}—{% endfor %}</td>
                         <td>{{ venda.get_forma_pagamento_display }}</td>
                         <td class="text-end">R$ {{ venda.total|floatformat:2 }}</td>
                     </tr>

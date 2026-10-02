@@ -7,12 +7,13 @@ from django.db.models import F
 from django.http import HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils.formats import date_format
 
 from produto.models import Produto
 from servico.models import Servico
 
-from .forms import EditarVendaForm, FinalizarVendaForm
-from .models import ItemVenda, Venda
+from .forms import DadosEstabelecimentoForm, EditarVendaForm, FinalizarVendaForm
+from .models import DadosEstabelecimento, ItemVenda, Venda
 
 
 CART_SESSION_KEY = "venda_cart"
@@ -110,7 +111,30 @@ def _render_caixa(request, form=None):
             "invalido": invalido,
             "produtos": Produto.objects.order_by("descricao"),
             "servicos": Servico.objects.order_by("descricao"),
+            "vendas_recentes": Venda.objects.prefetch_related("itens")[:3],
         },
+    )
+
+
+def configurar_estabelecimento(request):
+    dados_estabelecimento = DadosEstabelecimento.objects.filter(pk=1).first()
+    if dados_estabelecimento is None:
+        dados_estabelecimento = DadosEstabelecimento(pk=1)
+    form = DadosEstabelecimentoForm(
+        request.POST or None,
+        instance=dados_estabelecimento,
+    )
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(
+            request,
+            "Dados do estabelecimento salvos para os próximos comprovantes.",
+        )
+        return redirect("configurar_estabelecimento")
+    return render(
+        request,
+        "venda/configurar_estabelecimento.html",
+        {"form": form},
     )
 
 
@@ -185,11 +209,24 @@ def caixa(request):
 
             form = FinalizarVendaForm(request.POST, total=total)
             if form.is_valid():
+                dados_estabelecimento = DadosEstabelecimento.objects.filter(pk=1).first()
                 try:
                     with transaction.atomic():
                         venda = Venda.objects.create(
                             forma_pagamento=form.cleaned_data["forma_pagamento"],
+                            nome_cliente=form.cleaned_data["nome_cliente"],
                             telefone_whatsapp=form.cleaned_data["telefone_whatsapp"],
+                            nome_estabelecimento=(
+                                dados_estabelecimento.nome if dados_estabelecimento else ""
+                            ),
+                            horario_funcionamento=(
+                                dados_estabelecimento.horario_funcionamento
+                                if dados_estabelecimento
+                                else ""
+                            ),
+                            endereco_estabelecimento=(
+                                dados_estabelecimento.endereco if dados_estabelecimento else ""
+                            ),
                             total=total,
                             valor_recebido=(
                                 form.cleaned_data["valor_recebido"]
@@ -263,22 +300,42 @@ def detalhe_venda(request, pk):
     )
     whatsapp_url = None
     if venda.telefone_whatsapp:
+        data_completa = date_format(venda.criada_em, r"l, j \d\e F \d\e Y")
         mensagem = [
-            f"Resumo da venda #{venda.pk}",
-            *[
-                f"{item.descricao} x {item.quantidade} — R$ {_formatar_moeda(item.subtotal)}"
-                for item in venda.itens.all()
-            ],
-            f"Total: R$ {_formatar_moeda(venda.total)}",
-            f"Pagamento: {venda.get_forma_pagamento_display()}",
+            f"Olá {venda.nome_cliente}," if venda.nome_cliente else "Olá,",
+            "Segue o comprovante de pagamento solicitado:",
+            "",
         ]
-        if venda.valor_recebido is not None:
-            mensagem.extend(
-                [
-                    f"Valor recebido: R$ {_formatar_moeda(venda.valor_recebido)}",
-                    f"Troco: R$ {_formatar_moeda(venda.troco)}",
-                ]
-            )
+        if venda.nome_estabelecimento:
+            mensagem.append(venda.nome_estabelecimento.upper())
+        mensagem.extend(
+            [
+                f"Data: {data_completa}",
+                "",
+                *[
+                    f"{item.descricao} x {item.quantidade} — R$ {_formatar_moeda(item.subtotal)}"
+                    for item in venda.itens.all()
+                ],
+                "",
+                f"Valor total: R$ {_formatar_moeda(venda.total)}",
+                f"Pagamento: {venda.get_forma_pagamento_display()}",
+            ]
+        )
+        if venda.forma_pagamento == Venda.FormaPagamento.DINHEIRO:
+            mensagem.append(f"Troco: R$ {_formatar_moeda(venda.troco)}")
+        mensagem.extend(
+            [
+                "",
+                "Agradecemos por sua preferência!",
+                "É um prazer tê-lo como nosso cliente 🤩",
+            ]
+        )
+        if venda.nome_estabelecimento:
+            mensagem.append(venda.nome_estabelecimento)
+        if venda.horario_funcionamento:
+            mensagem.append(venda.horario_funcionamento)
+        if venda.endereco_estabelecimento:
+            mensagem.append(venda.endereco_estabelecimento)
         telefone = venda.telefone_whatsapp
         numero_whatsapp = f"55{telefone}" if len(telefone) in (10, 11) else telefone
         whatsapp_url = (
@@ -321,6 +378,7 @@ def editar_venda(request, pk):
                             )
 
                 venda.forma_pagamento = form.cleaned_data["forma_pagamento"]
+                venda.nome_cliente = form.cleaned_data["nome_cliente"]
                 venda.telefone_whatsapp = form.cleaned_data["telefone_whatsapp"]
                 venda.total = form.total
                 if venda.forma_pagamento == Venda.FormaPagamento.DINHEIRO:

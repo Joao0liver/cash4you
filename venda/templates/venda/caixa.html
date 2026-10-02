@@ -9,7 +9,15 @@
             <h1 class="h3 mb-1">Caixa</h1>
             <p class="text-muted mb-0">Adicione produtos e serviços para iniciar uma venda.</p>
         </div>
-        <a href="{% url 'listar_vendas' %}" class="btn btn-outline-secondary">Histórico de vendas</a>
+        <div class="d-flex flex-wrap gap-2">
+            <a href="{% url 'configurar_estabelecimento' %}" class="btn btn-outline-secondary d-inline-flex align-items-center justify-content-center" aria-label="Configurar dados do estabelecimento" title="Configurar dados do estabelecimento">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-gear" viewBox="0 0 16 16" aria-hidden="true">
+                    <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492M5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0"/>
+                    <path d="M9.796 1.343c-.4-1.117-1.992-1.117-2.392 0l-.094.262a1.25 1.25 0 0 1-1.852.65l-.235-.144c-1.004-.615-2.13.51-1.515 1.515l.144.235a1.25 1.25 0 0 1-.65 1.852l-.262.094c-1.117.4-1.117 1.992 0 2.392l.262.094a1.25 1.25 0 0 1 .65 1.852l-.144.235c-.615 1.004.51 2.13 1.515 1.515l.235-.144a1.25 1.25 0 0 1 1.852.65l.094.262c.4 1.117 1.992 1.117 2.392 0l.094-.262a1.25 1.25 0 0 1 1.852-.65l.235.144c1.004.615 2.13-.51 1.515-1.515l-.144-.235a1.25 1.25 0 0 1 .65-1.852l.262-.094c1.117-.4 1.117-1.992 0-2.392l-.262-.094a1.25 1.25 0 0 1-.65-1.852l.144-.235c.615-1.004-.51-2.13-1.515-1.515l-.235.144a1.25 1.25 0 0 1-1.852-.65zM8 1.5a.25.25 0 0 1 .235.165l.094.262a2.25 2.25 0 0 0 3.334 1.17l.235-.144a.25.25 0 0 1 .303.394l-.144.235a2.25 2.25 0 0 0 1.17 3.334l.262.094a.25.25 0 0 1 0 .47l-.262.094a2.25 2.25 0 0 0-1.17 3.334l.144.235a.25.25 0 0 1-.303.303l-.235-.144a2.25 2.25 0 0 0-3.334 1.17l-.094.262a.25.25 0 0 1-.47 0l-.094-.262a2.25 2.25 0 0 0-3.334-1.17l-.235.144a.25.25 0 0 1-.303-.303l.144-.235a2.25 2.25 0 0 0-1.17-3.334l-.262-.094a.25.25 0 0 1 0-.47l.262-.094a2.25 2.25 0 0 0 1.17-3.334l-.144-.235a.25.25 0 0 1 .303-.303l.235.144a2.25 2.25 0 0 0 3.334-1.17l.094-.262A.25.25 0 0 1 8 1.5"/>
+                </svg>
+            </a>
+            <a href="{% url 'listar_vendas' %}" class="btn btn-outline-secondary">Histórico de vendas</a>
+        </div>
     </div>
 
     {% if messages %}
@@ -20,7 +28,7 @@
 
     <div class="row g-4">
         <div class="col-12 col-xl-5">
-            <div class="card shadow-sm border-0 h-100">
+            <div class="card shadow-sm border-0">
                 <div class="card-body">
                     <h2 class="h5 mb-3">Adicionar item</h2>
                     <form method="post" class="mb-4">
@@ -58,6 +66,33 @@
                             <button class="btn btn-outline-primary" type="submit">Adicionar</button>
                         </div>
                     </form>
+
+                </div>
+            </div>
+            <div class="card shadow-sm border-0 mt-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h2 class="h6 mb-0">Últimas vendas</h2>
+                        <a href="{% url 'listar_vendas' %}" class="small">Ver histórico</a>
+                    </div>
+                    {% for venda in vendas_recentes %}
+                    <div class="py-2{% if not forloop.last %} border-bottom{% endif %}">
+                        <div class="d-flex justify-content-between align-items-start gap-2">
+                            <div class="small">
+                                <a href="{% url 'detalhe_venda' venda.pk %}" class="fw-semibold">Venda #{{ venda.pk }}</a>
+                                <span class="text-muted">· {{ venda.criada_em|date:"d/m/Y H:i" }}</span>
+                                {% if venda.nome_cliente %}<div class="text-muted">{{ venda.nome_cliente }}</div>{% endif %}
+                                <div class="text-muted">
+                                    {% for item in venda.itens.all %}{{ item.descricao }} × {{ item.quantidade }}{% if not forloop.last %}, {% endif %}{% endfor %}
+                                    · {{ venda.get_forma_pagamento_display }}
+                                </div>
+                            </div>
+                            <span class="small fw-semibold text-nowrap">R$ {{ venda.total|floatformat:2 }}</span>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="small text-muted mb-0">Ainda não há vendas registradas.</p>
+                    {% endfor %}
                 </div>
             </div>
         </div>
@@ -142,7 +177,12 @@
                                 {% if form.valor_recebido.errors %}<div class="text-danger">{{ form.valor_recebido.errors }}</div>{% endif %}
                                 <small class="form-text text-muted">Troco estimado: <span id="troco-estimado">R$ 0,00</span></small>
                             </div>
-                            <div class="col-12">
+                            <div class="col-12 col-md-6">
+                                <label for="{{ form.nome_cliente.id_for_label }}" class="form-label">{{ form.nome_cliente.label }}</label>
+                                {{ form.nome_cliente }}
+                                {% if form.nome_cliente.errors %}<div class="text-danger">{{ form.nome_cliente.errors }}</div>{% endif %}
+                            </div>
+                            <div class="col-12 col-md-6">
                                 <label for="{{ form.telefone_whatsapp.id_for_label }}" class="form-label">{{ form.telefone_whatsapp.label }}</label>
                                 {{ form.telefone_whatsapp }}
                                 {% if form.telefone_whatsapp.errors %}<div class="text-danger">{{ form.telefone_whatsapp.errors }}</div>{% endif %}

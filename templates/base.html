@@ -49,6 +49,7 @@
         aside.c4y-sidebar .nav-link { color: #C7CCD4; border-radius: 7px; font-size: 0.9rem; }
         aside.c4y-sidebar .nav-link:hover { background: rgba(255,255,255,0.06); color: #fff; }
         aside.c4y-sidebar .nav-link.active { background: var(--bs-primary); color: #fff; }
+        aside.c4y-sidebar [data-nav-toggle][aria-expanded="true"] { background: rgba(255,255,255,0.06); color: #fff; }
         .c4y-sidebar .nav-tree {
             margin: 0.25rem 0 0.5rem 0.9rem;
             padding-left: 0.8rem;
@@ -110,15 +111,15 @@
                     </li>
 
                     <li class="nav-item">
-                        <button type="button" class="nav-link text-white w-100 text-start" data-nav-toggle aria-expanded="false" aria-controls="menu-cadastrar">
-                            Cadastrar
-                        </button>
+                        <div class="d-flex align-items-center gap-1">
+                            <a href="{% url 'listar_cadastros' %}" class="nav-link text-white flex-grow-1{% if request.resolver_match.url_name == 'listar_cadastros' %} active{% endif %}">
+                                Cadastrar
+                            </a>
+                            <button type="button" class="nav-link text-white px-2" data-nav-toggle data-nav-paths="/cadastrar/,/produto/,/servico/,/cliente/" aria-label="Abrir menu Cadastrar" aria-expanded="false" aria-controls="menu-cadastrar">
+                                <span aria-hidden="true">⌄</span>
+                            </button>
+                        </div>
                         <ul id="menu-cadastrar" class="nav nav-pills flex-column gap-1 nav-tree" hidden>
-                            <li class="nav-item">
-                                <a href="{% url 'listar_cadastros' %}" class="nav-link{% if request.resolver_match.url_name == 'listar_cadastros' %} active{% endif %}">
-                                    Visão geral
-                                </a>
-                            </li>
                             <li class="nav-item">
                                 <a href="{% url 'listar_produto' %}" class="nav-link{% if request.resolver_match.url_name == 'listar_produto' %} active{% endif %}">
                                     Produtos
@@ -143,9 +144,14 @@
                     </li>
 
                     <li class="nav-item">
-                        <button type="button" class="nav-link text-white w-100 text-start" data-nav-toggle aria-expanded="false" aria-controls="menu-vendas">
-                            Vendas
-                        </button>
+                        <div class="d-flex align-items-center gap-1">
+                            <a href="{% url 'caixa' %}" class="nav-link text-white flex-grow-1">
+                                Vendas
+                            </a>
+                            <button type="button" class="nav-link text-white px-2" data-nav-toggle data-nav-paths="/vendas/" aria-label="Abrir menu Vendas" aria-expanded="false" aria-controls="menu-vendas">
+                                <span aria-hidden="true">⌄</span>
+                            </button>
+                        </div>
                         <ul id="menu-vendas" class="nav nav-pills flex-column gap-1 nav-tree" hidden>
                             <li class="nav-item">
                                 <a href="{% url 'caixa' %}" class="nav-link{% if request.resolver_match.url_name == 'caixa' %} active{% endif %}">
@@ -161,7 +167,7 @@
                     </li>
 
                     <li class="nav-item">
-                        <button type="button" class="nav-link text-white w-100 text-start" data-nav-toggle aria-expanded="false" aria-controls="menu-agenda">
+                        <button type="button" class="nav-link text-white w-100 text-start" data-nav-toggle data-nav-paths="/agenda/" aria-expanded="false" aria-controls="menu-agenda">
                             Agenda
                         </button>
                         <ul id="menu-agenda" class="nav nav-pills flex-column gap-1 nav-tree" hidden>
@@ -179,7 +185,7 @@
                     </li>
 
                     <li class="nav-item">
-                        <button type="button" class="nav-link text-white w-100 text-start" data-nav-toggle aria-expanded="false" aria-controls="menu-relatorios">
+                        <button type="button" class="nav-link text-white w-100 text-start" data-nav-toggle data-nav-paths="/relatorios/" aria-expanded="false" aria-controls="menu-relatorios">
                             Relatórios
                         </button>
                         <ul id="menu-relatorios" class="nav nav-pills flex-column gap-1 nav-tree" hidden>
@@ -276,21 +282,26 @@
                 });
             }
 
+            function abrirMenu(toggle) {
+                fecharMenus(toggle);
+                const menu = document.getElementById(toggle.getAttribute("aria-controls"));
+                menu.hidden = false;
+                toggle.setAttribute("aria-expanded", "true");
+            }
+
             toggles.forEach(function (toggle) {
                 toggle.addEventListener("click", function () {
-                    const menu = document.getElementById(toggle.getAttribute("aria-controls"));
-                    const abrir = menu.hidden;
-                    fecharMenus(toggle);
-                    menu.hidden = !abrir;
-                    toggle.setAttribute("aria-expanded", String(abrir));
+                    abrirMenu(toggle);
                 });
             });
 
-            document.querySelectorAll("[data-nav-leaf], .nav-tree a").forEach(function (link) {
-                link.addEventListener("click", function () {
-                    fecharMenus();
+            const caminhoAtual = window.location.pathname;
+            const menuAtual = Array.from(toggles).find(function (toggle) {
+                return toggle.dataset.navPaths.split(",").some(function (caminho) {
+                    return caminhoAtual.startsWith(caminho);
                 });
             });
+            if (menuAtual) abrirMenu(menuAtual);
         })();
     </script>
 
