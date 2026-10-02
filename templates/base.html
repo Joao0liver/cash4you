@@ -115,7 +115,7 @@
                             <a href="{% url 'listar_cadastros' %}" class="nav-link text-white flex-grow-1{% if request.resolver_match.url_name == 'listar_cadastros' %} active{% endif %}">
                                 Cadastrar
                             </a>
-                            <button type="button" class="nav-link text-white px-2" data-nav-toggle data-nav-paths="/cadastrar/,/produto/,/servico/,/cliente/" aria-label="Abrir menu Cadastrar" aria-expanded="false" aria-controls="menu-cadastrar">
+                            <button type="button" class="nav-link text-white px-2" data-nav-toggle data-nav-paths="/cadastrar/,/produto/,/servico/,/cliente/,/contas-a-pagar/funcionarios/" aria-label="Abrir menu Cadastrar" aria-expanded="false" aria-controls="menu-cadastrar">
                                 <span aria-hidden="true">⌄</span>
                             </button>
                         </div>
@@ -133,6 +133,11 @@
                             <li class="nav-item">
                                 <a href="{% url 'listar_cliente' %}" class="nav-link{% if request.resolver_match.url_name == 'listar_cliente' %} active{% endif %}">
                                     Carteira de Clientes
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{% url 'listar_funcionarios' %}" class="nav-link{% if request.resolver_match.url_name == 'listar_funcionarios' or request.resolver_match.url_name == 'criar_funcionario' %} active{% endif %}">
+                                    Funcionários
                                 </a>
                             </li>
                         </ul>

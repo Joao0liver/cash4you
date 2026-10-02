@@ -20,3 +20,16 @@ class ContaPagar(models.Model):
 
     def __str__(self):
         return self.descricao
+
+
+class Funcionario(models.Model):
+    nome = models.CharField(max_length=160)
+    funcao = models.CharField(max_length=120)
+
+    class Meta:
+        ordering = ("nome", "id")
+        verbose_name = "funcionário"
+        verbose_name_plural = "funcionários"
+
+    def __str__(self):
+        return f"{self.nome} - {self.funcao}"

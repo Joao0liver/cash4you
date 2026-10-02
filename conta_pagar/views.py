@@ -2,15 +2,39 @@ from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
-from .forms import ContaPagarForm
-from .models import ContaPagar
+from .forms import ContaPagarForm, FuncionarioForm
+from .models import ContaPagar, Funcionario
 
 
 def listar_contas(request):
     return render(
         request,
         "conta_pagar/listar_contas.html",
-        {"contas": ContaPagar.objects.all(), "hoje": timezone.localdate()},
+        {
+            "contas": ContaPagar.objects.all(),
+            "hoje": timezone.localdate(),
+        },
+    )
+
+
+def listar_funcionarios(request):
+    return render(
+        request,
+        "conta_pagar/listar_funcionarios.html",
+        {"funcionarios": Funcionario.objects.all()},
+    )
+
+
+def criar_funcionario(request):
+    form = FuncionarioForm(request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, "Funcionário cadastrado.")
+        return redirect("listar_funcionarios")
+    return render(
+        request,
+        "conta_pagar/form_funcionario.html",
+        {"form": form},
     )
 
 

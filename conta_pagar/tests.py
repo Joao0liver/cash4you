@@ -4,10 +4,54 @@ from decimal import Decimal
 from django.test import TestCase
 from django.urls import reverse
 
-from .models import ContaPagar
+from .models import ContaPagar, Funcionario
 
 
 class ContaPagarTests(TestCase):
+    def test_create_and_list_employee(self):
+        response = self.client.post(
+            reverse("criar_funcionario"),
+            {"nome": "Ana Silva", "funcao": "Gerente"},
+        )
+
+        self.assertRedirects(response, reverse("listar_funcionarios"))
+        funcionario = Funcionario.objects.get()
+        self.assertEqual(funcionario.nome, "Ana Silva")
+        self.assertEqual(funcionario.funcao, "Gerente")
+
+        listing = self.client.get(reverse("listar_funcionarios"))
+        self.assertContains(listing, "Funcionários")
+        self.assertContains(listing, "Ana Silva")
+        self.assertContains(listing, "Gerente")
+
+    def test_employee_pages_are_nested_in_registration_navigation(self):
+        response = self.client.get(reverse("listar_funcionarios"))
+
+        self.assertContains(
+            response,
+            f'<a href="{reverse("listar_funcionarios")}" class="nav-link active">',
+        )
+        self.assertContains(
+            response,
+            'data-nav-paths="/cadastrar/,/produto/,/servico/,/cliente/,/contas-a-pagar/funcionarios/" aria-label="Abrir menu Cadastrar"',
+        )
+        self.assertContains(response, "Funcionários")
+        self.assertNotContains(
+            response,
+            f'<a href="{reverse("listar_contas_pagar")}" class="nav-link active">',
+        )
+
+    def test_employee_name_and_role_are_required(self):
+        response = self.client.post(
+            reverse("criar_funcionario"),
+            {"nome": "", "funcao": ""},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("nome", response.context["form"].errors)
+        self.assertIn("funcao", response.context["form"].errors)
+        self.assertFalse(Funcionario.objects.exists())
+
     def test_create_and_list_payable_account(self):
         response = self.client.post(
             reverse("criar_conta_pagar"),

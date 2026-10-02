@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import ContaPagar
+from .models import ContaPagar, Funcionario
 
 
 class ContaPagarForm(forms.ModelForm):
@@ -24,4 +24,22 @@ class ContaPagarForm(forms.ModelForm):
                 attrs={"class": "form-control", "type": "date"}
             ),
             "paga": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+        }
+
+
+class FuncionarioForm(forms.ModelForm):
+    class Meta:
+        model = Funcionario
+        fields = ("nome", "funcao")
+        labels = {
+            "nome": "Nome",
+            "funcao": "Função na empresa",
+        }
+        widgets = {
+            "nome": forms.TextInput(
+                attrs={"class": "form-control", "autocomplete": "name"}
+            ),
+            "funcao": forms.TextInput(
+                attrs={"class": "form-control", "autocomplete": "organization-title"}
+            ),
         }

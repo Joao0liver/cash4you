@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Funcionários | Cash4You{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div>
+            <h1 class="h3 mb-1">Funcionários</h1>
+            <p class="text-muted mb-0">Cadastre e consulte os funcionários e suas funções na empresa.</p>
+        </div>
+        <a href="{% url 'criar_funcionario' %}" class="btn btn-primary">Adicionar funcionário</a>
+    </div>
+
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags|default:'info' }}" role="alert">{{ message }}</div>
+    {% endfor %}
+    {% endif %}
+
+    <div class="card shadow-sm border-0">
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th class="text-center">Nome</th>
+                        <th class="text-center">Função na empresa</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for funcionario in funcionarios %}
+                    <tr>
+                        <td class="text-center">{{ funcionario.nome }}</td>
+                        <td class="text-center">{{ funcionario.funcao }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="2" class="text-center text-muted py-4">Nenhum funcionário cadastrado.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
