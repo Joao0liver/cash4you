@@ -165,6 +165,134 @@ class AgendaCRUDTests(TestCase):
         self.assertEqual(Agendamento.objects.count(), 1)
         self.assertContains(response, 'aria-label="11:00–11:30 indisponível"')
 
+    def test_different_employees_can_book_the_same_time(self):
+        ana = Funcionario.objects.create(nome="Ana", funcao="Cabeleireira")
+        bia = Funcionario.objects.create(nome="Bia", funcao="Manicure")
+
+        first = self.agendar(
+            "Cliente 1",
+            ["11:00"],
+            tipo_agendar_para="funcionario",
+            funcionario=str(ana.pk),
+            descricao_agendar_para="",
+        )
+        second = self.agendar(
+            "Cliente 2",
+            ["11:00"],
+            tipo_agendar_para="funcionario",
+            funcionario=str(bia.pk),
+            descricao_agendar_para="",
+        )
+
+        self.assertRedirects(first, reverse("listar_agendamentos"))
+        self.assertRedirects(second, reverse("listar_agendamentos"))
+        self.assertEqual(Agendamento.objects.count(), 2)
+        self.assertEqual(HorarioAgendado.objects.filter(inicio=time(11, 0)).count(), 2)
+
+    def test_same_employee_cannot_book_the_same_time_twice(self):
+        funcionario = Funcionario.objects.create(nome="Ana", funcao="Cabeleireira")
+        self.agendar(
+            "Cliente 1",
+            ["11:00"],
+            tipo_agendar_para="funcionario",
+            funcionario=str(funcionario.pk),
+            descricao_agendar_para="",
+        )
+
+        response = self.agendar(
+            "Cliente 2",
+            ["11:00"],
+            tipo_agendar_para="funcionario",
+            funcionario=str(funcionario.pk),
+            descricao_agendar_para="",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("horarios", response.context["form"].errors)
+        self.assertEqual(Agendamento.objects.count(), 1)
+
+    def test_availability_page_only_blocks_slots_for_selected_employee(self):
+        ana = Funcionario.objects.create(nome="Ana", funcao="Cabeleireira")
+        bia = Funcionario.objects.create(nome="Bia", funcao="Manicure")
+        created = self.agendar(
+            "Cliente 1",
+            ["11:00"],
+            tipo_agendar_para="funcionario",
+            funcionario=str(ana.pk),
+            descricao_agendar_para="",
+        )
+        self.assertRedirects(created, reverse("listar_agendamentos"))
+        self.assertEqual(
+            HorarioAgendado.objects.get().agenda_key,
+            f"funcionario:{ana.pk}",
+        )
+
+        response = self.client.get(
+            reverse("criar_agendamento"),
+            {
+                "data": self.data.isoformat(),
+                "tipo_agendar_para": "funcionario",
+                "funcionario": str(ana.pk),
+            },
+        )
+        self.assertEqual(response.context["agenda_key"], f"funcionario:{ana.pk}")
+        horario_ana = next(
+            horario for horario in response.context["horarios"]
+            if horario["valor"] == "11:00"
+        )
+        self.assertFalse(horario_ana["disponivel"])
+
+        response = self.client.get(
+            reverse("criar_agendamento"),
+            {
+                "data": self.data.isoformat(),
+                "tipo_agendar_para": "funcionario",
+                "funcionario": str(bia.pk),
+            },
+        )
+        horario_bia = next(
+            horario for horario in response.context["horarios"]
+            if horario["valor"] == "11:00"
+        )
+        self.assertTrue(horario_bia["disponivel"])
+
+    def test_different_manual_descriptions_have_independent_schedules(self):
+        first = self.agendar(
+            "Cliente 1",
+            ["11:00"],
+            tipo_agendar_para="manual",
+            descricao_agendar_para="Evento",
+        )
+        second = self.agendar(
+            "Cliente 2",
+            ["11:00"],
+            tipo_agendar_para="manual",
+            descricao_agendar_para="Atendimento externo",
+        )
+
+        self.assertRedirects(first, reverse("listar_agendamentos"))
+        self.assertRedirects(second, reverse("listar_agendamentos"))
+        self.assertEqual(Agendamento.objects.count(), 2)
+
+    def test_same_manual_description_cannot_book_the_same_time_twice(self):
+        self.agendar(
+            "Cliente 1",
+            ["11:00"],
+            tipo_agendar_para="manual",
+            descricao_agendar_para="Evento",
+        )
+
+        response = self.agendar(
+            "Cliente 2",
+            ["11:00"],
+            tipo_agendar_para="manual",
+            descricao_agendar_para="Evento",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("horarios", response.context["form"].errors)
+        self.assertEqual(Agendamento.objects.count(), 1)
+
     def test_invalid_slot_is_rejected(self):
         response = self.agendar("Maria Silva", ["09:15"])
 

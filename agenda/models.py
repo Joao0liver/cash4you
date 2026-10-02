@@ -41,6 +41,14 @@ class Agendamento(models.Model):
             return self.funcionario.nome
         return self.descricao_agendar_para or "—"
 
+    @property
+    def agenda_key(self):
+        if self.funcionario_id:
+            return f"funcionario:{self.funcionario_id}"
+        if self.descricao_agendar_para:
+            return f"descricao:{self.descricao_agendar_para.strip()}"
+        return f"legado:{self.pk}"
+
     def __str__(self):
         return f"{self.nome} - {self.data:%d/%m/%Y}"
 
@@ -54,13 +62,14 @@ class HorarioAgendado(models.Model):
     data = models.DateField()
     inicio = models.TimeField()
     fim = models.TimeField()
+    agenda_key = models.CharField(max_length=180)
 
     class Meta:
         ordering = ("inicio",)
         constraints = [
             models.UniqueConstraint(
-                fields=("data", "inicio"),
-                name="agenda_horario_data_inicio_unico",
+                fields=("data", "inicio", "agenda_key"),
+                name="agenda_horario_recurso_data_inicio_unico",
             )
         ]
 

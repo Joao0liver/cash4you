@@ -4,12 +4,24 @@ from django.db import IntegrityError, transaction
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.dateparse import parse_date
 
+from conta_pagar.models import Funcionario
+
 from .forms import AgendamentoForm, horarios_disponiveis
 from .models import Agendamento, HorarioAgendado
 
 
-def _obter_horarios(data_selecionada, agendamento=None, selecionados=None):
-    horarios_ocupados = HorarioAgendado.objects.filter(data=data_selecionada)
+def _obter_horarios(
+    data_selecionada,
+    agenda_key=None,
+    agendamento=None,
+    selecionados=None,
+):
+    horarios_ocupados = HorarioAgendado.objects.filter(
+        data=data_selecionada,
+        agenda_key=agenda_key,
+    )
+    if not agenda_key:
+        horarios_ocupados = HorarioAgendado.objects.none()
     if agendamento is not None:
         horarios_ocupados = horarios_ocupados.exclude(agendamento=agendamento)
     ocupados = {
@@ -36,6 +48,43 @@ def _obter_horarios(data_selecionada, agendamento=None, selecionados=None):
     return resultado
 
 
+def _chave_agenda_selecionada(request, agendamento=None):
+    dados = request.POST if request.method == "POST" else request.GET
+    if "tipo_agendar_para" in dados:
+        tipo = dados.get("tipo_agendar_para")
+        if tipo == "funcionario":
+            funcionario_id = dados.get("funcionario")
+            if funcionario_id and funcionario_id.isdigit():
+                funcionario = Funcionario.objects.filter(pk=funcionario_id).first()
+                if funcionario:
+                    return f"funcionario:{funcionario.pk}"
+        elif tipo == "manual":
+            descricao = dados.get("descricao_agendar_para", "").strip()
+            if descricao:
+                return f"descricao:{descricao}"
+        return None
+
+    if agendamento is not None:
+        return agendamento.agenda_key
+    return None
+
+
+def _valores_filtro_agenda(request, form):
+    if request.method == "POST":
+        dados = request.POST
+        return (
+            dados.get("tipo_agendar_para", ""),
+            dados.get("funcionario", ""),
+            dados.get("descricao_agendar_para", ""),
+        )
+
+    return (
+        form["tipo_agendar_para"].value() or "",
+        form["funcionario"].value() or "",
+        form["descricao_agendar_para"].value() or "",
+    )
+
+
 def _data_selecionada(valor, fallback):
     data = parse_date(valor or "")
     return data or fallback
@@ -57,9 +106,22 @@ def criar_agendamento(request):
         request.POST.get("data") if request.method == "POST" else request.GET.get("data"),
         date.today(),
     )
+    initial = {}
+    if request.method == "GET" and "tipo_agendar_para" in request.GET:
+        initial = {
+            "tipo_agendar_para": request.GET.get("tipo_agendar_para", ""),
+            "funcionario": request.GET.get("funcionario", ""),
+            "descricao_agendar_para": request.GET.get(
+                "descricao_agendar_para", ""
+            ),
+        }
     form = AgendamentoForm(
         request.POST or None,
+        initial=initial,
         selected_date=data_selecionada,
+    )
+    tipo_filtro, funcionario_filtro, descricao_filtro = _valores_filtro_agenda(
+        request, form
     )
     selecionados = request.POST.getlist("horarios") if request.method == "POST" else None
 
@@ -76,6 +138,7 @@ def criar_agendamento(request):
                         HorarioAgendado(
                             agendamento=agendamento,
                             data=form.cleaned_data["data"],
+                            agenda_key=agendamento.agenda_key,
                             inicio=inicio,
                             fim=(
                                 datetime.combine(form.cleaned_data["data"], inicio)
@@ -100,9 +163,14 @@ def criar_agendamento(request):
             "form": form,
             "horarios": _obter_horarios(
                 data_selecionada,
+                agenda_key=_chave_agenda_selecionada(request),
                 selecionados=selecionados,
             ),
             "data_selecionada": data_selecionada,
+            "agenda_key": _chave_agenda_selecionada(request),
+            "tipo_filtro": tipo_filtro,
+            "funcionario_filtro": funcionario_filtro,
+            "descricao_filtro": descricao_filtro,
             "titulo": "Novo agendamento",
             "botao": "Confirmar agendamento",
         },
@@ -118,7 +186,21 @@ def editar_agendamento(request, pk):
     form = AgendamentoForm(
         request.POST or None,
         instance=agendamento,
+        initial=(
+            {
+                "tipo_agendar_para": request.GET.get("tipo_agendar_para", ""),
+                "funcionario": request.GET.get("funcionario", ""),
+                "descricao_agendar_para": request.GET.get(
+                    "descricao_agendar_para", ""
+                ),
+            }
+            if request.method == "GET" and "tipo_agendar_para" in request.GET
+            else None
+        ),
         selected_date=data_selecionada,
+    )
+    tipo_filtro, funcionario_filtro, descricao_filtro = _valores_filtro_agenda(
+        request, form
     )
     selecionados = request.POST.getlist("horarios") if request.method == "POST" else None
 
@@ -136,6 +218,7 @@ def editar_agendamento(request, pk):
                         HorarioAgendado(
                             agendamento=agendamento,
                             data=form.cleaned_data["data"],
+                            agenda_key=agendamento.agenda_key,
                             inicio=inicio,
                             fim=(
                                 datetime.combine(form.cleaned_data["data"], inicio)
@@ -160,10 +243,15 @@ def editar_agendamento(request, pk):
             "form": form,
             "horarios": _obter_horarios(
                 data_selecionada,
+                agenda_key=_chave_agenda_selecionada(request, agendamento),
                 agendamento=agendamento,
                 selecionados=selecionados,
             ),
             "data_selecionada": data_selecionada,
+            "agenda_key": _chave_agenda_selecionada(request, agendamento),
+            "tipo_filtro": tipo_filtro,
+            "funcionario_filtro": funcionario_filtro,
+            "descricao_filtro": descricao_filtro,
             "titulo": "Editar agendamento",
             "botao": "Salvar alterações",
             "agendamento": agendamento,

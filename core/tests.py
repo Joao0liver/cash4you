@@ -8,7 +8,7 @@ from django.utils import timezone
 
 from agenda.models import Agendamento, HorarioAgendado
 from cliente.models import Cliente
-from conta_pagar.models import ContaPagar
+from conta_pagar.models import ContaPagar, Funcionario
 from produto.models import Produto
 from venda.models import ItemVenda, Venda
 
@@ -188,6 +188,7 @@ class DashboardTests(TestCase):
         HorarioAgendado.objects.create(
             agendamento=agendamento,
             data=agendamento.data,
+            agenda_key=agendamento.agenda_key,
             inicio=time(9, 0),
             fim=time(9, 30),
         )
@@ -219,6 +220,48 @@ class DashboardTests(TestCase):
         self.assertContains(response, "Maria Silva")
         self.assertContains(response, "Aluguel")
         self.assertNotContains(response, "Conta de novembro")
+
+    @patch("core.views.timezone.localdate", return_value=date(2026, 10, 1))
+    def test_home_calendar_groups_overlapping_resource_schedules_together(self, _localdate):
+        funcionario = Funcionario.objects.create(nome="Ana Silva", funcao="Cabeleireira")
+        agendamentos = [
+            Agendamento.objects.create(
+                data=date(2026, 10, 15),
+                nome="Cliente da Ana",
+                telefone="11999998888",
+                funcionario=funcionario,
+            ),
+            Agendamento.objects.create(
+                data=date(2026, 10, 15),
+                nome="Evento manual",
+                telefone="11999997777",
+                descricao_agendar_para="Evento",
+            ),
+        ]
+        for agendamento in agendamentos:
+            HorarioAgendado.objects.create(
+                agendamento=agendamento,
+                data=agendamento.data,
+                agenda_key=agendamento.agenda_key,
+                inicio=time(9, 0),
+                fim=time(9, 30),
+            )
+
+        response = self.client.get(reverse("home"), {"mes": "2026-10"})
+        dia = next(
+            dia
+            for semana in response.context["semanas_calendario"]
+            for dia in semana
+            if dia["data"] == date(2026, 10, 15)
+        )
+
+        self.assertEqual(len(dia["agendamentos"]), 2)
+        self.assertCountEqual(
+            [item["agendar_para"] for item in dia["agendamentos"]],
+            ["Ana Silva", "Evento"],
+        )
+        self.assertContains(response, "Cliente da Ana")
+        self.assertContains(response, "Evento manual")
 
     @patch("core.views.timezone.localdate", return_value=date(2026, 10, 1))
     def test_home_calendar_month_navigation_handles_year_boundaries(self, _localdate):

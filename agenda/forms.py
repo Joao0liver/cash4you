@@ -74,7 +74,7 @@ class AgendamentoForm(forms.ModelForm):
             "servicos",
         )
         labels = {
-            "nome": "Nome",
+            "nome": "Nome do Cliente",
             "telefone": "Telefone (WhatsApp)",
             "email": "E-mail (opcional)",
         }
@@ -165,15 +165,41 @@ class AgendamentoForm(forms.ModelForm):
         if data is None:
             return horarios
 
-        consulta = HorarioAgendado.objects.filter(data=data, inicio__in=horarios)
+        agenda_key = self._agenda_key()
+        if not agenda_key:
+            return horarios
+
+        consulta = HorarioAgendado.objects.filter(
+            data=data,
+            inicio__in=horarios,
+            agenda_key=agenda_key,
+        )
         if self.instance.pk:
             consulta = consulta.exclude(agendamento=self.instance)
         if consulta.exists():
             raise forms.ValidationError(
-                "Um ou mais blocos foram reservados por outra pessoa. "
+                "Um ou mais blocos já foram reservados nesta agenda. "
                 "Escolha novamente entre os horários disponíveis."
             )
         return horarios
+
+    def _agenda_key(self):
+        tipo = self.cleaned_data.get("tipo_agendar_para")
+        funcionario = self.cleaned_data.get("funcionario")
+        descricao = self.cleaned_data.get("descricao_agendar_para", "").strip()
+
+        if tipo == "funcionario" and funcionario:
+            return f"funcionario:{funcionario.pk}"
+        if tipo == "manual" and descricao:
+            return f"descricao:{descricao}"
+        if (
+            not tipo
+            and self.instance.pk
+            and not self.instance.funcionario_id
+            and not self.instance.descricao_agendar_para
+        ):
+            return self.instance.agenda_key
+        return ""
 
     def clean_telefone(self):
         telefone = self.cleaned_data["telefone"].strip()

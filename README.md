@@ -52,7 +52,8 @@ Sistema web de gestão para pequenos negócios, desenvolvido com Django. O Cash4
 
 - Cadastro, consulta, edição e exclusão de agendamentos.
 - Horários de atendimento em blocos de 30 minutos, das 07:00 às 23:00.
-- Horários já reservados para a data não podem ser selecionados novamente.
+- Cada funcionário ou descrição manual tem uma agenda independente; dois responsáveis diferentes podem ter agendamentos no mesmo horário.
+- Os horários ocupados pelo responsável selecionado não podem ser reservados novamente. A Home reúne todos os agendamentos em seu calendário geral.
 - Cada agendamento pode ser atribuído a um funcionário cadastrado em **Cadastrar > Funcionários** ou a uma descrição manual.
 - Nome e telefone são obrigatórios; e-mail e serviços relacionados são opcionais.
 - Link para iniciar conversa pelo WhatsApp a partir do telefone do agendamento.
