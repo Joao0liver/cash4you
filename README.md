@@ -14,11 +14,11 @@ Sistema web de gestão para pequenos negócios, desenvolvido com Django. O Cash4
 
 ### Home e dashboard
 
-- A Home apresenta um calendário mensal com agendamentos e vencimentos de contas a pagar; permite navegar entre meses e iniciar um agendamento ou cadastrar uma conta diretamente.
-- O calendário da Home pode ser exibido por dia, semana ou mês; a visualização padrão é o dia atual.
-- O calendário identifica os feriados nacionais fixos e a Paixão de Cristo, além dos pontos facultativos de Carnaval, Quarta-feira de Cinzas (até 14h) e Corpus Christi, calculados para o ano exibido.
+- A Home apresenta um calendário geral com agendamentos e vencimentos de contas a pagar. É possível alternar entre as visualizações **Dia**, **Semana** e **Mês**; o padrão é o dia atual.
+- Os controles permitem navegar pelo período anterior ou seguinte, escolher uma data de referência e voltar para hoje. A visão geral reúne compromissos de todos os funcionários e descrições manuais, inclusive quando acontecem no mesmo dia e horário.
+- O calendário identifica os feriados nacionais fixos e a Paixão de Cristo, além dos pontos facultativos de Carnaval, Quarta-feira de Cinzas (até 14h) e Corpus Christi.
 - Contas a pagar podem ser cadastradas com descrição, valor e vencimento, editadas, excluídas e marcadas como pagas ou pendentes. Vencimentos não pagos anteriores à data atual são identificados como atrasados.
-- A área **Cadastrar > Funcionários** permite cadastrar e consultar funcionários com nome e função na empresa.
+- Em **Cadastrar > Funcionários**, é possível incluir funcionários com nome e função na empresa e consultar a lista.
 - Os indicadores e gráficos do dashboard permanecem disponíveis abaixo do calendário.
 
 - Indicadores do dia: valor total vendido, número de vendas, quantidade de clientes cadastrados e produtos com estoque baixo.
@@ -33,13 +33,14 @@ Sistema web de gestão para pequenos negócios, desenvolvido com Django. O Cash4
 - CRUD (criar, listar, editar e excluir) de Produtos no Estoque, Serviços Prestados e Carteira de Clientes.
 - Busca e ordenação em produtos e serviços, e busca de clientes.
 - Produtos e serviços incluem custo direto, despesas variáveis, lucro desejado, sugestão de preço de venda e cálculo de lucro líquido quando os dados necessários estão cadastrados.
-- A página **Cadastrar** apresenta atalhos para os cadastros e para a ferramenta de precificação.
+- A página **Cadastrar** apresenta atalhos para os cadastros de produtos, serviços, clientes e funcionários.
 
 ### Frente de Caixa e Registro de Vendas
 
 - Inclusão de produtos e serviços no carrinho, alteração de quantidades e remoção de itens.
 - A Frente de Caixa separa os campos de adição de produtos e serviços, mostra o carrinho à esquerda e o pagamento à direita.
 - A inclusão de produtos ou serviços não exibe aviso de sucesso; mensagens de erro, como estoque insuficiente, permanecem visíveis.
+- O total da venda e a ação de pagamento ficam disponíveis junto ao carrinho; a forma de pagamento e o cálculo de troco são tratados no fluxo de pagamento.
 - Validação de estoque no carrinho e novamente ao finalizar a venda.
 - Pagamento em dinheiro, cartão de crédito, cartão de débito ou Pix. Para dinheiro, o valor recebido deve cobrir o total; o troco é calculado e exibido durante o preenchimento.
 - Nome e telefone do cliente são opcionais. O telefone habilita a preparação de um comprovante para WhatsApp.
@@ -54,9 +55,9 @@ Sistema web de gestão para pequenos negócios, desenvolvido com Django. O Cash4
 - Cadastro, consulta, edição e exclusão de agendamentos.
 - Horários de atendimento em blocos de 30 minutos, das 07:00 às 23:00.
 - Cada funcionário ou descrição manual tem uma agenda independente; dois responsáveis diferentes podem ter agendamentos no mesmo horário.
-- Os horários ocupados pelo responsável selecionado não podem ser reservados novamente. A Home reúne todos os agendamentos em seu calendário geral.
+- Ao selecionar um responsável, os horários ocupados somente nessa agenda ficam indisponíveis. O mesmo horário pode ser reservado para outro funcionário ou outra descrição.
 - Cada agendamento pode ser atribuído a um funcionário cadastrado em **Cadastrar > Funcionários** ou a uma descrição manual.
-- Nome e telefone são obrigatórios; e-mail e serviços relacionados são opcionais.
+- Nome do cliente e telefone são obrigatórios; e-mail e serviços relacionados são opcionais.
 - Link para iniciar conversa pelo WhatsApp a partir do telefone do agendamento.
 
 ### Relatórios
@@ -70,11 +71,12 @@ Sistema web de gestão para pequenos negócios, desenvolvido com Django. O Cash4
 
 ### Navegação
 
-- As áreas principais são Home, Cadastrar, Vendas, Agenda, Relatórios e Configurações; Contas a pagar fica no submenu de Configurações.
+- As áreas principais são Home, Cadastrar, Vendas, Agenda, Relatórios e Configurações. **Funcionários** fica em Cadastrar; **Contas a pagar**, **Dados do Estabelecimento** e **Precificação** ficam no submenu Configurações.
 - Os grupos de navegação permanecem abertos durante a navegação interna e se ajustam à seção atual; selecionar outro grupo fecha o anterior.
-- Clicar em **Cadastrar** abre a página com atalhos de cadastro. A seta ao lado expande os links diretos para Produtos no Estoque, Serviços Prestados e Carteira de Clientes.
+- Clicar em **Cadastrar** abre a página com atalhos de cadastro. A seta expande os links diretos para Produtos no Estoque, Serviços Prestados, Carteira de Clientes e Funcionários.
 - Clicar em **Vendas** abre diretamente a Frente de Caixa. Na navegação, somente **Frente de Caixa** fica selecionada; a seta abre os atalhos para a Frente de Caixa e o Registro de Vendas.
-- O menu **Configurações** agrupa os Dados do Estabelecimento e a página de Precificação, com orientações sobre o método de markup.
+- Clicar em **Agenda** abre Agendamentos, mantendo somente essa opção selecionada; a seta expande os atalhos para Agendamentos e Novo agendamento.
+- O menu **Configurações** agrupa os Dados do Estabelecimento, Precificação e Contas a pagar, com orientações sobre o método de markup.
 - Títulos e opções visíveis usam os nomes **Produtos no Estoque**, **Serviços Prestados**, **Carteira de Clientes**, **Frente de Caixa** e **Registro de Vendas**. Nomes internos de rotas e modelos permanecem técnicos.
 
 ### Clientes
@@ -104,7 +106,9 @@ Sistema web de gestão para pequenos negócios, desenvolvido com Django. O Cash4
 ### Agenda
 
 - Existem 32 blocos de meia hora por dia, do período 07:00–07:30 até 22:30–23:00.
-- Cada combinação de data e horário inicial só pode ser reservada uma vez, com validação no servidor e proteção contra duplicidade no banco.
+- A disponibilidade é controlada por data, horário e agenda do responsável: o mesmo bloco pode ser ocupado por agendas diferentes, mas não pode ser duplicado na agenda do mesmo funcionário ou da mesma descrição.
+- A validação de disponibilidade acontece no servidor e a restrição no banco protege contra reservas simultâneas duplicadas.
+- Descrições manuais iguais representam a mesma agenda; funcionários são identificados pelo cadastro selecionado.
 - Excluir um agendamento libera seus horários.
 
 ### Vendas e estoque
