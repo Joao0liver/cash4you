@@ -12,7 +12,12 @@ from django.utils.formats import date_format
 from produto.models import Produto
 from servico.models import Servico
 
-from .forms import DadosEstabelecimentoForm, EditarVendaForm, FinalizarVendaForm
+from .forms import (
+    DadosEstabelecimentoForm,
+    EditarVendaForm,
+    FiltroVendasForm,
+    FinalizarVendaForm,
+)
 from .models import DadosEstabelecimento, ItemVenda, Venda
 
 
@@ -289,8 +294,23 @@ def caixa(request):
 
 
 def listar_vendas(request):
+    form = FiltroVendasForm(request.GET or None)
     vendas = Venda.objects.prefetch_related("itens")
-    return render(request, "venda/listar_vendas.html", {"vendas": vendas})
+    if form.is_valid():
+        pagamentos = form.cleaned_data["pagamentos"]
+        data_inicial = form.cleaned_data["data_inicial"]
+        data_final = form.cleaned_data["data_final"]
+        if pagamentos:
+            vendas = vendas.filter(forma_pagamento__in=pagamentos)
+        if data_inicial:
+            vendas = vendas.filter(criada_em__date__gte=data_inicial)
+        if data_final:
+            vendas = vendas.filter(criada_em__date__lte=data_final)
+    return render(
+        request,
+        "venda/listar_vendas.html",
+        {"vendas": vendas, "form_filtro": form},
+    )
 
 
 def detalhe_venda(request, pk):

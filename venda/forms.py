@@ -139,6 +139,42 @@ class DadosEstabelecimentoForm(forms.ModelForm):
         }
 
 
+class FiltroVendasForm(forms.Form):
+    pagamentos = forms.MultipleChoiceField(
+        required=False,
+        choices=Venda.FormaPagamento.choices,
+        label="Pagamento",
+        widget=forms.SelectMultiple(
+            attrs={
+                "class": "form-select",
+                "size": 1,
+                "style": "height: 38px",
+            }
+        ),
+    )
+    data_inicial = forms.DateField(
+        required=False,
+        label="Data inicial",
+        widget=forms.DateInput(attrs={"type": "date", "class": "form-control"}),
+    )
+    data_final = forms.DateField(
+        required=False,
+        label="Data final",
+        widget=forms.DateInput(attrs={"type": "date", "class": "form-control"}),
+    )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        data_inicial = cleaned_data.get("data_inicial")
+        data_final = cleaned_data.get("data_final")
+        if data_inicial and data_final and data_inicial > data_final:
+            self.add_error(
+                "data_final",
+                "A data final deve ser igual ou posterior à data inicial.",
+            )
+        return cleaned_data
+
+
 class EditarVendaForm(FinalizarVendaForm):
     def __init__(self, *args, venda, **kwargs):
         self.venda = venda

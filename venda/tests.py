@@ -1,8 +1,10 @@
+from datetime import date, datetime, time
 from decimal import Decimal
 from urllib.parse import parse_qs, urlparse
 
 from django.test import TestCase
 from django.urls import reverse
+from django.utils import timezone
 from django.utils.formats import date_format
 
 from produto.models import Produto
@@ -315,6 +317,60 @@ class CaixaTests(TestCase):
 
         self.assertContains(response, "Registro de Vendas")
         self.assertContains(response, "R$ 25,00")
+
+    def test_sales_history_filters_multiple_payment_methods_and_inclusive_date_range(self):
+        vendas = []
+        for dia, pagamento in (
+            (date(2026, 10, 1), Venda.FormaPagamento.PIX),
+            (date(2026, 10, 2), Venda.FormaPagamento.DINHEIRO),
+            (date(2026, 10, 3), Venda.FormaPagamento.CREDITO),
+            (date(2026, 10, 2), Venda.FormaPagamento.DEBITO),
+        ):
+            venda = Venda.objects.create(
+                forma_pagamento=pagamento,
+                total=Decimal("25.00"),
+            )
+            instante = timezone.make_aware(
+                datetime.combine(dia, time(12, 0)),
+                timezone.get_current_timezone(),
+            )
+            Venda.objects.filter(pk=venda.pk).update(criada_em=instante)
+            vendas.append(venda)
+
+        response = self.client.get(
+            reverse("listar_vendas"),
+            [
+                ("pagamentos", Venda.FormaPagamento.DINHEIRO),
+                ("pagamentos", Venda.FormaPagamento.PIX),
+                ("data_inicial", "2026-10-01"),
+                ("data_final", "2026-10-02"),
+            ],
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            {venda.pk for venda in response.context["vendas"]},
+            {vendas[0].pk, vendas[1].pk},
+        )
+        self.assertEqual(
+            response.context["form_filtro"].cleaned_data["pagamentos"],
+            [Venda.FormaPagamento.DINHEIRO, Venda.FormaPagamento.PIX],
+        )
+        self.assertContains(response, 'name="pagamentos"')
+        self.assertContains(response, 'size="1"')
+        self.assertContains(response, 'style="height: 38px"')
+        self.assertContains(response, 'name="data_inicial"')
+        self.assertContains(response, 'name="data_final"')
+
+    def test_sales_history_reports_invalid_date_filters(self):
+        response = self.client.get(
+            reverse("listar_vendas"),
+            {"data_inicial": "2026-10-03", "data_final": "2026-10-01"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.context["form_filtro"].is_valid())
+        self.assertContains(response, "A data final deve ser igual ou posterior à data inicial.")
 
     def test_navigation_links_to_cash_and_sales_history(self):
         response = self.client.get(reverse("caixa"))
