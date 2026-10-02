@@ -6,7 +6,9 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
+from agenda.models import Agendamento, HorarioAgendado
 from cliente.models import Cliente
+from conta_pagar.models import ContaPagar
 from produto.models import Produto
 from venda.models import ItemVenda, Venda
 
@@ -160,6 +162,55 @@ class DashboardTests(TestCase):
         self.assertContains(response, "Acesse Cadastrar → Carteira de Clientes")
         self.assertContains(response, "Acesse Cadastrar → Produtos no Estoque")
 
+    @patch("core.views.timezone.localdate", return_value=date(2026, 10, 1))
+    def test_home_calendar_shows_month_appointments_and_payable_accounts(self, _localdate):
+        agendamento = Agendamento.objects.create(
+            data=date(2026, 10, 15),
+            nome="Maria Silva",
+            telefone="11999998888",
+        )
+        HorarioAgendado.objects.create(
+            agendamento=agendamento,
+            data=agendamento.data,
+            inicio=time(9, 0),
+            fim=time(9, 30),
+        )
+        ContaPagar.objects.create(
+            descricao="Aluguel",
+            valor=Decimal("1200.00"),
+            vencimento=date(2026, 10, 15),
+        )
+        ContaPagar.objects.create(
+            descricao="Conta de novembro",
+            valor=Decimal("50.00"),
+            vencimento=date(2026, 11, 1),
+        )
+
+        response = self.client.get(reverse("home"), {"mes": "2026-10"})
+
+        self.assertEqual(response.context["mes_calendario"], date(2026, 10, 1))
+        dia = next(
+            dia
+            for semana in response.context["semanas_calendario"]
+            for dia in semana
+            if dia["data"] == date(2026, 10, 15)
+        )
+        self.assertEqual(dia["agendamentos"][0]["nome"], "Maria Silva")
+        self.assertEqual(dia["agendamentos"][0]["horarios"], "09:00")
+        self.assertEqual([conta.descricao for conta in dia["contas"]], ["Aluguel"])
+        self.assertContains(response, "Agenda e contas a pagar")
+        self.assertContains(response, "Maria Silva")
+        self.assertContains(response, "Aluguel")
+        self.assertNotContains(response, "Conta de novembro")
+
+    @patch("core.views.timezone.localdate", return_value=date(2026, 10, 1))
+    def test_home_calendar_month_navigation_handles_year_boundaries(self, _localdate):
+        response = self.client.get(reverse("home"), {"mes": "2026-12"})
+
+        self.assertEqual(response.context["mes_calendario"], date(2026, 12, 1))
+        self.assertEqual(response.context["mes_anterior"], "2026-11")
+        self.assertEqual(response.context["proximo_mes"], "2027-01")
+
     def test_dashboard_chart_initialization_is_independent_of_tooltips(self):
         response = self.client.get(reverse("home"))
         conteudo = response.content.decode()
@@ -252,7 +303,7 @@ class DashboardTests(TestCase):
             list(response.context["produtos_baixo_estoque"]),
             [{"descricao": "Shampoo", "quantidade": 3}],
         )
-        self.assertContains(response, "Dashboards")
+        self.assertContains(response, "Home")
         self.assertContains(response, "Vendas hoje")
         self.assertContains(response, "Nº de vendas")
         self.assertContains(response, "Carteira de Clientes")

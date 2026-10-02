@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Excluir conta a pagar | Cash4You{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+            <h1 class="h4">Excluir conta a pagar</h1>
+            <p>Deseja excluir a conta <strong>{{ conta.descricao }}</strong> de R$ {{ conta.valor|floatformat:2 }}?</p>
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">Excluir conta</button>
+                <a href="{% url 'listar_contas_pagar' %}" class="btn btn-outline-secondary">Cancelar</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

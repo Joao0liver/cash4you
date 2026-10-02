@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'usuario',
     'agenda',
     'venda',
+    'conta_pagar',
 ]
 
 MIDDLEWARE = [

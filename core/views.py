@@ -1,12 +1,17 @@
+import calendar
+from collections import defaultdict
 from datetime import date, datetime, time, timedelta
 from decimal import Decimal
 
+from django import forms
 from django.db.models import Sum
 from django.shortcuts import render
+from django.urls import reverse
 from django.utils import timezone
-from django import forms
 
+from agenda.models import Agendamento
 from cliente.models import Cliente
+from conta_pagar.models import ContaPagar
 from produto.models import Produto
 from venda.models import ItemVenda, Venda
 
@@ -76,6 +81,69 @@ def dashboard(request):
         periodo = "dias"
 
     hoje = timezone.localdate()
+    mes_parametro = request.GET.get("mes", "")
+    try:
+        mes_atual = datetime.strptime(mes_parametro, "%Y-%m").date().replace(day=1)
+    except ValueError:
+        mes_atual = hoje.replace(day=1)
+    proximo_mes = (
+        date(mes_atual.year + 1, 1, 1)
+        if mes_atual.month == 12
+        else date(mes_atual.year, mes_atual.month + 1, 1)
+    )
+    mes_anterior = (mes_atual - timedelta(days=1)).replace(day=1)
+    agendamentos_por_dia = defaultdict(list)
+    agendamentos_mes = (
+        Agendamento.objects.filter(data__gte=mes_atual, data__lt=proximo_mes)
+        .prefetch_related("horarios")
+        .order_by("data", "nome")
+    )
+    for agendamento in agendamentos_mes:
+        horarios = ", ".join(
+            horario.inicio.strftime("%H:%M")
+            for horario in agendamento.horarios.all()
+        )
+        agendamentos_por_dia[agendamento.data].append(
+            {
+                "nome": agendamento.nome,
+                "horarios": horarios,
+                "url": reverse("listar_agendamentos"),
+            }
+        )
+
+    contas_por_dia = defaultdict(list)
+    contas_mes = ContaPagar.objects.filter(
+        vencimento__gte=mes_atual,
+        vencimento__lt=proximo_mes,
+    ).order_by("vencimento", "descricao")
+    for conta in contas_mes:
+        contas_por_dia[conta.vencimento].append(conta)
+
+    semanas_calendario = []
+    for semana in calendar.Calendar(firstweekday=0).monthdatescalendar(
+        mes_atual.year,
+        mes_atual.month,
+    ):
+        semanas_calendario.append(
+            [
+                {
+                    "data": dia,
+                    "no_mes": dia.month == mes_atual.month,
+                    "hoje": dia == hoje,
+                    "agendamentos": agendamentos_por_dia.get(dia, []),
+                    "contas": contas_por_dia.get(dia, []),
+                    "url_novo_agendamento": (
+                        f"{reverse('criar_agendamento')}?data={dia.isoformat()}"
+                    ),
+                }
+                for dia in semana
+            ]
+        )
+    nomes_meses = (
+        "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+        "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
+    )
+
     periodos = _periodos_comparacao(periodo, hoje)
     vendas = Venda.objects.all()
     inicio_hoje = _inicio_fuso(hoje)
@@ -176,6 +244,12 @@ def dashboard(request):
         "dashboard.html",
         {
             "periodo": periodo,
+            "hoje": hoje,
+            "mes_calendario": mes_atual,
+            "mes_calendario_nome": nomes_meses[mes_atual.month - 1],
+            "mes_anterior": mes_anterior.strftime("%Y-%m"),
+            "proximo_mes": proximo_mes.strftime("%Y-%m"),
+            "semanas_calendario": semanas_calendario,
             "vendas_hoje": vendas_hoje.count(),
             "total_vendas_hoje": total_vendas_hoje,
             "total_clientes": Cliente.objects.count(),

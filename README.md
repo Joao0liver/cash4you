@@ -12,7 +12,11 @@ Sistema web de gestão para pequenos negócios, desenvolvido com Django. O Cash4
 
 ## Funcionalidades
 
-### Dashboard
+### Home e dashboard
+
+- A Home apresenta um calendário mensal com agendamentos e vencimentos de contas a pagar; permite navegar entre meses e iniciar um agendamento ou cadastrar uma conta diretamente.
+- Contas a pagar podem ser cadastradas com descrição, valor e vencimento, editadas, excluídas e marcadas como pagas ou pendentes. Vencimentos não pagos anteriores à data atual são identificados como atrasados.
+- Os indicadores e gráficos do dashboard permanecem disponíveis abaixo do calendário.
 
 - Indicadores do dia: valor total vendido, número de vendas, quantidade de clientes cadastrados e produtos com estoque baixo.
 - Os cartões de vendas levam ao Registro de Vendas; o cartão de clientes abre a Carteira de Clientes; o cartão de estoque baixo abre Produtos no Estoque. Dicas explicam os destinos.
@@ -61,7 +65,7 @@ Sistema web de gestão para pequenos negócios, desenvolvido com Django. O Cash4
 
 ### Navegação
 
-- As áreas principais são Dashboard, Cadastrar, Vendas, Agenda, Relatórios e Configurações.
+- As áreas principais são Home, Cadastrar, Vendas, Agenda, Contas a pagar, Relatórios e Configurações.
 - Os grupos de navegação permanecem abertos durante a navegação interna e se ajustam à seção atual; selecionar outro grupo fecha o anterior.
 - Clicar em **Cadastrar** abre a página com atalhos de cadastro. A seta ao lado expande os links diretos para Produtos no Estoque, Serviços Prestados e Carteira de Clientes.
 - Clicar em **Vendas** abre diretamente a Frente de Caixa. Na navegação, somente **Frente de Caixa** fica selecionada; a seta abre os atalhos para a Frente de Caixa e o Registro de Vendas.

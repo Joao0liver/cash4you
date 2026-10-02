@@ -36,4 +36,5 @@ urlpatterns = [
     path('cliente/', include("cliente.urls")),
     path('agenda/', include("agenda.urls")),
     path('vendas/', include("venda.urls")),
+    path('contas-a-pagar/', include("conta_pagar.urls")),
 ]
