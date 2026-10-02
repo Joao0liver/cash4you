@@ -111,12 +111,6 @@
                     </li>
 
                     <li class="nav-item">
-                        <a href="{% url 'listar_contas_pagar' %}" class="nav-link text-white{% if request.resolver_match.url_name == 'listar_contas_pagar' or request.resolver_match.url_name == 'criar_conta_pagar' or request.resolver_match.url_name == 'editar_conta_pagar' or request.resolver_match.url_name == 'alternar_status_conta' or request.resolver_match.url_name == 'excluir_conta_pagar' %} active{% endif %}" data-nav-leaf>
-                            Contas a pagar
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
                         <div class="d-flex align-items-center gap-1">
                             <a href="{% url 'listar_cadastros' %}" class="nav-link text-white flex-grow-1{% if request.resolver_match.url_name == 'listar_cadastros' %} active{% endif %}">
                                 Cadastrar
@@ -213,7 +207,7 @@
                             <a href="{% url 'configurar_estabelecimento' %}" class="nav-link text-white flex-grow-1">
                                 Configurações
                             </a>
-                            <button type="button" class="nav-link text-white px-2" data-nav-toggle data-nav-paths="/configuracoes/,/vendas/configuracoes/" aria-label="Abrir menu Configurações" aria-expanded="false" aria-controls="menu-configuracoes">
+                            <button type="button" class="nav-link text-white px-2" data-nav-toggle data-nav-paths="/configuracoes/,/vendas/configuracoes/,/contas-a-pagar/" aria-label="Abrir menu Configurações" aria-expanded="false" aria-controls="menu-configuracoes">
                                 <span aria-hidden="true">⌄</span>
                             </button>
                         </div>
@@ -226,6 +220,11 @@
                             <li class="nav-item">
                                 <a href="{% url 'precificar' %}" class="nav-link{% if request.resolver_match.url_name == 'precificar' %} active{% endif %}">
                                     Precificação
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{% url 'listar_contas_pagar' %}" class="nav-link{% if request.resolver_match.url_name == 'listar_contas_pagar' or request.resolver_match.url_name == 'criar_conta_pagar' or request.resolver_match.url_name == 'editar_conta_pagar' or request.resolver_match.url_name == 'alternar_status_conta' or request.resolver_match.url_name == 'excluir_conta_pagar' %} active{% endif %}">
+                                    Contas a pagar
                                 </a>
                             </li>
                         </ul>

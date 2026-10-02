@@ -95,8 +95,24 @@ class PricingPageTests(TestCase):
         self.assertContains(response, "Precificação")
         self.assertContains(
             response,
-            'data-nav-paths="/configuracoes/,/vendas/configuracoes/" aria-label="Abrir menu Configurações" aria-expanded="false" aria-controls="menu-configuracoes"',
+            'data-nav-paths="/configuracoes/,/vendas/configuracoes/,/contas-a-pagar/" aria-label="Abrir menu Configurações" aria-expanded="false" aria-controls="menu-configuracoes"',
         )
+
+    def test_payable_accounts_are_nested_in_settings_navigation(self):
+        response = self.client.get(reverse("listar_contas_pagar"))
+
+        conteudo = response.content.decode()
+        link_contas = (
+            f'<a href="{reverse("listar_contas_pagar")}" class="nav-link'
+        )
+        self.assertEqual(conteudo.count(link_contas), 1)
+        self.assertContains(
+            response,
+            'data-nav-paths="/configuracoes/,/vendas/configuracoes/,/contas-a-pagar/" aria-label="Abrir menu Configurações"',
+        )
+        self.assertContains(response, "Contas a pagar")
+        self.assertIn('id="menu-configuracoes"', conteudo)
+        self.assertLess(conteudo.index('id="menu-configuracoes"'), conteudo.index(link_contas))
 
     def test_legacy_pricing_url_redirects_to_settings(self):
         response = self.client.get("/cadastrar/precificar/")

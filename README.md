@@ -66,7 +66,7 @@ Sistema web de gestão para pequenos negócios, desenvolvido com Django. O Cash4
 
 ### Navegação
 
-- As áreas principais são Home, Cadastrar, Vendas, Agenda, Contas a pagar, Relatórios e Configurações.
+- As áreas principais são Home, Cadastrar, Vendas, Agenda, Relatórios e Configurações; Contas a pagar fica no submenu de Configurações.
 - Os grupos de navegação permanecem abertos durante a navegação interna e se ajustam à seção atual; selecionar outro grupo fecha o anterior.
 - Clicar em **Cadastrar** abre a página com atalhos de cadastro. A seta ao lado expande os links diretos para Produtos no Estoque, Serviços Prestados e Carteira de Clientes.
 - Clicar em **Vendas** abre diretamente a Frente de Caixa. Na navegação, somente **Frente de Caixa** fica selecionada; a seta abre os atalhos para a Frente de Caixa e o Registro de Vendas.
