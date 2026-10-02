@@ -167,9 +167,14 @@
                     </li>
 
                     <li class="nav-item">
-                        <button type="button" class="nav-link text-white w-100 text-start" data-nav-toggle data-nav-paths="/agenda/" aria-expanded="false" aria-controls="menu-agenda">
-                            Agenda
-                        </button>
+                        <div class="d-flex align-items-center gap-1">
+                            <a href="{% url 'listar_agendamentos' %}" class="nav-link text-white flex-grow-1">
+                                Agenda
+                            </a>
+                            <button type="button" class="nav-link text-white px-2" data-nav-toggle data-nav-paths="/agenda/" aria-label="Abrir menu Agenda" aria-expanded="false" aria-controls="menu-agenda">
+                                <span aria-hidden="true">⌄</span>
+                            </button>
+                        </div>
                         <ul id="menu-agenda" class="nav nav-pills flex-column gap-1 nav-tree" hidden>
                             <li class="nav-item">
                                 <a href="{% url 'listar_agendamentos' %}" class="nav-link{% if request.resolver_match.url_name == 'listar_agendamentos' %} active{% endif %}">

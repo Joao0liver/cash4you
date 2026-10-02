@@ -56,6 +56,23 @@ class PricingPageTests(TestCase):
         self.assertContains(response, "const caminhoAtual = window.location.pathname")
         self.assertContains(response, "if (menuAtual) abrirMenu(menuAtual)")
 
+    def test_agenda_link_opens_appointments_and_only_appointments_are_selected(self):
+        response = self.client.get(reverse("listar_agendamentos"))
+
+        self.assertRegex(
+            response.content.decode(),
+            rf'<a href="{reverse("listar_agendamentos")}" class="nav-link text-white flex-grow-1">\s*Agenda\s*</a>',
+        )
+        self.assertContains(
+            response,
+            f'<a href="{reverse("listar_agendamentos")}" class="nav-link active">\n                                    Agendamentos',
+        )
+        self.assertNotContains(response, "class=\"nav-link text-white flex-grow-1 active\"")
+        self.assertContains(
+            response,
+            'data-nav-paths="/agenda/" aria-label="Abrir menu Agenda" aria-expanded="false" aria-controls="menu-agenda"',
+        )
+
     def test_precificar_is_available_from_cadastros_page(self):
         response = self.client.get(reverse("listar_cadastros"))
 
