@@ -71,8 +71,8 @@
                                 </div>
                                 {% endif %}
                                 {% for agendamento in dia.agendamentos %}
-                                <a href="{{ agendamento.url }}" class="d-block text-decoration-none text-truncate small rounded px-1 mb-1 bg-primary bg-opacity-25" title="{{ agendamento.nome }}{% if agendamento.horarios %} — {{ agendamento.horarios }}{% endif %}">
-                                    <span class="fw-semibold">{{ agendamento.horarios }}</span> {{ agendamento.nome }}
+                                <a href="{{ agendamento.url }}" class="d-block text-decoration-none text-truncate small rounded px-1 mb-1 bg-primary bg-opacity-25" title="{{ agendamento.nome }}{% if agendamento.agendar_para != '—' %} — {{ agendamento.agendar_para }}{% endif %}{% if agendamento.horarios %} — {{ agendamento.horarios }}{% endif %}">
+                                    <span class="fw-semibold">{{ agendamento.horarios }}</span> {{ agendamento.nome }}{% if agendamento.agendar_para != '—' %} · {{ agendamento.agendar_para }}{% endif %}
                                 </a>
                                 {% endfor %}
                                 {% for conta in dia.contas %}

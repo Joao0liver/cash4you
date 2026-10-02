@@ -212,6 +212,7 @@ class DashboardTests(TestCase):
             if dia["data"] == date(2026, 10, 15)
         )
         self.assertEqual(dia["agendamentos"][0]["nome"], "Maria Silva")
+        self.assertEqual(dia["agendamentos"][0]["agendar_para"], "—")
         self.assertEqual(dia["agendamentos"][0]["horarios"], "09:00")
         self.assertEqual([conta.descricao for conta in dia["contas"]], ["Aluguel"])
         self.assertContains(response, "Agenda e contas a pagar")

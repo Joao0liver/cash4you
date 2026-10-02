@@ -20,6 +20,7 @@
                     <tr>
                         <th>Data e horários</th>
                         <th>Cliente</th>
+                        <th>Agendar para</th>
                         <th>Telefone (WhatsApp)</th>
                         <th>E-mail</th>
                         <th>Serviços</th>
@@ -36,6 +37,7 @@
                             {% endfor %}
                         </td>
                         <td>{{ agendamento.nome }}</td>
+                        <td>{{ agendamento.agendar_para_display }}</td>
                         <td>
                             <a href="https://wa.me/{{ agendamento.whatsapp_numero }}" target="_blank" rel="noopener noreferrer">{{ agendamento.telefone }}</a>
                         </td>

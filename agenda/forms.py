@@ -2,6 +2,8 @@ from datetime import date, datetime, time, timedelta
 
 from django import forms
 
+from conta_pagar.models import Funcionario
+
 from .models import Agendamento, HorarioAgendado
 
 
@@ -18,6 +20,35 @@ def horarios_disponiveis():
 
 class AgendamentoForm(forms.ModelForm):
     data = forms.DateField(widget=forms.HiddenInput, label="Data")
+    tipo_agendar_para = forms.ChoiceField(
+        choices=(
+            ("funcionario", "Funcionário"),
+            ("manual", "Descrição manual"),
+        ),
+        required=False,
+        initial="manual",
+        widget=forms.RadioSelect,
+        label="Agendar para",
+    )
+    funcionario = forms.ModelChoiceField(
+        queryset=Funcionario.objects.none(),
+        required=False,
+        empty_label="Selecione um funcionário",
+        widget=forms.Select(attrs={"class": "form-select"}),
+        label="Funcionário",
+    )
+    descricao_agendar_para = forms.CharField(
+        required=False,
+        max_length=160,
+        widget=forms.TextInput(
+            attrs={
+                "class": "form-control",
+                "autocomplete": "off",
+                "placeholder": "Ex.: atendimento geral",
+            }
+        ),
+        label="Descrição",
+    )
     horarios = forms.MultipleChoiceField(
         choices=horarios_disponiveis,
         required=True,
@@ -33,7 +64,15 @@ class AgendamentoForm(forms.ModelForm):
 
     class Meta:
         model = Agendamento
-        fields = ("data", "nome", "telefone", "email", "servicos")
+        fields = (
+            "data",
+            "nome",
+            "telefone",
+            "email",
+            "funcionario",
+            "descricao_agendar_para",
+            "servicos",
+        )
         labels = {
             "nome": "Nome",
             "telefone": "Telefone (WhatsApp)",
@@ -59,6 +98,14 @@ class AgendamentoForm(forms.ModelForm):
         from servico.models import Servico
 
         self.fields["servicos"].queryset = Servico.objects.order_by("descricao")
+        self.fields["funcionario"].queryset = Funcionario.objects.order_by("nome")
+        if self.instance.pk:
+            if self.instance.funcionario_id:
+                self.initial["tipo_agendar_para"] = "funcionario"
+            elif self.instance.descricao_agendar_para:
+                self.initial["tipo_agendar_para"] = "manual"
+            else:
+                self.initial["tipo_agendar_para"] = ""
         if selected_date is not None:
             self.initial["data"] = selected_date
         if self.instance.pk:
@@ -68,6 +115,49 @@ class AgendamentoForm(forms.ModelForm):
             self.initial["horarios"] = [
                 horario.strftime("%H:%M") for horario in self.initial["horarios"]
             ]
+
+    def clean(self):
+        cleaned_data = super().clean()
+        tipo = cleaned_data.get("tipo_agendar_para")
+        funcionario = cleaned_data.get("funcionario")
+        descricao = cleaned_data.get("descricao_agendar_para", "").strip()
+
+        if not tipo:
+            if not (
+                self.instance.pk
+                and not self.instance.funcionario_id
+                and not self.instance.descricao_agendar_para
+                and not funcionario
+                and not descricao
+            ):
+                self.add_error(
+                    "tipo_agendar_para",
+                    "Escolha um funcionário ou uma descrição manual.",
+                )
+        elif tipo == "funcionario":
+            if not funcionario:
+                self.add_error("funcionario", "Selecione um funcionário.")
+            cleaned_data["descricao_agendar_para"] = ""
+        elif tipo == "manual":
+            if not descricao:
+                self.add_error(
+                    "descricao_agendar_para",
+                    "Informe a descrição de para quem é o agendamento.",
+                )
+            cleaned_data["funcionario"] = None
+
+        return cleaned_data
+
+    def save(self, commit=True):
+        agendamento = super().save(commit=False)
+        agendamento.funcionario = self.cleaned_data.get("funcionario")
+        agendamento.descricao_agendar_para = self.cleaned_data.get(
+            "descricao_agendar_para", ""
+        )
+        if commit:
+            agendamento.save()
+            self.save_m2m()
+        return agendamento
 
     def clean_horarios(self):
         horarios = self.cleaned_data["horarios"]

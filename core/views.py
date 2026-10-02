@@ -137,6 +137,7 @@ def dashboard(request):
     agendamentos_por_dia = defaultdict(list)
     agendamentos_mes = (
         Agendamento.objects.filter(data__gte=mes_atual, data__lt=proximo_mes)
+        .select_related("funcionario")
         .prefetch_related("horarios")
         .order_by("data", "nome")
     )
@@ -148,6 +149,7 @@ def dashboard(request):
         agendamentos_por_dia[agendamento.data].append(
             {
                 "nome": agendamento.nome,
+                "agendar_para": agendamento.agendar_para_display,
                 "horarios": horarios,
                 "url": reverse("listar_agendamentos"),
             }

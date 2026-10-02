@@ -10,6 +10,14 @@ class Agendamento(models.Model):
     nome = models.CharField(max_length=100)
     telefone = models.CharField(max_length=20)
     email = models.EmailField(blank=True)
+    funcionario = models.ForeignKey(
+        "conta_pagar.Funcionario",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="agendamentos",
+    )
+    descricao_agendar_para = models.CharField(max_length=160, blank=True)
     servicos = models.ManyToManyField(
         "servico.Servico",
         blank=True,
@@ -26,6 +34,12 @@ class Agendamento(models.Model):
         if len(numero) in (10, 11):
             return f"55{numero}"
         return numero
+
+    @property
+    def agendar_para_display(self):
+        if self.funcionario_id:
+            return self.funcionario.nome
+        return self.descricao_agendar_para or "—"
 
     def __str__(self):
         return f"{self.nome} - {self.data:%d/%m/%Y}"

@@ -42,7 +42,9 @@ def _data_selecionada(valor, fallback):
 
 
 def listar_agendamentos(request):
-    agendamentos = Agendamento.objects.prefetch_related("servicos", "horarios")
+    agendamentos = Agendamento.objects.select_related("funcionario").prefetch_related(
+        "servicos", "horarios"
+    )
     return render(
         request,
         "agenda/listar_agendamentos.html",

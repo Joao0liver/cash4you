@@ -3,6 +3,7 @@ from datetime import date, time
 from django.test import TestCase
 from django.urls import reverse
 
+from conta_pagar.models import Funcionario
 from servico.models import Servico
 
 from .forms import horarios_disponiveis
@@ -23,6 +24,8 @@ class AgendaCRUDTests(TestCase):
             "horarios": horarios,
             "nome": nome,
             "telefone": "11999998888",
+            "tipo_agendar_para": "manual",
+            "descricao_agendar_para": "Atendimento geral",
         }
         dados.update(extra)
         return self.client.post(reverse("criar_agendamento"), dados)
@@ -50,6 +53,79 @@ class AgendaCRUDTests(TestCase):
             agendamento.horarios.get(inicio=time(9, 0)).fim,
             time(9, 30),
         )
+        self.assertEqual(agendamento.descricao_agendar_para, "Atendimento geral")
+
+    def test_appointment_can_be_assigned_to_an_existing_employee(self):
+        funcionario = Funcionario.objects.create(nome="Ana Silva", funcao="Cabeleireira")
+
+        response = self.agendar(
+            "Maria Silva",
+            ["09:00"],
+            tipo_agendar_para="funcionario",
+            funcionario=str(funcionario.pk),
+            descricao_agendar_para="",
+        )
+
+        self.assertRedirects(response, reverse("listar_agendamentos"))
+        agendamento = Agendamento.objects.get()
+        self.assertEqual(agendamento.funcionario, funcionario)
+        self.assertEqual(agendamento.descricao_agendar_para, "")
+
+        listing = self.client.get(reverse("listar_agendamentos"))
+        self.assertContains(listing, "Agendar para")
+        self.assertContains(listing, "Ana Silva")
+
+    def test_manual_appointment_description_is_required(self):
+        response = self.agendar(
+            "Maria Silva",
+            ["09:00"],
+            descricao_agendar_para="",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("descricao_agendar_para", response.context["form"].errors)
+        self.assertEqual(Agendamento.objects.count(), 0)
+
+    def test_employee_must_be_selected_when_employee_mode_is_used(self):
+        response = self.agendar(
+            "Maria Silva",
+            ["09:00"],
+            tipo_agendar_para="funcionario",
+            funcionario="",
+            descricao_agendar_para="Descrição ignorada",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("funcionario", response.context["form"].errors)
+        self.assertEqual(Agendamento.objects.count(), 0)
+
+    def test_legacy_unassigned_appointment_can_still_be_edited(self):
+        agendamento = Agendamento.objects.create(
+            data=self.data,
+            nome="Maria Silva",
+            telefone="11999998888",
+        )
+
+        response = self.client.post(
+            reverse("editar_agendamento", args=[agendamento.pk]),
+            {
+                "data": self.data.isoformat(),
+                "horarios": ["09:00"],
+                "nome": "Maria Souza",
+                "telefone": "11999997777",
+                "email": "",
+                "servicos": [],
+                "tipo_agendar_para": "",
+                "funcionario": "",
+                "descricao_agendar_para": "",
+            },
+        )
+
+        self.assertRedirects(response, reverse("listar_agendamentos"))
+        agendamento.refresh_from_db()
+        self.assertEqual(agendamento.nome, "Maria Souza")
+        self.assertIsNone(agendamento.funcionario)
+        self.assertEqual(agendamento.descricao_agendar_para, "")
 
     def test_services_are_optional(self):
         response = self.agendar("João Silva", ["10:00"])
@@ -114,6 +190,8 @@ class AgendaCRUDTests(TestCase):
                 "telefone": "11999997777",
                 "email": "",
                 "servicos": [str(self.servico.pk)],
+                "tipo_agendar_para": "manual",
+                "descricao_agendar_para": "Atendimento",
             },
         )
         self.assertRedirects(edit, reverse("listar_agendamentos"))

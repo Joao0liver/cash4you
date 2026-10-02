@@ -71,6 +71,28 @@
         </div>
 
         <div class="row g-3 mb-4">
+            <div class="col-12">
+                <fieldset>
+                    <legend class="form-label">{{ form.tipo_agendar_para.label }}</legend>
+                    {% for radio in form.tipo_agendar_para %}
+                    <div class="form-check form-check-inline">
+                        {{ radio.tag }}
+                        <label class="form-check-label" for="{{ radio.id_for_label }}">{{ radio.choice_label }}</label>
+                    </div>
+                    {% endfor %}
+                    {% if form.tipo_agendar_para.errors %}<div class="text-danger">{{ form.tipo_agendar_para.errors }}</div>{% endif %}
+                </fieldset>
+            </div>
+            <div class="col-12 col-md-6" data-agendar-para-campo="funcionario">
+                <label for="{{ form.funcionario.id_for_label }}" class="form-label">{{ form.funcionario.label }}</label>
+                {{ form.funcionario }}
+                {% if form.funcionario.errors %}<div class="text-danger">{{ form.funcionario.errors }}</div>{% endif %}
+            </div>
+            <div class="col-12 col-md-6" data-agendar-para-campo="manual">
+                <label for="{{ form.descricao_agendar_para.id_for_label }}" class="form-label">{{ form.descricao_agendar_para.label }}</label>
+                {{ form.descricao_agendar_para }}
+                {% if form.descricao_agendar_para.errors %}<div class="text-danger">{{ form.descricao_agendar_para.errors }}</div>{% endif %}
+            </div>
             <div class="col-12 col-md-6">
                 <label for="{{ form.nome.id_for_label }}" class="form-label">{{ form.nome.label }}</label>
                 {{ form.nome }}
@@ -94,4 +116,22 @@
         </div>
     </form>
 </div>
+<script>
+    (function () {
+        const radios = document.querySelectorAll('input[name="tipo_agendar_para"]');
+        const campos = document.querySelectorAll("[data-agendar-para-campo]");
+        function atualizarCampos() {
+            const selecionado = document.querySelector('input[name="tipo_agendar_para"]:checked');
+            campos.forEach(function (campo) {
+                const ativo = selecionado && campo.dataset.agendarParaCampo === selecionado.value;
+                campo.hidden = !ativo;
+                campo.querySelector("input, select").disabled = !ativo;
+            });
+        }
+        radios.forEach(function (radio) {
+            radio.addEventListener("change", atualizarCampos);
+        });
+        atualizarCampos();
+    })();
+</script>
 {% endblock %}
