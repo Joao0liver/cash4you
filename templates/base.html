@@ -122,17 +122,17 @@
                         <ul id="menu-cadastrar" class="nav nav-pills flex-column gap-1 nav-tree" hidden>
                             <li class="nav-item">
                                 <a href="{% url 'listar_produto' %}" class="nav-link{% if request.resolver_match.url_name == 'listar_produto' %} active{% endif %}">
-                                    Produtos
+                                    Produtos no Estoque
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a href="{% url 'listar_servico' %}" class="nav-link{% if request.resolver_match.url_name == 'listar_servico' %} active{% endif %}">
-                                    Serviços
+                                    Serviços Prestados
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a href="{% url 'listar_cliente' %}" class="nav-link{% if request.resolver_match.url_name == 'listar_cliente' %} active{% endif %}">
-                                    Clientes
+                                    Carteira de Clientes
                                 </a>
                             </li>
                             <li class="nav-item">
@@ -155,12 +155,12 @@
                         <ul id="menu-vendas" class="nav nav-pills flex-column gap-1 nav-tree" hidden>
                             <li class="nav-item">
                                 <a href="{% url 'caixa' %}" class="nav-link{% if request.resolver_match.url_name == 'caixa' %} active{% endif %}">
-                                    Caixa
+                                    Frente de Caixa
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a href="{% url 'listar_vendas' %}" class="nav-link{% if request.resolver_match.url_name == 'listar_vendas' %} active{% endif %}">
-                                    Histórico de vendas
+                                    Registro de Vendas
                                 </a>
                             </li>
                         </ul>

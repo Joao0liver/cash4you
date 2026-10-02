@@ -30,7 +30,12 @@ class PricingPageTests(TestCase):
 
         self.assertContains(response, f'href="{reverse("listar_cadastros")}"')
         self.assertNotContains(response, ">Visão geral<")
-        for label in ("Produtos", "Serviços", "Clientes", "Precificar"):
+        for label in (
+            "Produtos no Estoque",
+            "Serviços Prestados",
+            "Carteira de Clientes",
+            "Precificar",
+        ):
             self.assertContains(response, label)
 
     def test_vendas_link_opens_cashier_and_keeps_sales_menu_expanded(self):
@@ -42,7 +47,7 @@ class PricingPageTests(TestCase):
         )
         self.assertContains(
             response,
-            f'<a href="{reverse("caixa")}" class="nav-link active">\n                                    Caixa',
+            f'<a href="{reverse("caixa")}" class="nav-link active">\n                                    Frente de Caixa',
         )
         self.assertContains(
             response,
@@ -112,8 +117,8 @@ class DashboardTests(TestCase):
         )
         self.assertContains(response, "Acesse o histórico para consultar as vendas e seus detalhes.")
         self.assertContains(response, "Acesse o histórico para consultar a quantidade e os detalhes das vendas.")
-        self.assertContains(response, "Acesse Cadastrar → Clientes")
-        self.assertContains(response, "Acesse Cadastrar → Produtos")
+        self.assertContains(response, "Acesse Cadastrar → Carteira de Clientes")
+        self.assertContains(response, "Acesse Cadastrar → Produtos no Estoque")
 
     def test_dashboard_chart_initialization_is_independent_of_tooltips(self):
         response = self.client.get(reverse("home"))
@@ -210,7 +215,7 @@ class DashboardTests(TestCase):
         self.assertContains(response, "Dashboards")
         self.assertContains(response, "Vendas hoje")
         self.assertContains(response, "Nº de vendas")
-        self.assertContains(response, "Clientes")
+        self.assertContains(response, "Carteira de Clientes")
         self.assertContains(response, "Produtos mais vendidos hoje")
         self.assertContains(response, "Formas de pagamento (hoje)")
         self.assertContains(response, "Repor estoque (abaixo de 5 un.)")

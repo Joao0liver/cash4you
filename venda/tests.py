@@ -313,14 +313,14 @@ class CaixaTests(TestCase):
 
         response = self.client.get(reverse("listar_vendas"))
 
-        self.assertContains(response, "Histórico de vendas")
+        self.assertContains(response, "Registro de Vendas")
         self.assertContains(response, "R$ 25,00")
 
     def test_navigation_links_to_cash_and_sales_history(self):
         response = self.client.get(reverse("caixa"))
 
-        self.assertContains(response, "Caixa")
-        self.assertContains(response, "Histórico de vendas")
+        self.assertContains(response, "Frente de Caixa")
+        self.assertContains(response, "Registro de Vendas")
 
     def test_sale_can_be_edited_and_product_stock_is_recalculated(self):
         self.adicionar("produto", self.produto)

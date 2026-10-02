@@ -154,7 +154,37 @@ class ProdutoCRUDTests(TestCase):
 
         self.assertContains(response, '<th scope="col" class="text-center"', count=9)
         self.assertContains(response, '<td class="text-center">R$ 12,50</td>')
-        self.assertContains(response, '<td class="text-center">10</td>')
+        self.assertRegex(
+            response.content.decode(),
+            r'<td class="text-center">\s*10\s*</td>',
+        )
+
+    def test_products_with_fewer_than_five_units_are_highlighted(self):
+        produto_baixo = Produto.objects.create(
+            descricao="Estoque baixo",
+            preco_custo="5.00",
+            preco_venda="10.00",
+            quantidade=4,
+        )
+        produto_limite = Produto.objects.create(
+            descricao="No limite",
+            preco_custo="5.00",
+            preco_venda="10.00",
+            quantidade=5,
+        )
+
+        response = self.client.get(reverse("listar_produto"))
+        conteudo = response.content.decode()
+
+        self.assertRegex(
+            conteudo,
+            rf'<tr class="table-warning">\s*<td class="text-center">{produto_baixo.pk}</td>\s*<td><strong>Estoque baixo</strong></td>',
+        )
+        self.assertContains(response, '<span class="badge text-bg-warning ms-1">Estoque baixo</span>')
+        self.assertRegex(
+            conteudo,
+            rf'<tr>\s*<td class="text-center">{produto_limite.pk}</td>\s*<td><strong>No limite</strong></td>',
+        )
 
     def test_products_without_expense_percent_are_excluded_from_profit_total(self):
         Produto.objects.create(

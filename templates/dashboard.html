@@ -30,15 +30,15 @@
             </a>
         </div>
         <div class="col-6 col-xl-3">
-            <a href="{% url 'listar_cliente' %}" class="card shadow-sm border-0 h-100 text-decoration-none" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Acesse Cadastrar → Clientes para consultar e gerenciar os clientes.">
+            <a href="{% url 'listar_cliente' %}" class="card shadow-sm border-0 h-100 text-decoration-none" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Acesse Cadastrar → Carteira de Clientes para consultar e gerenciar os clientes.">
                 <div class="card-body py-3">
-                    <div class="small text-muted">Clientes</div>
+                    <div class="small text-muted">Carteira de Clientes</div>
                     <div class="h5 mb-0 mt-1">{{ total_clientes }}</div>
                 </div>
             </a>
         </div>
         <div class="col-6 col-xl-3">
-            <a href="{% url 'listar_produto' %}" class="card shadow-sm border-warning h-100 text-decoration-none" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Acesse Cadastrar → Produtos para consultar e atualizar o estoque.">
+            <a href="{% url 'listar_produto' %}" class="card shadow-sm border-warning h-100 text-decoration-none" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Acesse Cadastrar → Produtos no Estoque para consultar e atualizar o estoque.">
                 <div class="card-body py-3">
                     <div class="small text-muted">Estoque baixo</div>
                     <div class="h5 mb-0 mt-1">{{ quantidade_estoque_baixo }} produto(s)</div>

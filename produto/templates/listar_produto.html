@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Produtos | Cash4You{% endblock %}
+{% block title %}Produtos no Estoque | Cash4You{% endblock %}
 
 {% block content %}
 
@@ -21,7 +21,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
 
         <div>
-            <h1 class="h3 mb-1">Produtos</h1>
+            <h1 class="h3 mb-1">Produtos no Estoque</h1>
             <p class="mb-0" style="color: var(--c4y-ink-soft);">
                 Lista de produtos cadastrados.
             </p>
@@ -117,7 +117,7 @@
 
                     <tbody>
                         {% for produto in produtos %}
-                        <tr>
+                        <tr{% if produto.quantidade < 5 %} class="table-warning"{% endif %}>
                             <td class="text-center">{{ produto.id }}</td>
                             <td><strong>{{ produto.descricao }}</strong></td>
                             <td class="text-center">R$ {{ produto.preco_custo|floatformat:2 }}</td>
@@ -137,7 +137,10 @@
                                 R$ {{ produto.lucro_liquido_unitario|floatformat:2 }}
                                 {% else %}—{% endif %}
                             </td>
-                            <td class="text-center">{{ produto.quantidade }}</td>
+                            <td class="text-center">
+                                {{ produto.quantidade }}
+                                {% if produto.quantidade < 5 %}<span class="badge text-bg-warning ms-1">Estoque baixo</span>{% endif %}
+                            </td>
                             <td class="text-center">R$ {{ produto.valor_estoque|floatformat:2 }}</td>
                             <td class="text-center">
                                 {% if produto.lucro_liquido_estoque is not None %}
