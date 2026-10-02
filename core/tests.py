@@ -211,6 +211,62 @@ class DashboardTests(TestCase):
         self.assertEqual(response.context["mes_anterior"], "2026-11")
         self.assertEqual(response.context["proximo_mes"], "2027-01")
 
+    def test_home_calendar_displays_fixed_and_movable_national_holidays(self):
+        response = self.client.get(reverse("home"), {"mes": "2026-04"})
+
+        dias = {
+            dia["data"]: dia
+            for semana in response.context["semanas_calendario"]
+            for dia in semana
+        }
+        self.assertEqual(dias[date(2026, 4, 3)]["feriado"], "Paixão de Cristo")
+        self.assertEqual(dias[date(2026, 4, 21)]["feriado"], "Tiradentes")
+        self.assertContains(response, "Paixão de Cristo")
+        self.assertContains(response, "Tiradentes")
+
+        novembro = self.client.get(reverse("home"), {"mes": "2026-11"})
+        dias_novembro = {
+            dia["data"]: dia
+            for semana in novembro.context["semanas_calendario"]
+            for dia in semana
+        }
+        self.assertEqual(
+            dias_novembro[date(2026, 11, 20)]["feriado"],
+            "Dia Nacional de Zumbi e da Consciência Negra",
+        )
+
+    def test_home_calendar_displays_national_optional_holidays(self):
+        fevereiro = self.client.get(reverse("home"), {"mes": "2026-02"})
+        dias_fevereiro = {
+            dia["data"]: dia
+            for semana in fevereiro.context["semanas_calendario"]
+            for dia in semana
+        }
+        self.assertEqual(
+            dias_fevereiro[date(2026, 2, 16)]["ponto_facultativo"],
+            "Carnaval (ponto facultativo)",
+        )
+        self.assertEqual(
+            dias_fevereiro[date(2026, 2, 17)]["ponto_facultativo"],
+            "Carnaval (ponto facultativo)",
+        )
+        self.assertEqual(
+            dias_fevereiro[date(2026, 2, 18)]["ponto_facultativo"],
+            "Quarta-feira de Cinzas (ponto facultativo até 14h)",
+        )
+        self.assertContains(fevereiro, "Ponto facultativo")
+
+        junho = self.client.get(reverse("home"), {"mes": "2026-06"})
+        dias_junho = {
+            dia["data"]: dia
+            for semana in junho.context["semanas_calendario"]
+            for dia in semana
+        }
+        self.assertEqual(
+            dias_junho[date(2026, 6, 4)]["ponto_facultativo"],
+            "Corpus Christi (ponto facultativo)",
+        )
+
     def test_dashboard_chart_initialization_is_independent_of_tooltips(self):
         response = self.client.get(reverse("home"))
         conteudo = response.content.decode()
@@ -304,6 +360,8 @@ class DashboardTests(TestCase):
             [{"descricao": "Shampoo", "quantidade": 3}],
         )
         self.assertContains(response, "Home")
+        self.assertContains(response, "Outubro 2026")
+        self.assertContains(response, "Agenda e contas a pagar deste mês.")
         self.assertContains(response, "Vendas hoje")
         self.assertContains(response, "Nº de vendas")
         self.assertContains(response, "Carteira de Clientes")

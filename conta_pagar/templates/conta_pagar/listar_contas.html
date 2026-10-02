@@ -23,20 +23,20 @@
             <table class="table align-middle mb-0">
                 <thead>
                     <tr>
-                        <th>Descrição</th>
-                        <th>Vencimento</th>
-                        <th class="text-end">Valor</th>
-                        <th>Situação</th>
-                        <th class="text-end">Ações</th>
+                        <th class="text-center">Descrição</th>
+                        <th class="text-center">Vencimento</th>
+                        <th class="text-center">Valor</th>
+                        <th class="text-center">Situação</th>
+                        <th class="text-center">Ações</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for conta in contas %}
                     <tr>
-                        <td>{{ conta.descricao }}</td>
-                        <td>{{ conta.vencimento|date:"d/m/Y" }}</td>
-                        <td class="text-end">R$ {{ conta.valor|floatformat:2 }}</td>
-                        <td>
+                        <td class="text-center">{{ conta.descricao }}</td>
+                        <td class="text-center">{{ conta.vencimento|date:"d/m/Y" }}</td>
+                        <td class="text-center">R$ {{ conta.valor|floatformat:2 }}</td>
+                        <td class="text-center">
                             {% if conta.paga %}
                             <span class="badge text-bg-success">Paga</span>
                             {% elif conta.vencimento < hoje %}
@@ -45,7 +45,7 @@
                             <span class="badge text-bg-warning">Pendente</span>
                             {% endif %}
                         </td>
-                        <td class="text-end text-nowrap">
+                        <td class="text-center text-nowrap">
                             <form method="post" action="{% url 'alternar_status_conta' conta.pk %}" class="d-inline">
                                 {% csrf_token %}
                                 <button type="submit" class="btn btn-sm btn-outline-success">

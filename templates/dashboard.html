@@ -16,8 +16,8 @@
         <div class="card-body">
             <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
                 <div>
-                    <h2 id="calendario-mensal-titulo" class="h5 mb-1">Agenda e contas a pagar</h2>
-                    <p class="text-muted small mb-0">Compromissos e vencimentos de {{ mes_calendario_nome }} {{ mes_calendario.year }}.</p>
+                    <h2 id="calendario-mensal-titulo" class="h5 mb-1">{{ mes_calendario_nome }} {{ mes_calendario.year }}</h2>
+                    <p class="text-muted small mb-0">Agenda e contas a pagar deste mês.</p>
                 </div>
                 <div class="d-flex flex-wrap gap-2">
                     <a href="?mes={{ mes_anterior }}" class="btn btn-outline-secondary btn-sm" aria-label="Mês anterior">‹</a>
@@ -28,6 +28,8 @@
             </div>
 
             <div class="d-flex flex-wrap gap-3 small mb-3">
+                <span><span class="badge text-bg-danger me-1">F</span>Feriado nacional</span>
+                <span><span class="badge text-bg-info me-1">P</span>Ponto facultativo</span>
                 <span><span class="badge text-bg-primary me-1">A</span>Agendamento</span>
                 <span><span class="badge text-bg-warning me-1">R$</span>Conta pendente</span>
                 <span><span class="badge text-bg-success me-1">✓</span>Conta paga</span>
@@ -58,6 +60,16 @@
                                     <a href="{{ dia.url_novo_agendamento }}" class="small text-decoration-none" aria-label="Novo agendamento em {{ dia.data|date:'d/m/Y' }}">+</a>
                                     {% endif %}
                                 </div>
+                                {% if dia.feriado %}
+                                <div class="small text-danger-emphasis fw-semibold text-truncate mb-1" title="{{ dia.feriado }}">
+                                    {{ dia.feriado }}
+                                </div>
+                                {% endif %}
+                                {% if dia.ponto_facultativo %}
+                                <div class="small text-info-emphasis fw-semibold text-truncate mb-1" title="{{ dia.ponto_facultativo }}">
+                                    {{ dia.ponto_facultativo }}
+                                </div>
+                                {% endif %}
                                 {% for agendamento in dia.agendamentos %}
                                 <a href="{{ agendamento.url }}" class="d-block text-decoration-none text-truncate small rounded px-1 mb-1 bg-primary bg-opacity-25" title="{{ agendamento.nome }}{% if agendamento.horarios %} — {{ agendamento.horarios }}{% endif %}">
                                     <span class="fw-semibold">{{ agendamento.horarios }}</span> {{ agendamento.nome }}

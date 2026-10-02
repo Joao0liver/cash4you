@@ -75,6 +75,48 @@ def _inicio_fuso(data):
     return instante
 
 
+def _feriados_nacionais(ano):
+    feriados = {
+        date(ano, 1, 1): "Confraternização Universal",
+        date(ano, 4, 21): "Tiradentes",
+        date(ano, 5, 1): "Dia do Trabalho",
+        date(ano, 9, 7): "Independência do Brasil",
+        date(ano, 10, 12): "Nossa Senhora Aparecida",
+        date(ano, 11, 2): "Finados",
+        date(ano, 11, 15): "Proclamação da República",
+        date(ano, 11, 20): "Dia Nacional de Zumbi e da Consciência Negra",
+        date(ano, 12, 25): "Natal",
+    }
+
+    a = ano % 19
+    b, c = divmod(ano, 100)
+    d, e = divmod(b, 4)
+    f = (b + 8) // 25
+    g = (b - f + 1) // 3
+    h = (19 * a + b - d - g + 15) % 30
+    i, k = divmod(c, 4)
+    l = (32 + 2 * e + 2 * i - h - k) % 7
+    m = (a + 11 * h + 22 * l) // 451
+    mes, dia = divmod(h + l - 7 * m + 114, 31)
+    pascoa = date(ano, mes, dia + 1)
+    feriados[pascoa - timedelta(days=2)] = "Paixão de Cristo"
+    return feriados
+
+
+def _pontos_facultativos_nacionais(ano):
+    pascoa = next(
+        data
+        for data, nome in _feriados_nacionais(ano).items()
+        if nome == "Paixão de Cristo"
+    ) + timedelta(days=2)
+    return {
+        pascoa - timedelta(days=48): "Carnaval (ponto facultativo)",
+        pascoa - timedelta(days=47): "Carnaval (ponto facultativo)",
+        pascoa - timedelta(days=46): "Quarta-feira de Cinzas (ponto facultativo até 14h)",
+        pascoa + timedelta(days=60): "Corpus Christi (ponto facultativo)",
+    }
+
+
 def dashboard(request):
     periodo = request.GET.get("periodo", "dias")
     if periodo not in ("dias", "semanas", "meses"):
@@ -119,11 +161,22 @@ def dashboard(request):
     for conta in contas_mes:
         contas_por_dia[conta.vencimento].append(conta)
 
-    semanas_calendario = []
-    for semana in calendar.Calendar(firstweekday=0).monthdatescalendar(
+    semanas_datas = calendar.Calendar(firstweekday=0).monthdatescalendar(
         mes_atual.year,
         mes_atual.month,
-    ):
+    )
+    feriados = {
+        dia: nome
+        for ano in {dia.year for semana in semanas_datas for dia in semana}
+        for dia, nome in _feriados_nacionais(ano).items()
+    }
+    pontos_facultativos = {
+        dia: nome
+        for ano in {dia.year for semana in semanas_datas for dia in semana}
+        for dia, nome in _pontos_facultativos_nacionais(ano).items()
+    }
+    semanas_calendario = []
+    for semana in semanas_datas:
         semanas_calendario.append(
             [
                 {
@@ -132,6 +185,8 @@ def dashboard(request):
                     "hoje": dia == hoje,
                     "agendamentos": agendamentos_por_dia.get(dia, []),
                     "contas": contas_por_dia.get(dia, []),
+                    "feriado": feriados.get(dia),
+                    "ponto_facultativo": pontos_facultativos.get(dia),
                     "url_novo_agendamento": (
                         f"{reverse('criar_agendamento')}?data={dia.isoformat()}"
                     ),

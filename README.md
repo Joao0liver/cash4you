@@ -15,6 +15,7 @@ Sistema web de gestão para pequenos negócios, desenvolvido com Django. O Cash4
 ### Home e dashboard
 
 - A Home apresenta um calendário mensal com agendamentos e vencimentos de contas a pagar; permite navegar entre meses e iniciar um agendamento ou cadastrar uma conta diretamente.
+- O calendário identifica os feriados nacionais fixos e a Paixão de Cristo, além dos pontos facultativos de Carnaval, Quarta-feira de Cinzas (até 14h) e Corpus Christi, calculados para o ano exibido.
 - Contas a pagar podem ser cadastradas com descrição, valor e vencimento, editadas, excluídas e marcadas como pagas ou pendentes. Vencimentos não pagos anteriores à data atual são identificados como atrasados.
 - Os indicadores e gráficos do dashboard permanecem disponíveis abaixo do calendário.
 
