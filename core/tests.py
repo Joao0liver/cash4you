@@ -178,6 +178,46 @@ class DashboardTests(TestCase):
         self.assertContains(response, "Acesse Cadastrar → Carteira de Clientes")
         self.assertContains(response, "Acesse Cadastrar → Produtos no Estoque")
 
+    @patch("core.views.timezone.localdate", return_value=date(2026, 10, 2))
+    def test_home_calendar_defaults_to_day_view(self, _localdate):
+        response = self.client.get(reverse("home"))
+
+        self.assertEqual(response.context["visao_calendario"], "dia")
+        self.assertEqual(response.context["data_referencia"], date(2026, 10, 2))
+        self.assertEqual(len(response.context["semanas_calendario"]), 1)
+        self.assertEqual(len(response.context["semanas_calendario"][0]), 1)
+        self.assertContains(response, "Sexta-feira, 02/10/2026")
+        self.assertContains(response, '<option value="dia" selected>')
+
+    @patch("core.views.timezone.localdate", return_value=date(2026, 10, 2))
+    def test_home_calendar_can_show_a_week(self, _localdate):
+        response = self.client.get(
+            reverse("home"),
+            {"visao": "semana", "data": "2026-10-02"},
+        )
+
+        semana = response.context["semanas_calendario"][0]
+        self.assertEqual(response.context["visao_calendario"], "semana")
+        self.assertEqual(len(semana), 7)
+        self.assertEqual(semana[0]["data"], date(2026, 9, 28))
+        self.assertEqual(semana[-1]["data"], date(2026, 10, 4))
+        self.assertEqual(response.context["data_anterior"], "2026-09-21")
+        self.assertEqual(response.context["data_proxima"], "2026-10-05")
+        self.assertContains(response, "Seg")
+        self.assertContains(response, "Dom")
+
+    @patch("core.views.timezone.localdate", return_value=date(2026, 10, 2))
+    def test_home_calendar_can_show_a_month(self, _localdate):
+        response = self.client.get(
+            reverse("home"),
+            {"visao": "mes", "data": "2026-10-02"},
+        )
+
+        self.assertEqual(response.context["visao_calendario"], "mes")
+        self.assertEqual(response.context["mes_calendario"], date(2026, 10, 1))
+        self.assertEqual(len(response.context["semanas_calendario"]), 5)
+        self.assertContains(response, "Outubro 2026")
+
     @patch("core.views.timezone.localdate", return_value=date(2026, 10, 1))
     def test_home_calendar_shows_month_appointments_and_payable_accounts(self, _localdate):
         agendamento = Agendamento.objects.create(
@@ -420,8 +460,8 @@ class DashboardTests(TestCase):
             [{"descricao": "Shampoo", "quantidade": 3}],
         )
         self.assertContains(response, "Home")
-        self.assertContains(response, "Outubro 2026")
-        self.assertContains(response, "Agenda e contas a pagar deste mês.")
+        self.assertContains(response, "Quinta-feira, 01/10/2026")
+        self.assertContains(response, "Agenda e contas a pagar.")
         self.assertContains(response, "Vendas hoje")
         self.assertContains(response, "Nº de vendas")
         self.assertContains(response, "Carteira de Clientes")

@@ -125,18 +125,80 @@ def dashboard(request):
     hoje = timezone.localdate()
     mes_parametro = request.GET.get("mes", "")
     try:
-        mes_atual = datetime.strptime(mes_parametro, "%Y-%m").date().replace(day=1)
+        mes_legado = datetime.strptime(mes_parametro, "%Y-%m").date().replace(day=1)
     except ValueError:
-        mes_atual = hoje.replace(day=1)
+        mes_legado = None
+    data_parametro = request.GET.get("data", "")
+    try:
+        data_referencia = datetime.strptime(data_parametro, "%Y-%m-%d").date()
+    except ValueError:
+        data_referencia = mes_legado or hoje
+    visao = request.GET.get("visao")
+    if visao not in ("dia", "semana", "mes"):
+        visao = "mes" if mes_legado and not request.GET.get("visao") else "dia"
+
+    nomes_meses = (
+        "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+        "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
+    )
+    nomes_dias = (
+        "Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira",
+        "Sexta-feira", "Sábado", "Domingo",
+    )
+    mes_atual = data_referencia.replace(day=1)
     proximo_mes = (
         date(mes_atual.year + 1, 1, 1)
         if mes_atual.month == 12
         else date(mes_atual.year, mes_atual.month + 1, 1)
     )
     mes_anterior = (mes_atual - timedelta(days=1)).replace(day=1)
+    if visao == "dia":
+        inicio_intervalo = data_referencia
+        fim_intervalo = inicio_intervalo + timedelta(days=1)
+        semanas_datas = [[data_referencia]]
+        data_anterior = data_referencia - timedelta(days=1)
+        data_proxima = data_referencia + timedelta(days=1)
+        titulo_calendario = (
+            f"{nomes_dias[data_referencia.weekday()]}, {data_referencia:%d/%m/%Y}"
+        )
+    elif visao == "semana":
+        inicio_intervalo = data_referencia - timedelta(days=data_referencia.weekday())
+        fim_intervalo = inicio_intervalo + timedelta(days=7)
+        semanas_datas = [
+            [inicio_intervalo + timedelta(days=dia) for dia in range(7)]
+        ]
+        data_anterior = inicio_intervalo - timedelta(days=7)
+        data_proxima = inicio_intervalo + timedelta(days=7)
+        titulo_calendario = (
+            f"{inicio_intervalo:%d/%m/%Y} – "
+            f"{(fim_intervalo - timedelta(days=1)):%d/%m/%Y}"
+        )
+    else:
+        inicio_intervalo = calendar.Calendar(firstweekday=0).monthdatescalendar(
+            mes_atual.year, mes_atual.month
+        )[0][0]
+        semanas_datas = calendar.Calendar(firstweekday=0).monthdatescalendar(
+            mes_atual.year,
+            mes_atual.month,
+        )
+        fim_intervalo = semanas_datas[-1][-1] + timedelta(days=1)
+        data_anterior = mes_anterior
+        data_proxima = proximo_mes
+        titulo_calendario = f"{nomes_meses[mes_atual.month - 1]} {mes_atual.year}"
+
+    if visao == "mes":
+        inicio_eventos = mes_atual
+        fim_eventos = proximo_mes
+    else:
+        inicio_eventos = inicio_intervalo
+        fim_eventos = fim_intervalo
+
     agendamentos_por_dia = defaultdict(list)
     agendamentos_mes = (
-        Agendamento.objects.filter(data__gte=mes_atual, data__lt=proximo_mes)
+        Agendamento.objects.filter(
+            data__gte=inicio_eventos,
+            data__lt=fim_eventos,
+        )
         .select_related("funcionario")
         .prefetch_related("horarios")
         .order_by("data", "nome")
@@ -157,16 +219,12 @@ def dashboard(request):
 
     contas_por_dia = defaultdict(list)
     contas_mes = ContaPagar.objects.filter(
-        vencimento__gte=mes_atual,
-        vencimento__lt=proximo_mes,
+        vencimento__gte=inicio_eventos,
+        vencimento__lt=fim_eventos,
     ).order_by("vencimento", "descricao")
     for conta in contas_mes:
         contas_por_dia[conta.vencimento].append(conta)
 
-    semanas_datas = calendar.Calendar(firstweekday=0).monthdatescalendar(
-        mes_atual.year,
-        mes_atual.month,
-    )
     feriados = {
         dia: nome
         for ano in {dia.year for semana in semanas_datas for dia in semana}
@@ -183,7 +241,7 @@ def dashboard(request):
             [
                 {
                     "data": dia,
-                    "no_mes": dia.month == mes_atual.month,
+                    "no_mes": visao != "mes" or dia.month == mes_atual.month,
                     "hoje": dia == hoje,
                     "agendamentos": agendamentos_por_dia.get(dia, []),
                     "contas": contas_por_dia.get(dia, []),
@@ -196,11 +254,6 @@ def dashboard(request):
                 for dia in semana
             ]
         )
-    nomes_meses = (
-        "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
-        "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
-    )
-
     periodos = _periodos_comparacao(periodo, hoje)
     vendas = Venda.objects.all()
     inicio_hoje = _inicio_fuso(hoje)
@@ -302,8 +355,17 @@ def dashboard(request):
         {
             "periodo": periodo,
             "hoje": hoje,
+            "visao_calendario": visao,
+            "data_referencia": data_referencia,
+            "titulo_calendario": titulo_calendario,
+            "data_anterior": data_anterior.isoformat(),
+            "data_proxima": data_proxima.isoformat(),
             "mes_calendario": mes_atual,
             "mes_calendario_nome": nomes_meses[mes_atual.month - 1],
+            "dias_semana": [
+                ("Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom")[dia.weekday()]
+                for dia in semanas_datas[0]
+            ],
             "mes_anterior": mes_anterior.strftime("%Y-%m"),
             "proximo_mes": proximo_mes.strftime("%Y-%m"),
             "semanas_calendario": semanas_calendario,
