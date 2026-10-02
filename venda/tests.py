@@ -44,9 +44,16 @@ class CaixaTests(TestCase):
 
         self.assertContains(response, "Shampoo")
         self.assertContains(response, "Corte")
-        self.assertContains(response, "Lista de compras")
+        self.assertContains(response, "Carrinho")
+        self.assertContains(response, "Buscar produto")
+        self.assertContains(response, "Buscar serviço")
+        self.assertContains(response, 'id="produto-selecionado"')
+        self.assertContains(response, 'id="servico-selecionado"')
         self.assertContains(response, "Últimas vendas")
         self.assertContains(response, "Ainda não há vendas registradas.")
+        response = self.adicionar("produto", self.produto)
+        response = self.client.get(response.url)
+        self.assertNotContains(response, "adicionado ao carrinho")
 
     def test_cashier_shows_only_three_most_recent_sales(self):
         vendas = []
@@ -83,7 +90,9 @@ class CaixaTests(TestCase):
     def test_payment_controls_remain_visible_when_cart_is_empty(self):
         response = self.client.get(reverse("caixa"))
 
-        self.assertContains(response, 'id="forma-pagamento"')
+        self.assertContains(response, "Total")
+        self.assertContains(response, "Finalizar venda")
+        self.assertContains(response, 'name="forma_pagamento"')
         self.assertContains(response, 'id="valor-recebido"')
         self.assertContains(response, 'name="telefone_whatsapp"')
         self.assertContains(response, 'name="nome_cliente"')
@@ -93,7 +102,7 @@ class CaixaTests(TestCase):
         self.assertNotContains(response, 'name="endereco"')
         self.assertContains(
             response,
-            '<button type="submit" class="btn btn-primary" disabled>Finalizar pagamento</button>',
+            '<button type="submit" class="btn btn-primary w-100" disabled>Finalizar venda</button>',
         )
 
     def test_establishment_details_can_be_saved_and_reused(self):
@@ -161,7 +170,9 @@ class CaixaTests(TestCase):
         sale = Venda.objects.get()
         self.assertRedirects(response, reverse("detalhe_venda", args=[sale.pk]))
         self.assertEqual(sale.total, Decimal("25.00"))
+        self.assertEqual(sale.nome_cliente, "")
         self.assertEqual(sale.valor_recebido, Decimal("30.50"))
+        self.assertEqual(sale.telefone_whatsapp, "11999998888")
         self.assertEqual(sale.troco, Decimal("5.50"))
         self.produto.refresh_from_db()
         self.assertEqual(self.produto.quantidade, 4)

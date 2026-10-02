@@ -3,8 +3,22 @@
 {% block title %}Frente de Caixa | Cash4You{% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+<style>
+    .checkout-layout { --checkout-border: var(--c4y-line); }
+    .checkout-panel { background: var(--c4y-panel); border: 1px solid var(--checkout-border); }
+    .checkout-add-form { min-width: 250px; }
+    .checkout-table th { color: var(--c4y-ink-soft); font-size: 0.82rem; font-weight: 500; }
+    .checkout-table td, .checkout-table th { vertical-align: middle; }
+    .checkout-payment { position: sticky; top: 5.5rem; }
+    .checkout-total { font-size: clamp(1.75rem, 3vw, 2.25rem); font-weight: 700; }
+    .checkout-payment-method label { min-height: 42px; display: flex; align-items: center; justify-content: center; }
+    @media (max-width: 1199.98px) {
+        .checkout-payment { position: static; }
+    }
+</style>
+
+<div class="container-fluid checkout-layout">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
         <div>
             <h1 class="h3 mb-1">Frente de Caixa</h1>
             <p class="text-muted mb-0">Adicione produtos e serviços para iniciar uma venda.</p>
@@ -13,7 +27,7 @@
             <a href="{% url 'configurar_estabelecimento' %}" class="btn btn-outline-secondary d-inline-flex align-items-center justify-content-center" aria-label="Configurar dados do estabelecimento" title="Configurar dados do estabelecimento">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-gear" viewBox="0 0 16 16" aria-hidden="true">
                     <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492M5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0"/>
-                    <path d="M9.796 1.343c-.4-1.117-1.992-1.117-2.392 0l-.094.262a1.25 1.25 0 0 1-1.852.65l-.235-.144c-1.004-.615-2.13.51-1.515 1.515l.144.235a1.25 1.25 0 0 1-.65 1.852l-.262.094c-1.117.4-1.117 1.992 0 2.392l.262.094a1.25 1.25 0 0 1 .65 1.852l-.144.235c-.615 1.004.51 2.13 1.515 1.515l.235-.144a1.25 1.25 0 0 1 1.852.65l.094.262c.4 1.117 1.992 1.117 2.392 0l.094-.262a1.25 1.25 0 0 1 1.852-.65l.235.144c1.004.615 2.13-.51 1.515-1.515l-.144-.235a1.25 1.25 0 0 1 .65-1.852l.262-.094c1.117-.4 1.117-1.992 0-2.392l-.262-.094a1.25 1.25 0 0 1-.65-1.852l.144-.235c.615-1.004-.51-2.13-1.515-1.515l-.235.144a1.25 1.25 0 0 1-1.852-.65zM8 1.5a.25.25 0 0 1 .235.165l.094.262a2.25 2.25 0 0 0 3.334 1.17l.235-.144a.25.25 0 0 1 .303.394l-.144.235a2.25 2.25 0 0 0 1.17 3.334l.262.094a.25.25 0 0 1 0 .47l-.262.094a2.25 2.25 0 0 0-1.17 3.334l.144.235a.25.25 0 0 1-.303.303l-.235-.144a2.25 2.25 0 0 0-3.334 1.17l-.094.262a.25.25 0 0 1-.47 0l-.094-.262a2.25 2.25 0 0 0-3.334-1.17l-.235.144a.25.25 0 0 1-.303-.303l.144-.235a2.25 2.25 0 0 0-1.17-3.334l-.262-.094a.25.25 0 0 1 0-.47l.262-.094a2.25 2.25 0 0 0 1.17-3.334l-.144-.235a.25.25 0 0 1 .303-.303l.235.144a2.25 2.25 0 0 0 3.334-1.17l.094-.262A.25.25 0 0 1 8 1.5"/>
+                    <path d="M9.796 1.343c-.4-1.117-1.992-1.117-2.392 0l-.094.262a1.25 1.25 0 0 1-1.852.65l-.235-.144c-1.004-.615-2.13.51-1.515 1.515l.144.235a1.25 1.25 0 0 1-.65 1.852l-.262.094c-1.117.4-1.117 1.992 0 2.392l.262.094a1.25 1.25 0 0 1 .65 1.852l-.144.235c-.615 1.004.51 2.13 1.515 1.515l.235-.144a1.25 1.25 0 0 1 1.852.65l.094.262c.4 1.117 1.992 1.117 2.392 0l.094-.262a1.25 1.25 0 0 1 1.852-.65l.235.144c1.004.615 2.13-.51 1.515-1.515l-.144-.235a1.25 1.25 0 0 1 .65-1.852l.262-.094c1.117-.4 1.117-1.992 0-2.392l-.262-.094a1.25 1.25 0 0 1-.65-1.852l.144-.235a1.25 1.25 0 0 1-1.515-1.515l-.235.144a1.25 1.25 0 0 1-1.852-.65zM8 1.5a.25.25 0 0 1 .235.165l.094.262a2.25 2.25 0 0 0 3.334 1.17l.235-.144a.25.25 0 0 1 .303.394l-.144.235a2.25 2.25 0 0 0 1.17 3.334l.262.094a.25.25 0 0 1 0 .47l-.262.094a2.25 2.25 0 0 0-1.17 3.334l.144.235a.25.25 0 0 1-.303.303l-.235-.144a2.25 2.25 0 0 0-3.334 1.17l-.094.262a.25.25 0 0 1-.47 0l-.094-.262a2.25 2.25 0 0 0-3.334-1.17l-.235.144a.25.25 0 0 1-.303-.303l.144-.235a2.25 2.25 0 0 0-1.17-3.334l-.262-.094a.25.25 0 0 1 0-.47l.262-.094a2.25 2.25 0 0 0 1.17-3.334l-.144-.235a.25.25 0 0 1 .303-.303l.235.144a2.25 2.25 0 0 0 3.334-1.17l.094-.262A.25.25 0 0 1 8 1.5"/>
                 </svg>
             </a>
             <a href="{% url 'listar_vendas' %}" class="btn btn-outline-secondary">Registro de Vendas</a>
@@ -26,50 +40,115 @@
     {% endfor %}
     {% endif %}
 
-    <div class="row g-4">
-        <div class="col-12 col-xl-5">
-            <div class="card shadow-sm border-0">
-                <div class="card-body">
-                    <h2 class="h5 mb-3">Adicionar item</h2>
-                    <form method="post" class="mb-4">
-                        {% csrf_token %}
-                        <input type="hidden" name="acao" value="adicionar">
-                        <input type="hidden" name="tipo" value="produto">
-                        <label for="produto-selecionado" class="form-label">Produto</label>
-                        <div class="input-group">
-                            <select id="produto-selecionado" name="item_id" class="form-select" required>
-                                <option value="">Selecione um produto</option>
-                                {% for produto in produtos %}
-                                <option value="{{ produto.pk }}" {% if produto.quantidade < 1 %}disabled{% endif %}>
-                                    {{ produto.descricao }} — R$ {{ produto.preco_venda|floatformat:2 }} (estoque: {{ produto.quantidade }})
-                                </option>
-                                {% endfor %}
-                            </select>
-                            <button class="btn btn-outline-primary" type="submit">Adicionar</button>
+    <div class="row g-4 align-items-start">
+        <div class="col-12 col-xl-8">
+            <section class="card checkout-panel shadow-sm mb-4">
+                <div class="card-body p-3 p-lg-4">
+                    <h2 class="h5 mb-3">Carrinho</h2>
+                    <div class="row g-3 mb-4">
+                        <div class="col-12 col-lg-6">
+                            <form method="post" class="checkout-add-form">
+                                {% csrf_token %}
+                                <input type="hidden" name="acao" value="adicionar">
+                                <input type="hidden" name="tipo" value="produto">
+                                <label for="produto-selecionado" class="form-label">Buscar produto</label>
+                                <div class="input-group">
+                                    <select id="produto-selecionado" name="item_id" class="form-select" required>
+                                        <option value="">Selecione um produto</option>
+                                        {% for produto in produtos %}
+                                        <option value="{{ produto.pk }}" {% if produto.quantidade < 1 %}disabled{% endif %}>
+                                            {{ produto.descricao }} — R$ {{ produto.preco_venda|floatformat:2 }} (estoque: {{ produto.quantidade }})
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                    <button type="submit" class="btn btn-outline-primary">Adicionar</button>
+                                </div>
+                            </form>
                         </div>
-                    </form>
-
-                    <form method="post">
-                        {% csrf_token %}
-                        <input type="hidden" name="acao" value="adicionar">
-                        <input type="hidden" name="tipo" value="servico">
-                        <label for="servico-selecionado" class="form-label">Serviço</label>
-                        <div class="input-group">
-                            <select id="servico-selecionado" name="item_id" class="form-select" required>
-                                <option value="">Selecione um serviço</option>
-                                {% for servico in servicos %}
-                                <option value="{{ servico.pk }}">
-                                    {{ servico.descricao }} — R$ {{ servico.preco_venda|floatformat:2 }}
-                                </option>
-                                {% endfor %}
-                            </select>
-                            <button class="btn btn-outline-primary" type="submit">Adicionar</button>
+                        <div class="col-12 col-lg-6">
+                            <form method="post" class="checkout-add-form">
+                                {% csrf_token %}
+                                <input type="hidden" name="acao" value="adicionar">
+                                <input type="hidden" name="tipo" value="servico">
+                                <label for="servico-selecionado" class="form-label">Buscar serviço</label>
+                                <div class="input-group">
+                                    <select id="servico-selecionado" name="item_id" class="form-select" required>
+                                        <option value="">Selecione um serviço</option>
+                                        {% for servico in servicos %}
+                                        <option value="{{ servico.pk }}">
+                                            {{ servico.descricao }} — R$ {{ servico.preco_venda|floatformat:2 }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                    <button type="submit" class="btn btn-outline-primary">Adicionar</button>
+                                </div>
+                            </form>
                         </div>
-                    </form>
+                    </div>
 
+                    {% if linhas %}
+                    <div class="table-responsive">
+                        <table class="table checkout-table align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Item</th>
+                                    <th scope="col" class="text-center" style="width: 150px">Qtd</th>
+                                    <th scope="col" class="text-end text-nowrap">Preço</th>
+                                    <th scope="col" class="text-end text-nowrap">Subtotal</th>
+                                    <th scope="col"><span class="visually-hidden">Ação</span></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for linha in linhas %}
+                                <tr>
+                                    <td>
+                                        <span class="fw-medium">{{ linha.descricao }}</span>
+                                        {% if linha.tipo == "produto" %}<small class="d-block text-muted">Produto · estoque disponível: {{ linha.estoque }}</small>{% endif %}
+                                        {% if linha.tipo == "servico" %}<small class="d-block text-muted">Serviço</small>{% endif %}
+                                        {% if not linha.disponivel %}<small class="d-block text-danger">Item indisponível</small>{% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        {% if linha.disponivel %}
+                                        <form method="post" class="d-flex gap-1 justify-content-center">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="acao" value="atualizar">
+                                            <input type="hidden" name="chave" value="{{ linha.chave }}">
+                                            <input type="number" min="1" {% if linha.estoque != None %}max="{{ linha.estoque }}"{% endif %} name="quantidade" value="{{ linha.quantidade }}" class="form-control form-control-sm" style="width: 68px" aria-label="Quantidade de {{ linha.descricao }}">
+                                            <button type="submit" class="btn btn-sm btn-outline-secondary" aria-label="Atualizar quantidade de {{ linha.descricao }}">↻</button>
+                                        </form>
+                                        {% else %}
+                                        {{ linha.quantidade }}
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end text-nowrap">{% if linha.disponivel %}R$ {{ linha.preco_unitario|floatformat:2 }}{% else %}—{% endif %}</td>
+                                    <td class="text-end text-nowrap fw-medium">{% if linha.disponivel %}R$ {{ linha.subtotal|floatformat:2 }}{% else %}—{% endif %}</td>
+                                    <td class="text-end">
+                                        <form method="post">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="acao" value="remover">
+                                            <input type="hidden" name="chave" value="{{ linha.chave }}">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" aria-label="Remover {{ linha.descricao }}">×</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th colspan="3" class="text-end">Total</th>
+                                    <th class="text-end text-nowrap">R$ {{ total|floatformat:2 }}</th>
+                                    <th></th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-muted py-3">O carrinho está vazio. Adicione pelo menos um produto ou serviço.</div>
+                    {% endif %}
                 </div>
-            </div>
-            <div class="card shadow-sm border-0 mt-4">
+            </section>
+
+            <section class="card checkout-panel shadow-sm">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <h2 class="h6 mb-0">Últimas vendas</h2>
@@ -94,125 +173,94 @@
                     <p class="small text-muted mb-0">Ainda não há vendas registradas.</p>
                     {% endfor %}
                 </div>
-            </div>
+            </section>
         </div>
 
-        <div class="col-12 col-xl-7">
-            <div class="card shadow-sm border-0">
-                <div class="card-body">
-                    <h2 class="h5 mb-3">Lista de compras</h2>
-                    {% if linhas %}
-                    <div class="table-responsive">
-                        <table class="table align-middle">
-                            <thead>
-                                <tr>
-                                    <th>Item</th>
-                                    <th class="text-end">Preço unitário</th>
-                                    <th class="text-center">Quantidade</th>
-                                    <th class="text-end">Subtotal</th>
-                                    <th>Ação</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for linha in linhas %}
-                                <tr>
-                                    <td>
-                                        {{ linha.descricao }}
-                                        {% if linha.tipo == "produto" %}<small class="d-block text-muted">Produto · estoque: {{ linha.estoque }}</small>{% endif %}
-                                        {% if linha.tipo == "servico" %}<small class="d-block text-muted">Serviço</small>{% endif %}
-                                    </td>
-                                    <td class="text-end">{% if linha.disponivel %}R$ {{ linha.preco_unitario|floatformat:2 }}{% else %}—{% endif %}</td>
-                                    <td class="text-center">
-                                        {% if linha.disponivel %}
-                                        <form method="post" class="d-flex gap-1 justify-content-center">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="acao" value="atualizar">
-                                            <input type="hidden" name="chave" value="{{ linha.chave }}">
-                                            <input type="number" min="1" {% if linha.estoque != None %}max="{{ linha.estoque }}"{% endif %} name="quantidade" value="{{ linha.quantidade }}" class="form-control form-control-sm" style="width: 82px" aria-label="Quantidade de {{ linha.descricao }}">
-                                            <button type="submit" class="btn btn-sm btn-outline-secondary" aria-label="Atualizar quantidade">Atualizar</button>
-                                        </form>
-                                        {% else %}
-                                        {{ linha.quantidade }}
-                                        {% endif %}
-                                    </td>
-                                    <td class="text-end">{% if linha.disponivel %}R$ {{ linha.subtotal|floatformat:2 }}{% else %}—{% endif %}</td>
-                                    <td>
-                                        <form method="post">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="acao" value="remover">
-                                            <input type="hidden" name="chave" value="{{ linha.chave }}">
-                                            <button type="submit" class="btn btn-sm btn-outline-danger">Excluir</button>
-                                        </form>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                            <tfoot>
-                                <tr>
-                                    <th colspan="3" class="text-end">Total</th>
-                                    <th class="text-end">R$ {{ total|floatformat:2 }}</th>
-                                    <th></th>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
-                    {% else %}
-                    <div class="alert alert-info mb-0">A lista de compras está vazia. Adicione pelo menos um produto ou serviço para iniciar uma venda.</div>
-                    {% endif %}
-
-                    <hr>
-                    <h2 class="h5 mb-3">Pagamento</h2>
+        <div class="col-12 col-xl-4">
+            <section class="card checkout-panel checkout-payment shadow-sm">
+                <div class="card-body p-3 p-lg-4">
                     <form method="post">
                         {% csrf_token %}
                         <input type="hidden" name="acao" value="finalizar">
-                        <div class="row g-3">
-                            <div class="col-12 col-md-6">
-                                <label for="{{ form.forma_pagamento.id_for_label }}" class="form-label">{{ form.forma_pagamento.label }}</label>
-                                {{ form.forma_pagamento }}
-                                {% if form.forma_pagamento.errors %}<div class="text-danger">{{ form.forma_pagamento.errors }}</div>{% endif %}
-                            </div>
-                            <div class="col-12 col-md-6" id="campo-dinheiro">
-                                <label for="{{ form.valor_recebido.id_for_label }}" class="form-label">{{ form.valor_recebido.label }}</label>
-                                {{ form.valor_recebido }}
-                                {% if form.valor_recebido.errors %}<div class="text-danger">{{ form.valor_recebido.errors }}</div>{% endif %}
-                                <small class="form-text text-muted">Troco estimado: <span id="troco-estimado">R$ 0,00</span></small>
-                            </div>
-                            <div class="col-12 col-md-6">
-                                <label for="{{ form.nome_cliente.id_for_label }}" class="form-label">{{ form.nome_cliente.label }}</label>
-                                {{ form.nome_cliente }}
-                                {% if form.nome_cliente.errors %}<div class="text-danger">{{ form.nome_cliente.errors }}</div>{% endif %}
-                            </div>
-                            <div class="col-12 col-md-6">
-                                <label for="{{ form.telefone_whatsapp.id_for_label }}" class="form-label">{{ form.telefone_whatsapp.label }}</label>
-                                {{ form.telefone_whatsapp }}
-                                {% if form.telefone_whatsapp.errors %}<div class="text-danger">{{ form.telefone_whatsapp.errors }}</div>{% endif %}
-                                <small class="form-text text-muted">Após finalizar, você poderá abrir o WhatsApp com o resumo da venda preenchido. O envio é opcional.</small>
-                            </div>
+                        <div class="mb-3">
+                            <span class="small text-muted d-block">Total</span>
+                            <output class="checkout-total d-block" aria-live="polite">R$ {{ total|floatformat:2 }}</output>
                         </div>
-                        <div class="mt-4 d-flex flex-wrap gap-2">
-                            <button type="submit" class="btn btn-primary" {% if not linhas or invalido %}disabled{% endif %}>Finalizar pagamento</button>
-                            <a href="{% url 'caixa' %}" class="btn btn-outline-secondary">Continuar comprando</a>
+
+                        <fieldset class="mb-3">
+                            <legend class="form-label small mb-2">{{ form.forma_pagamento.label }}</legend>
+                            <div class="row g-2 checkout-payment-method">
+                                {% for value, label in form.forma_pagamento.field.choices %}
+                                <div class="col-6">
+                                    <input class="btn-check" type="radio" name="forma_pagamento" id="forma-pagamento-{{ forloop.counter }}" value="{{ value }}" {% if form.forma_pagamento.value == value or not form.is_bound and forloop.first %}checked{% endif %}>
+                                    <label class="btn btn-outline-secondary w-100" for="forma-pagamento-{{ forloop.counter }}">{{ label }}</label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% if form.forma_pagamento.errors %}<div class="text-danger small mt-1">{{ form.forma_pagamento.errors }}</div>{% endif %}
+                        </fieldset>
+
+                        <div class="mb-3" id="campo-dinheiro">
+                            <label for="{{ form.valor_recebido.id_for_label }}" class="form-label small mb-1">{{ form.valor_recebido.label }}</label>
+                            {{ form.valor_recebido }}
+                            {% if form.valor_recebido.errors %}<div class="text-danger small">{{ form.valor_recebido.errors }}</div>{% endif %}
                         </div>
+                        <div class="mb-3" id="area-troco">
+                            <span class="small text-muted d-block">Troco</span>
+                            <strong id="troco-estimado" aria-live="polite">R$ 0,00</strong>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.nome_cliente.id_for_label }}" class="form-label small mb-1">{{ form.nome_cliente.label }} (opcional)</label>
+                            {{ form.nome_cliente }}
+                            {% if form.nome_cliente.errors %}<div class="text-danger small">{{ form.nome_cliente.errors }}</div>{% endif %}
+                        </div>
+                        <div class="mb-3">
+                            <label for="{{ form.telefone_whatsapp.id_for_label }}" class="form-label small mb-1">WhatsApp (opcional)</label>
+                            {{ form.telefone_whatsapp }}
+                            {% if form.telefone_whatsapp.errors %}<div class="text-danger small">{{ form.telefone_whatsapp.errors }}</div>{% endif %}
+                            <small class="form-text text-muted">O comprovante será preparado após finalizar a venda.</small>
+                        </div>
+
+                        {% if form.non_field_errors %}<div class="alert alert-danger py-2 small">{{ form.non_field_errors }}</div>{% endif %}
+                        <button type="submit" class="btn btn-primary w-100" {% if not linhas or invalido %}disabled{% endif %}>Finalizar venda</button>
                     </form>
                 </div>
-            </div>
+            </section>
         </div>
     </div>
 </div>
 
 <script>
     (function () {
-        const pagamento = document.getElementById("forma-pagamento");
+        const pagamentos = document.querySelectorAll('input[type="radio"]');
         const campoDinheiro = document.getElementById("campo-dinheiro");
+        const areaTroco = document.getElementById("area-troco");
         const recebido = document.getElementById("valor-recebido");
         const troco = document.getElementById("troco-estimado");
         const total = Number("{{ total|floatformat:2 }}".replace(",", "."));
 
+        function converterMoeda(valor) {
+            let normalizado = (valor || "").replace(/[^\d,.-]/g, "");
+            if (normalizado.includes(",")) {
+                normalizado = normalizado.replace(/\./g, "").replace(",", ".");
+            }
+            return Number(normalizado) || 0;
+        }
+
+        function obterFormaPagamento() {
+            const selecionado = Array.from(pagamentos).find(function (pagamento) {
+                return pagamento.checked;
+            });
+            return selecionado ? selecionado.value : "";
+        }
+
         function atualizarPagamento() {
-            const dinheiro = pagamento.value === "dinheiro";
+            const dinheiro = obterFormaPagamento() === "dinheiro";
             campoDinheiro.hidden = !dinheiro;
+            areaTroco.hidden = !dinheiro;
             recebido.required = dinheiro;
-            const entrada = Number((recebido.value || "0").replace(",", "."));
+            const entrada = converterMoeda(recebido.value);
             const valorTroco = Math.max(0, entrada - total);
             troco.textContent = new Intl.NumberFormat("pt-BR", {
                 style: "currency",
@@ -220,7 +268,9 @@
             }).format(valorTroco);
         }
 
-        pagamento.addEventListener("change", atualizarPagamento);
+        pagamentos.forEach(function (pagamento) {
+            pagamento.addEventListener("change", atualizarPagamento);
+        });
         recebido.addEventListener("input", atualizarPagamento);
         atualizarPagamento();
     })();

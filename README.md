@@ -31,8 +31,10 @@ Sistema web de gestão para pequenos negócios, desenvolvido com Django. O Cash4
 ### Frente de Caixa e Registro de Vendas
 
 - Inclusão de produtos e serviços no carrinho, alteração de quantidades e remoção de itens.
+- A Frente de Caixa separa os campos de adição de produtos e serviços, mostra o carrinho à esquerda e o pagamento à direita.
+- A inclusão de produtos ou serviços não exibe aviso de sucesso; mensagens de erro, como estoque insuficiente, permanecem visíveis.
 - Validação de estoque no carrinho e novamente ao finalizar a venda.
-- Pagamento em dinheiro, cartão de crédito, cartão de débito ou Pix. Para dinheiro, o valor recebido deve cobrir o total; o troco é calculado.
+- Pagamento em dinheiro, cartão de crédito, cartão de débito ou Pix. Para dinheiro, o valor recebido deve cobrir o total; o troco é calculado e exibido durante o preenchimento.
 - Nome e telefone do cliente são opcionais. O telefone habilita a preparação de um comprovante para WhatsApp.
 - A mensagem do comprovante pode incluir nome do estabelecimento, horário de funcionamento e endereço, configurados pela engrenagem na Frente de Caixa.
 - Os dados do estabelecimento ficam salvos para vendas futuras e são copiados para cada venda, preservando as informações usadas em comprovantes anteriores.

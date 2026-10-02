@@ -170,7 +170,6 @@ def caixa(request):
                 else:
                     carrinho[chave] = quantidade
                     _salvar_carrinho(request, carrinho)
-                    messages.success(request, f"{item.descricao} adicionado ao carrinho.")
             return redirect("caixa")
 
         if acao == "atualizar":
@@ -314,10 +313,7 @@ def listar_vendas(request):
 
 
 def detalhe_venda(request, pk):
-    venda = get_object_or_404(
-        Venda.objects.prefetch_related("itens"),
-        pk=pk,
-    )
+    venda = get_object_or_404(Venda.objects.prefetch_related("itens"), pk=pk)
     whatsapp_url = None
     if venda.telefone_whatsapp:
         data_completa = date_format(venda.criada_em, r"l, j \d\e F \d\e Y")

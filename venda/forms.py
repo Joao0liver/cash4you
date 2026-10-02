@@ -41,18 +41,6 @@ class FinalizarVendaForm(forms.Form):
             }
         ),
     )
-    telefone_whatsapp = forms.CharField(
-        required=False,
-        label="Telefone do cliente para WhatsApp (opcional)",
-        widget=forms.TextInput(
-            attrs={
-                "class": "form-control",
-                "type": "tel",
-                "autocomplete": "tel",
-                "placeholder": "(00) 00000-0000",
-            }
-        ),
-    )
     nome_cliente = forms.CharField(
         required=False,
         max_length=120,
@@ -62,6 +50,18 @@ class FinalizarVendaForm(forms.Form):
                 "class": "form-control",
                 "autocomplete": "name",
                 "placeholder": "Nome do cliente",
+            }
+        ),
+    )
+    telefone_whatsapp = forms.CharField(
+        required=False,
+        label="Telefone do cliente para WhatsApp (opcional)",
+        widget=forms.TextInput(
+            attrs={
+                "class": "form-control",
+                "type": "tel",
+                "autocomplete": "tel",
+                "placeholder": "(00) 00000-0000",
             }
         ),
     )
