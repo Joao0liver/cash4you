@@ -135,11 +135,6 @@
                                     Carteira de Clientes
                                 </a>
                             </li>
-                            <li class="nav-item">
-                                <a href="{% url 'precificar' %}" class="nav-link{% if request.resolver_match.url_name == 'precificar' %} active{% endif %}">
-                                    Precificar
-                                </a>
-                            </li>
                         </ul>
                     </li>
 
@@ -202,6 +197,29 @@
                             <li class="nav-item">
                                 <a href="{% url 'relatorio_estoque' %}" class="nav-link{% if request.resolver_match.url_name == 'relatorio_estoque' %} active{% endif %}">
                                     Relatório de estoque
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-item">
+                        <div class="d-flex align-items-center gap-1">
+                            <a href="{% url 'configurar_estabelecimento' %}" class="nav-link text-white flex-grow-1">
+                                Configurações
+                            </a>
+                            <button type="button" class="nav-link text-white px-2" data-nav-toggle data-nav-paths="/configuracoes/,/vendas/configuracoes/" aria-label="Abrir menu Configurações" aria-expanded="false" aria-controls="menu-configuracoes">
+                                <span aria-hidden="true">⌄</span>
+                            </button>
+                        </div>
+                        <ul id="menu-configuracoes" class="nav nav-pills flex-column gap-1 nav-tree" hidden>
+                            <li class="nav-item">
+                                <a href="{% url 'configurar_estabelecimento' %}" class="nav-link{% if request.resolver_match.url_name == 'configurar_estabelecimento' %} active{% endif %}">
+                                    Dados do Estabelecimento
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{% url 'precificar' %}" class="nav-link{% if request.resolver_match.url_name == 'precificar' %} active{% endif %}">
+                                    Precificação
                                 </a>
                             </li>
                         </ul>
@@ -301,9 +319,14 @@
             });
 
             const caminhoAtual = window.location.pathname;
-            const menuAtual = Array.from(toggles).find(function (toggle) {
-                return toggle.dataset.navPaths.split(",").some(function (caminho) {
-                    return caminhoAtual.startsWith(caminho);
+            let menuAtual = null;
+            let tamanhoCaminhoMenuAtual = 0;
+            toggles.forEach(function (toggle) {
+                toggle.dataset.navPaths.split(",").forEach(function (caminho) {
+                    if (caminhoAtual.startsWith(caminho) && caminho.length > tamanhoCaminhoMenuAtual) {
+                        menuAtual = toggle;
+                        tamanhoCaminhoMenuAtual = caminho.length;
+                    }
                 });
             });
             if (menuAtual) abrirMenu(menuAtual);

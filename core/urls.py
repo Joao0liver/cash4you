@@ -16,11 +16,17 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.views.generic.base import RedirectView
 from . import views
 
 urlpatterns = [
     path('cadastrar/', views.cadastros, name='listar_cadastros'),
-    path('cadastrar/precificar/', views.precificar, name='precificar'),
+    path('configuracoes/precificacao/', views.precificar, name='precificar'),
+    path(
+        'cadastrar/precificar/',
+        RedirectView.as_view(pattern_name='precificar', permanent=True),
+        name='precificar_legacy',
+    ),
     path('relatorios/caixa/', views.relatorio_caixa, name='relatorio_caixa'),
     path('relatorios/estoque/', views.relatorio_estoque, name='relatorio_estoque'),
     path('', views.dashboard, name='home'),

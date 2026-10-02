@@ -15,7 +15,13 @@ class PricingPageTests(TestCase):
     def test_navigation_groups_start_collapsed_and_support_single_open_menu(self):
         response = self.client.get(reverse("listar_cadastros"))
 
-        for menu_id in ("menu-cadastrar", "menu-vendas", "menu-agenda", "menu-relatorios"):
+        for menu_id in (
+            "menu-cadastrar",
+            "menu-vendas",
+            "menu-agenda",
+            "menu-relatorios",
+            "menu-configuracoes",
+        ):
             self.assertContains(
                 response,
                 f'<ul id="{menu_id}" class="nav nav-pills flex-column gap-1 nav-tree" hidden>',
@@ -24,6 +30,7 @@ class PricingPageTests(TestCase):
         self.assertContains(response, "fecharMenus(toggle)")
         self.assertContains(response, "function abrirMenu(toggle)")
         self.assertContains(response, "const caminhoAtual = window.location.pathname")
+        self.assertContains(response, "caminho.length > tamanhoCaminhoMenuAtual")
 
     def test_cadastrar_opens_the_form_choices_without_a_legacy_overview_link(self):
         response = self.client.get(reverse("listar_cadastros"))
@@ -34,9 +41,9 @@ class PricingPageTests(TestCase):
             "Produtos no Estoque",
             "Serviços Prestados",
             "Carteira de Clientes",
-            "Precificar",
         ):
             self.assertContains(response, label)
+        self.assertNotContains(response, ">Precificar<")
 
     def test_vendas_link_opens_cashier_and_keeps_sales_menu_expanded(self):
         response = self.client.get(reverse("caixa"))
@@ -73,16 +80,32 @@ class PricingPageTests(TestCase):
             'data-nav-paths="/agenda/" aria-label="Abrir menu Agenda" aria-expanded="false" aria-controls="menu-agenda"',
         )
 
-    def test_precificar_is_available_from_cadastros_page(self):
-        response = self.client.get(reverse("listar_cadastros"))
+    def test_settings_menu_contains_establishment_and_pricing_pages(self):
+        response = self.client.get(reverse("precificar"))
 
+        self.assertRegex(
+            response.content.decode(),
+            rf'<a href="{reverse("configurar_estabelecimento")}" class="nav-link text-white flex-grow-1">\s*Configurações\s*</a>',
+        )
+        self.assertContains(response, reverse("configurar_estabelecimento"))
         self.assertContains(response, reverse("precificar"))
-        self.assertContains(response, "Precificar")
+        self.assertContains(response, "Dados do Estabelecimento")
+        self.assertContains(response, "Precificação")
+        self.assertContains(
+            response,
+            'data-nav-paths="/configuracoes/,/vendas/configuracoes/" aria-label="Abrir menu Configurações" aria-expanded="false" aria-controls="menu-configuracoes"',
+        )
+
+    def test_legacy_pricing_url_redirects_to_settings(self):
+        response = self.client.get("/cadastrar/precificar/")
+
+        self.assertRedirects(response, reverse("precificar"), status_code=301)
 
     def test_precificar_page_explains_markup(self):
         response = self.client.get(reverse("precificar"))
 
         self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Precificação")
         self.assertContains(response, "Custo variável direto")
         self.assertContains(response, "Despesas variáveis")
         self.assertContains(response, "Lucro desejado")

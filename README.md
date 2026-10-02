@@ -59,10 +59,11 @@ Sistema web de gestão para pequenos negócios, desenvolvido com Django. O Cash4
 
 ### Navegação
 
-- As áreas principais são Dashboard, Cadastrar, Vendas, Agenda e Relatórios.
+- As áreas principais são Dashboard, Cadastrar, Vendas, Agenda, Relatórios e Configurações.
 - Os grupos de navegação permanecem abertos durante a navegação interna e se ajustam à seção atual; selecionar outro grupo fecha o anterior.
-- Clicar em **Cadastrar** abre a página com atalhos de cadastro. A seta ao lado expande os links diretos para Produtos no Estoque, Serviços Prestados, Carteira de Clientes e Precificar.
+- Clicar em **Cadastrar** abre a página com atalhos de cadastro. A seta ao lado expande os links diretos para Produtos no Estoque, Serviços Prestados e Carteira de Clientes.
 - Clicar em **Vendas** abre diretamente a Frente de Caixa. Na navegação, somente **Frente de Caixa** fica selecionada; a seta abre os atalhos para a Frente de Caixa e o Registro de Vendas.
+- O menu **Configurações** agrupa os Dados do Estabelecimento e a página de Precificação, com orientações sobre o método de markup.
 - Títulos e opções visíveis usam os nomes **Produtos no Estoque**, **Serviços Prestados**, **Carteira de Clientes**, **Frente de Caixa** e **Registro de Vendas**. Nomes internos de rotas e modelos permanecem técnicos.
 
 ### Clientes
