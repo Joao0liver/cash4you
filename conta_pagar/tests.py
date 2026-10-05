@@ -33,7 +33,7 @@ class ContaPagarTests(TestCase):
         )
         self.assertContains(
             response,
-            'data-nav-paths="/cadastrar/,/produto/,/servico/,/cliente/,/contas-a-pagar/funcionarios/" aria-label="Abrir menu Cadastrar"',
+            'data-nav-paths="/cadastrar/,/produto/,/servico/,/cliente/,/contas-a-pagar/funcionarios/,/contas-a-pagar/" aria-label="Abrir menu Cadastrar"',
         )
         self.assertContains(response, "Funcionários")
         self.assertNotContains(
