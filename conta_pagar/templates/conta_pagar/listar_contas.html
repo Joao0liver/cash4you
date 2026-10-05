@@ -96,7 +96,7 @@
 
     <section class="card c4y-table-card shadow-sm mt-4" aria-label="Percentual do teto por conta">
         <div class="card-body">
-            <h2 class="h5 mb-1">Percentual do teto por conta</h2>
+            <h2 class="h5 mb-1">Percentual gráfico correspondente</h2>
             {% if limite_gastos is None %}
             <p class="text-secondary mb-0"><a href="{% url 'configurar_estabelecimento' %}" class="text-reset text-decoration-none">Defina a margem máxima de gastos em Configurações &gt; Dados do estabelecimento para visualizar o gráfico.</a></p>
             {% elif limite_gastos == 0 %}
