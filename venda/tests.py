@@ -313,6 +313,8 @@ class CaixaTests(TestCase):
         detail = self.client.get(reverse("detalhe_venda", args=[sale.pk]))
         mensagem = parse_qs(urlparse(detail.context["whatsapp_url"]).query)["text"][0]
 
+        self.assertContains(detail, f'href="{reverse("caixa")}"')
+        self.assertContains(detail, "Voltar ao caixa")
         self.assertContains(detail, "Abrir resumo no WhatsApp")
         self.assertContains(detail, "https://wa.me/5511999998888")
         self.assertContains(detail, "Shampoo")

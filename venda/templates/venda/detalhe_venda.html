@@ -10,6 +10,7 @@
             <p class="text-muted mb-0">{{ venda.criada_em|date:"d/m/Y H:i" }}</p>
         </div>
         <div class="d-flex flex-wrap gap-2">
+            <a href="{% url 'caixa' %}" class="btn btn-primary">Voltar ao caixa</a>
             <a href="{% url 'editar_venda' venda.pk %}" class="btn btn-outline-primary">Editar venda</a>
             <a href="{% url 'excluir_venda' venda.pk %}" class="btn btn-outline-danger">Excluir venda</a>
             <a href="{% url 'listar_vendas' %}" class="btn btn-outline-secondary">Voltar ao histórico</a>
