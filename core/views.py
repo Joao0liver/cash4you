@@ -4,7 +4,7 @@ from datetime import date, datetime, time, timedelta
 from decimal import Decimal
 
 from django import forms
-from django.db.models import Sum
+from django.db.models import Count, Sum
 from django.shortcuts import render
 from django.urls import reverse
 from django.utils import timezone
@@ -328,6 +328,14 @@ def dashboard(request):
     )
     quantidade_estoque_baixo = len(produtos_baixo_estoque)
     quantidade_estoque_normal = Produto.objects.filter(quantidade__gte=5).count()
+    resumo_contas_pendentes = ContaPagar.objects.filter(paga=False).aggregate(
+        total=Sum("valor"),
+        quantidade=Count("pk"),
+    )
+    resumo_contas_pagas = ContaPagar.objects.filter(paga=True).aggregate(
+        total=Sum("valor"),
+        quantidade=Count("pk"),
+    )
 
     inicio_consulta = _inicio_fuso(periodos[0][0])
     fim_consulta = _inicio_fuso(periodos[-1][1])
@@ -384,6 +392,10 @@ def dashboard(request):
             "produtos_baixo_estoque": produtos_baixo_estoque,
             "quantidade_estoque_baixo": quantidade_estoque_baixo,
             "quantidade_estoque_normal": quantidade_estoque_normal,
+            "total_contas_pendentes": resumo_contas_pendentes["total"] or Decimal("0.00"),
+            "quantidade_contas_pendentes": resumo_contas_pendentes["quantidade"],
+            "total_contas_pagas": resumo_contas_pagas["total"] or Decimal("0.00"),
+            "quantidade_contas_pagas": resumo_contas_pagas["quantidade"],
             "periodo_labels": [item[2] for item in periodos],
             "periodo_valores": valores_por_periodo,
         },

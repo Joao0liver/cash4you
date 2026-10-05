@@ -183,6 +183,35 @@ class DashboardTests(TestCase):
         self.assertContains(response, "Acesse Cadastrar → Carteira de Clientes")
         self.assertContains(response, "Acesse Cadastrar → Produtos no Estoque")
 
+    def test_dashboard_shows_totals_and_counts_for_pending_and_paid_accounts(self):
+        ContaPagar.objects.create(
+            descricao="Aluguel pendente",
+            valor=Decimal("1200.00"),
+            vencimento=date(2026, 10, 10),
+        )
+        ContaPagar.objects.create(
+            descricao="Internet pendente",
+            valor=Decimal("150.50"),
+            vencimento=date(2026, 10, 15),
+        )
+        ContaPagar.objects.create(
+            descricao="Energia paga",
+            valor=Decimal("275.25"),
+            vencimento=date(2026, 9, 25),
+            paga=True,
+        )
+
+        response = self.client.get(reverse("home"))
+
+        self.assertEqual(response.context["total_contas_pendentes"], Decimal("1350.50"))
+        self.assertEqual(response.context["quantidade_contas_pendentes"], 2)
+        self.assertEqual(response.context["total_contas_pagas"], Decimal("275.25"))
+        self.assertEqual(response.context["quantidade_contas_pagas"], 1)
+        self.assertContains(response, "Contas a pagar (pendentes)")
+        self.assertContains(response, "Contas pagas")
+        self.assertContains(response, "2 conta(s)")
+        self.assertContains(response, "1 conta(s)")
+
     @patch("core.views.timezone.localdate", return_value=date(2026, 10, 2))
     def test_home_calendar_defaults_to_day_view(self, _localdate):
         response = self.client.get(reverse("home"))

@@ -144,6 +144,27 @@
     </div>
 
     <div class="row g-3 mb-4">
+        <div class="col-12 col-md-6">
+            <a href="{% url 'listar_contas_pagar' %}" class="card shadow-sm border-warning h-100 text-decoration-none" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Acesse Cadastrar → Contas a pagar para consultar e atualizar as contas pendentes.">
+                <div class="card-body py-3">
+                    <div class="small text-muted">Contas a pagar (pendentes)</div>
+                    <div class="h5 mb-0 mt-1">R$ {{ total_contas_pendentes|floatformat:2 }}</div>
+                    <div class="small text-muted mt-1">{{ quantidade_contas_pendentes }} conta(s)</div>
+                </div>
+            </a>
+        </div>
+        <div class="col-12 col-md-6">
+            <a href="{% url 'listar_contas_pagar' %}" class="card shadow-sm border-success h-100 text-decoration-none" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Acesse Cadastrar → Contas a pagar para consultar o histórico de contas pagas.">
+                <div class="card-body py-3">
+                    <div class="small text-muted">Contas pagas</div>
+                    <div class="h5 mb-0 mt-1">R$ {{ total_contas_pagas|floatformat:2 }}</div>
+                    <div class="small text-muted mt-1">{{ quantidade_contas_pagas }} conta(s)</div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
         <div class="col-12 col-xl-6">
             <div class="card shadow-sm border-0 h-100">
                 <div class="card-body">
