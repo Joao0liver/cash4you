@@ -21,7 +21,8 @@ class ContaPagarForm(forms.ModelForm):
                 attrs={"class": "form-control", "min": "0", "step": "0.01"}
             ),
             "vencimento": forms.DateInput(
-                attrs={"class": "form-control", "type": "date"}
+                format="%Y-%m-%d",
+                attrs={"class": "form-control", "type": "date"},
             ),
             "paga": forms.CheckboxInput(attrs={"class": "form-check-input"}),
         }

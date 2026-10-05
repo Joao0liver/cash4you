@@ -72,6 +72,29 @@ class ContaPagarTests(TestCase):
         listing = self.client.get(reverse("listar_contas_pagar"))
         self.assertContains(listing, "Aluguel")
         self.assertContains(listing, "Pendente")
+        self.assertEqual(listing.context["quantidade_total_contas"], 1)
+        self.assertEqual(listing.context["valor_total_contas"], Decimal("1200.00"))
+        self.assertContains(listing, "Contas cadastradas")
+        self.assertContains(listing, "Valor total das contas")
+
+    def test_payable_account_totals_include_paid_and_pending_accounts(self):
+        ContaPagar.objects.create(
+            descricao="Aluguel",
+            valor=Decimal("1200.00"),
+            vencimento=date(2026, 10, 10),
+        )
+        ContaPagar.objects.create(
+            descricao="Energia",
+            valor=Decimal("180.50"),
+            vencimento=date(2026, 10, 12),
+            paga=True,
+        )
+
+        response = self.client.get(reverse("listar_contas_pagar"))
+
+        self.assertEqual(response.context["quantidade_total_contas"], 2)
+        self.assertEqual(response.context["valor_total_contas"], Decimal("1380.50"))
+
 
     def test_invalid_payable_amount_is_rejected(self):
         response = self.client.post(
@@ -93,6 +116,12 @@ class ContaPagarTests(TestCase):
             valor=Decimal("80.00"),
             vencimento=date(2026, 10, 12),
         )
+        edit_form = self.client.get(reverse("editar_conta_pagar", args=[conta.pk]))
+        self.assertContains(
+            edit_form,
+            '<input type="date" name="vencimento" value="2026-10-12"',
+        )
+
         update = self.client.post(
             reverse("editar_conta_pagar", args=[conta.pk]),
             {

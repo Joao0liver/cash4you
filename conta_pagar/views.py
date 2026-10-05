@@ -1,4 +1,7 @@
+from decimal import Decimal
+
 from django.contrib import messages
+from django.db.models import Count, Sum
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
@@ -7,12 +10,16 @@ from .models import ContaPagar, Funcionario
 
 
 def listar_contas(request):
+    contas = ContaPagar.objects.all()
+    resumo = contas.aggregate(quantidade=Count("pk"), total=Sum("valor"))
     return render(
         request,
         "conta_pagar/listar_contas.html",
         {
-            "contas": ContaPagar.objects.all(),
+            "contas": contas,
             "hoje": timezone.localdate(),
+            "quantidade_total_contas": resumo["quantidade"],
+            "valor_total_contas": resumo["total"] or Decimal("0.00"),
         },
     )
 
