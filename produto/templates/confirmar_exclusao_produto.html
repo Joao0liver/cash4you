@@ -4,18 +4,25 @@
 
 {% block content %}
 <div class="container-fluid">
-    <h1 class="h3 mb-4">Excluir produto</h1>
-
-    <div class="alert alert-warning" role="alert">
-        Tem certeza de que deseja excluir o produto
-        <strong>{{ produto.descricao }}</strong>?
-        Esta ação não pode ser desfeita.
+    <div class="mb-4">
+        <h1 class="h3 mb-1">Excluir produto</h1>
+        <p class="text-secondary mb-0">Revise os dados antes de confirmar a exclusão.</p>
     </div>
 
-    <form method="post">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-danger">Confirmar exclusão</button>
-        <a href="{% url 'listar_produto' %}" class="btn btn-outline-secondary">Cancelar</a>
-    </form>
+    <div class="card shadow-sm border-0 c4y-confirm-wrap">
+        <div class="card-body">
+            <div class="alert alert-danger" role="alert">
+                <h2 class="h5 alert-heading">Esta ação não pode ser desfeita</h2>
+                <p class="mb-0">Você está prestes a excluir o produto <strong>{{ produto.descricao }}</strong>. Confirme somente se deseja remover este cadastro.</p>
+            </div>
+
+            <form method="post" class="d-flex flex-wrap gap-2">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">Confirmar exclusão</button>
+                <a href="{% url 'listar_produto' %}" class="btn btn-outline-secondary">Cancelar</a>
+            </form>
+        </div>
+    </div>
 </div>
+<style>.c4y-confirm-wrap { max-width: 680px; background: var(--c4y-panel); border: 1px solid var(--c4y-line) !important; }</style>
 {% endblock %}

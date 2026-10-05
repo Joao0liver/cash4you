@@ -178,8 +178,10 @@ class ProdutoCRUDTests(TestCase):
 
         self.assertRegex(
             conteudo,
-            rf'<tr class="table-warning">\s*<td class="text-center">{produto_baixo.pk}</td>\s*<td><strong>Estoque baixo</strong></td>',
+            rf'<tr class="c4y-low-stock">\s*<td class="text-center">{produto_baixo.pk}</td>\s*<td><strong>Estoque baixo</strong></td>',
         )
+        self.assertContains(response, "--c4y-stock-alert-ink: #ffe2a3;")
+        self.assertContains(response, "--c4y-stock-alert-ink: #624600;")
         self.assertContains(response, '<span class="badge text-bg-warning ms-1">Estoque baixo</span>')
         self.assertRegex(
             conteudo,

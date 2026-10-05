@@ -3,31 +3,45 @@
 {% block title %}{{ titulo }} | Cash4You{% endblock %}
 
 {% block content %}
+<style>
+    .c4y-form-card { max-width: 860px; background: var(--c4y-panel); border: 1px solid var(--c4y-line) !important; }
+    .c4y-form-card .form-label { color: var(--c4y-ink-soft); }
+    .c4y-form-card input:not([type="checkbox"]), .c4y-form-card select, .c4y-form-card textarea {
+        display: block; width: 100%; padding: .375rem .75rem; border-radius: .375rem;
+        background: var(--c4y-bg); color: var(--c4y-ink); border: 1px solid var(--c4y-line);
+    }
+</style>
 <div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center gap-3 mb-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
         <div>
             <h1 class="h3 mb-1">{{ titulo }}</h1>
-            <p class="text-muted mb-0">Informe a descrição, o valor e a data de vencimento.</p>
+            <p class="text-secondary mb-0">Informe a descrição, o valor e a data de vencimento.</p>
         </div>
         <a href="{% url 'listar_contas_pagar' %}" class="btn btn-outline-secondary">Voltar às contas</a>
     </div>
-    <div class="card shadow-sm border-0">
+    <div class="card c4y-form-card shadow-sm">
         <div class="card-body">
             <form method="post">
                 {% csrf_token %}
-                {% for field in form %}
-                <div class="{% if field.name == 'paga' %}form-check mb-3{% else %}mb-3{% endif %}">
-                    {% if field.name == 'paga' %}
-                    {{ field }}
-                    <label for="{{ field.id_for_label }}" class="form-check-label">{{ field.label }}</label>
-                    {% else %}
-                    <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
-                    {{ field }}
-                    {% endif %}
-                    {% if field.errors %}<div class="text-danger small">{{ field.errors }}</div>{% endif %}
+                {% if form.non_field_errors %}<div class="alert alert-danger" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+                <div class="row g-3">
+                    {% for field in form %}
+                    <div class="{% if field.name == 'paga' %}col-12{% else %}col-12 col-md-6{% endif %}">
+                        {% if field.name == 'paga' %}
+                        <div class="form-check">
+                            {{ field }}
+                            <label for="{{ field.id_for_label }}" class="form-check-label">{{ field.label }}</label>
+                        </div>
+                        {% else %}
+                        <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                        {{ field }}
+                        {% endif %}
+                        {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+                        {% for error in field.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                    </div>
+                    {% endfor %}
                 </div>
-                {% endfor %}
-                <button type="submit" class="btn btn-primary">{{ botao }}</button>
+                <button type="submit" class="btn btn-primary mt-4">{{ botao }}</button>
             </form>
         </div>
     </div>

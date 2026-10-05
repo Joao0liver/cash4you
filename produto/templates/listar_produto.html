@@ -12,29 +12,38 @@
     }
     .c4y-card tbody td { color: var(--c4y-ink); border-color: var(--c4y-line); vertical-align: middle; }
     .c4y-card tbody tr:hover { background: rgba(255,255,255,0.03); }
+    .c4y-card tbody tr.c4y-low-stock > * {
+        color: var(--c4y-stock-alert-ink) !important;
+        background-color: var(--c4y-stock-alert-bg) !important;
+        border-color: var(--c4y-stock-alert-border) !important;
+    }
+    [data-bs-theme="dark"] {
+        --c4y-stock-alert-bg: #342b1b;
+        --c4y-stock-alert-ink: #ffe2a3;
+        --c4y-stock-alert-border: #65502a;
+    }
+    [data-bs-theme="light"] {
+        --c4y-stock-alert-bg: #fff6dd;
+        --c4y-stock-alert-ink: #624600;
+        --c4y-stock-alert-border: #e8d49e;
+    }
     .c4y-summary { background: var(--c4y-panel); border: 1px solid var(--c4y-line); color: var(--c4y-ink); }
     .c4y-summary .label { color: var(--c4y-ink-soft); font-size: 0.85rem; }
+    .c4y-actions { display: inline-flex; flex-wrap: wrap; justify-content: flex-end; gap: .4rem; }
+    .c4y-empty { background: var(--c4y-panel); border: 1px dashed var(--c4y-line); color: var(--c4y-ink); }
 </style>
 
 <div class="container-fluid">
-    <!-- Título da página -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
         <div>
             <h1 class="h3 mb-1">Produtos no Estoque</h1>
-            <p class="mb-0" style="color: var(--c4y-ink-soft);">
-                Lista de produtos cadastrados.
-            </p>
+            <p class="mb-0" style="color: var(--c4y-ink-soft);">Consulte estoque, custos e resultado potencial dos produtos.</p>
         </div>
-
-        <a href="{% url 'criar_produto' %}" class="btn btn-primary">
-            + Novo produto
-        </a>
-
+        <a href="{% url 'criar_produto' %}" class="btn btn-primary">+ Novo produto</a>
     </div>
 
     <form method="get" class="row g-2 mb-4" role="search">
-        <div class="col">
+        <div class="col-12 col-md">
             <label for="busca-produto" class="visually-hidden">Buscar produto</label>
             <input
                 type="search"
@@ -45,7 +54,7 @@
                 value="{{ busca }}"
             >
         </div>
-        <div class="col-auto">
+        <div class="col-12 col-md-auto">
             <label for="ordenar-produto" class="visually-hidden">Ordenar produtos</label>
             <select id="ordenar-produto" name="ordenar" class="form-select" onchange="this.form.submit()">
                 <option value="descricao_asc" {% if ordenar == "descricao_asc" %}selected{% endif %}>Descrição: A–Z</option>
@@ -54,14 +63,13 @@
                 <option value="quantidade_desc" {% if ordenar == "quantidade_desc" %}selected{% endif %}>Quantidade: maior–menor</option>
             </select>
         </div>
-        <div class="col-auto">
+        <div class="col-12 col-md-auto">
             {% if busca %}
             <a href="{% url 'listar_produto' %}" class="btn btn-outline-secondary">Limpar</a>
             {% endif %}
         </div>
     </form>
 
-    <!-- Tabela de produtos -->
     {% if produtos %}
     <div class="row g-3 mb-4">
         <div class="col-12 col-md-4">
@@ -95,7 +103,7 @@
         Edite esses produtos para informar esse percentual e incluir seus lucros no total.
     </div>
     {% endif %}
-    <div class="card shadow-sm border-0">
+    <div class="card c4y-card shadow-sm">
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
@@ -117,7 +125,7 @@
 
                     <tbody>
                         {% for produto in produtos %}
-                        <tr{% if produto.quantidade < 5 %} class="table-warning"{% endif %}>
+                        <tr{% if produto.quantidade < 5 %} class="c4y-low-stock"{% endif %}>
                             <td class="text-center">{{ produto.id }}</td>
                             <td><strong>{{ produto.descricao }}</strong></td>
                             <td class="text-center">R$ {{ produto.preco_custo|floatformat:2 }}</td>
@@ -147,9 +155,11 @@
                                 R$ {{ produto.lucro_liquido_estoque|floatformat:2 }}
                                 {% else %}—{% endif %}
                             </td>
-                            <td class="text-end">
+                            <td class="text-end text-nowrap">
+                                <span class="c4y-actions">
                                 <a href="{% url 'editar_produto' produto.pk %}" class="btn btn-sm btn-outline-primary">Editar</a>
                                 <a href="{% url 'excluir_produto' produto.pk %}" class="btn btn-sm btn-outline-danger">Excluir</a>
+                                </span>
                             </td>
                         </tr>
                         {% endfor %}
@@ -159,7 +169,7 @@
         </div>
     </div>
     {% else %}
-    <div class="alert alert-warning" role="alert">
+    <div class="alert c4y-empty p-4 mb-0" role="status">
         {% if busca %}
         Nenhum produto encontrado para "{{ busca }}".
         {% else %}

@@ -3,14 +3,23 @@
 {% block title %}Excluir conta a pagar | Cash4You{% endblock %}
 
 {% block content %}
+<style>
+    .c4y-confirm-card { max-width: 680px; background: var(--c4y-panel); border: 1px solid var(--c4y-line) !important; }
+</style>
 <div class="container-fluid">
-    <div class="card shadow-sm border-0">
+    <div class="mb-4">
+        <h1 class="h3 mb-1">Excluir conta a pagar</h1>
+        <p class="text-secondary mb-0">Revise os dados antes de confirmar a exclusão.</p>
+    </div>
+    <div class="card c4y-confirm-card shadow-sm">
         <div class="card-body">
-            <h1 class="h4">Excluir conta a pagar</h1>
-            <p>Deseja excluir a conta <strong>{{ conta.descricao }}</strong> de R$ {{ conta.valor|floatformat:2 }}?</p>
-            <form method="post">
+            <div class="alert alert-danger" role="alert">
+                <h2 class="h5 alert-heading">Esta ação não pode ser desfeita</h2>
+                <p class="mb-0">Você está prestes a excluir <strong>{{ conta.descricao }}</strong>, no valor de R$ {{ conta.valor|floatformat:2 }}.</p>
+            </div>
+            <form method="post" class="d-flex flex-wrap gap-2">
                 {% csrf_token %}
-                <button type="submit" class="btn btn-danger">Excluir conta</button>
+                <button type="submit" class="btn btn-danger">Confirmar exclusão</button>
                 <a href="{% url 'listar_contas_pagar' %}" class="btn btn-outline-secondary">Cancelar</a>
             </form>
         </div>

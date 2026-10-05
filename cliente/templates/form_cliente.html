@@ -6,6 +6,7 @@
 
 <style>
     .c4y-card { background: var(--c4y-panel); border: 1px solid var(--c4y-line) !important; }
+    .c4y-form-wrap { max-width: 860px; }
     .c4y-card .form-label { color: var(--c4y-ink-soft); font-size: 0.85rem; }
     .c4y-card input, .c4y-card select, .c4y-card textarea {
         background: var(--c4y-bg); color: var(--c4y-ink); border: 1px solid var(--c4y-line);
@@ -18,31 +19,41 @@
 </style>
 
 <div class="container-fluid">
-    <h1 class="h3 mb-4">{{ titulo }}</h1>
+    <div class="mb-4">
+        <h1 class="h3 mb-1">{{ titulo }}</h1>
+        <p class="text-secondary mb-0">Preencha os dados para manter o cadastro do cliente atualizado.</p>
+    </div>
 
-    <div class="card c4y-card shadow-sm">
+    <div class="card c4y-card c4y-form-wrap shadow-sm">
         <div class="card-body">
             <form method="post">
                 {% csrf_token %}
-                {{ form.non_field_errors }}
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger" role="alert">{{ form.non_field_errors }}</div>
+                {% endif %}
 
-                {% for field in form %}
-                <div class="mb-3">
-                    <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
-                    {{ field }}
-                    {% if field.name == "cpf" %}
-                    <div id="cpf-feedback" class="form-text" aria-live="polite">
-                        Digite os 11 números do CPF.
+                <div class="row g-3">
+                    {% for field in form %}
+                    <div class="col-12 col-md-6">
+                        <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.name == "cpf" %}
+                        <div id="cpf-feedback" class="form-text" aria-live="polite">
+                            Digite os 11 números do CPF.
+                        </div>
+                        {% endif %}
+                        {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+                        {% for error in field.errors %}
+                        <div class="invalid-feedback d-block">{{ error }}</div>
+                        {% endfor %}
                     </div>
-                    {% endif %}
-                    {% for error in field.errors %}
-                    <div class="text-danger small">{{ error }}</div>
                     {% endfor %}
                 </div>
-                {% endfor %}
 
-                <button type="submit" class="btn btn-primary">{{ botao }}</button>
-                <a href="{% url 'listar_cliente' %}" class="btn btn-outline-secondary">Cancelar</a>
+                <div class="d-flex flex-wrap gap-2 mt-4">
+                    <button type="submit" class="btn btn-primary">{{ botao }}</button>
+                    <a href="{% url 'listar_cliente' %}" class="btn btn-outline-secondary">Cancelar</a>
+                </div>
             </form>
         </div>
     </div>

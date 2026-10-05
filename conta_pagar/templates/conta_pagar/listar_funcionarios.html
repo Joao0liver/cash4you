@@ -3,11 +3,17 @@
 {% block title %}Funcionários | Cash4You{% endblock %}
 
 {% block content %}
+<style>
+    .c4y-table-card { background: var(--c4y-panel); border: 1px solid var(--c4y-line) !important; }
+    .c4y-table-card thead th { color: var(--c4y-ink-soft); border-bottom-color: var(--c4y-line); font-size: .8rem; }
+    .c4y-table-card tbody td { color: var(--c4y-ink); border-color: var(--c4y-line); }
+    .c4y-empty { color: var(--c4y-ink-soft) !important; }
+</style>
 <div class="container-fluid">
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
         <div>
             <h1 class="h3 mb-1">Funcionários</h1>
-            <p class="text-muted mb-0">Cadastre e consulte os funcionários e suas funções na empresa.</p>
+            <p class="text-secondary mb-0">Cadastre e consulte os funcionários e suas funções na empresa.</p>
         </div>
         <a href="{% url 'criar_funcionario' %}" class="btn btn-primary">Adicionar funcionário</a>
     </div>
@@ -18,7 +24,7 @@
     {% endfor %}
     {% endif %}
 
-    <div class="card shadow-sm border-0">
+    <div class="card c4y-table-card shadow-sm">
         <div class="table-responsive">
             <table class="table align-middle mb-0">
                 <thead>
@@ -34,7 +40,7 @@
                         <td class="text-center">{{ funcionario.funcao }}</td>
                     </tr>
                     {% empty %}
-                    <tr><td colspan="2" class="text-center text-muted py-4">Nenhum funcionário cadastrado.</td></tr>
+                    <tr><td colspan="2" class="text-center c4y-empty py-5">Nenhum funcionário cadastrado. Use <strong>Adicionar funcionário</strong> para incluir o primeiro.</td></tr>
                     {% endfor %}
                 </tbody>
             </table>
