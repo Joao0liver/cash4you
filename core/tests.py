@@ -189,6 +189,8 @@ class DashboardTests(TestCase):
         self.assertEqual(len(response.context["semanas_calendario"][0]), 1)
         self.assertContains(response, "Sexta-feira, 02/10/2026")
         self.assertContains(response, '<option value="dia" selected>')
+        self.assertContains(response, 'title="Exibir o mês anterior no calendário"')
+        self.assertContains(response, 'title="Exibir o próximo mês no calendário"')
 
     @patch("core.views.timezone.localdate", return_value=date(2026, 10, 2))
     def test_home_calendar_can_show_a_week(self, _localdate):
@@ -206,6 +208,19 @@ class DashboardTests(TestCase):
         self.assertEqual(response.context["data_proxima"], "2026-10-05")
         self.assertContains(response, "Seg")
         self.assertContains(response, "Dom")
+
+    @patch("core.views.timezone.localdate", return_value=date(2026, 10, 2))
+    def test_home_visualization_controls_preserve_each_others_selection(self, _localdate):
+        response = self.client.get(
+            reverse("home"),
+            {"visao": "mes", "data": "2026-10-15", "periodo": "meses"},
+        )
+        self.assertEqual(response.context["visao_calendario"], "mes")
+        self.assertEqual(response.context["data_referencia"], date(2026, 10, 15))
+        self.assertEqual(response.context["periodo"], "meses")
+        self.assertContains(response, '<input type="hidden" name="periodo" value="meses">')
+        self.assertContains(response, '<input type="hidden" name="visao" value="mes">')
+        self.assertContains(response, '<input type="hidden" name="data" value="2026-10-15">')
 
     @patch("core.views.timezone.localdate", return_value=date(2026, 10, 2))
     def test_home_calendar_can_show_a_month(self, _localdate):

@@ -20,14 +20,15 @@
                     <p class="text-muted small mb-0">Agenda e contas a pagar.</p>
                 </div>
                 <div class="d-flex flex-wrap gap-2">
-                    <a href="?visao={{ visao_calendario }}&data={{ data_anterior }}" class="btn btn-outline-secondary btn-sm" aria-label="Período anterior">‹</a>
+                    <a href="?visao={{ visao_calendario }}&data={{ data_anterior }}&periodo={{ periodo }}" class="btn btn-outline-secondary btn-sm" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Exibir o mês anterior no calendário" aria-label="Período anterior">‹</a>
                     <a href="{% url 'criar_agendamento' %}" class="btn btn-outline-primary btn-sm">Novo agendamento</a>
                     <a href="{% url 'criar_conta_pagar' %}" class="btn btn-outline-primary btn-sm">Nova conta</a>
-                    <a href="?visao={{ visao_calendario }}&data={{ data_proxima }}" class="btn btn-outline-secondary btn-sm" aria-label="Próximo período">›</a>
+                    <a href="?visao={{ visao_calendario }}&data={{ data_proxima }}&periodo={{ periodo }}" class="btn btn-outline-secondary btn-sm" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Exibir o próximo mês no calendário" aria-label="Próximo período">›</a>
                 </div>
             </div>
 
             <form method="get" class="row g-2 align-items-end mb-3">
+                <input type="hidden" name="periodo" value="{{ periodo }}">
                 <div class="col-auto">
                     <label for="visao-calendario" class="form-label mb-1">Exibição</label>
                     <select id="visao-calendario" name="visao" class="form-select form-select-sm">
@@ -44,7 +45,7 @@
                     <button type="submit" class="btn btn-primary btn-sm">Exibir</button>
                 </div>
                 <div class="col-auto">
-                    <a href="{% url 'home' %}" class="btn btn-outline-secondary btn-sm">Hoje</a>
+                    <a href="{% url 'home' %}?periodo={{ periodo }}" class="btn btn-outline-secondary btn-sm">Hoje</a>
                 </div>
             </form>
 
@@ -249,6 +250,8 @@
                             <p class="text-muted small mb-0">Total de vendas concluídas em cada período.</p>
                         </div>
                         <form method="get">
+                            <input type="hidden" name="visao" value="{{ visao_calendario }}">
+                            <input type="hidden" name="data" value="{{ data_referencia|date:'Y-m-d' }}">
                             <label for="periodo" class="visually-hidden">Período do comparativo</label>
                             <select id="periodo" name="periodo" class="form-select" onchange="this.form.submit()">
                                 <option value="dias" {% if periodo == "dias" %}selected{% endif %}>Últimos 3 dias</option>
