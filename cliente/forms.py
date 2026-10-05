@@ -44,6 +44,20 @@ class ClienteForm(forms.ModelForm):
                 'Informe um CPF válido.'
             )
 
+        # Cálculo do primeiro dígito verificador
+        soma = sum(
+            int(cpf[i]) * (10 - i)
+            for i in range(9)
+        )
+
+        resto = soma % 11
+        primeiro_digito = 0 if resto < 2 else 11 - resto
+
+        if primeiro_digito != int(cpf[9]):
+            raise forms.ValidationError(
+                'Informe um CPF válido.'
+            )
+
         # Cálculo do segundo dígito verificador
         soma = sum(
             int(cpf[i]) * (11 - i)
