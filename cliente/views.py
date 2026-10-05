@@ -35,3 +35,12 @@ def editar_cliente(request, id):
         form = ClienteForm(instance=cliente)
 
     return render(request, 'form_cliente.html', {'form' : form, 'titulo' : 'Editar Cliente'})
+
+def excluir_cliente(request, id):
+    cliente = get_object_or_404(Cliente, id=id)
+
+    if request.method == 'POST':
+        cliente.delete()
+        return redirect('listar_cliente')
+
+    return render(request, 'confirmar_exclusao.html', {'cliente' : cliente})

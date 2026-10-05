@@ -44,7 +44,7 @@
                             <td>{{ cliente.telefone }}</td>
                             <td class="text-end">
                                 <a href="{% url 'editar_cliente' cliente.id %}" class="btn btn-sm btn-outline-primary">Editar</a>
-                                <a href="#" class="btn btn-sm btn-outline-secondary">Excluir</a>
+                                <a href="{% url 'excluir_cliente' cliente.id %}" class="btn btn-sm btn-outline-secondary">Excluir</a>
                             </td>
                         </tr>
                         {% endfor %}
