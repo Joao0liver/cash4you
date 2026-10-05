@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1120" viewBox="0 0 1600 1120" role="img" aria-labelledby="titulo descricao">
+  <title id="titulo">Funcionalidades e integrações do Cash4You</title>
+  <desc id="descricao">Mapa da Home, cadastros, vendas, estoque, pagamentos, agenda, teto de gastos, relatórios, precificação e dados do estabelecimento.</desc>
+  <defs>
+    <style>
+      .bg{fill:#f4f7fb}.title{font:700 30px Arial,sans-serif;fill:#172b4d}.sub{font:15px Arial,sans-serif;fill:#51627a}
+      .card{fill:#fff;stroke:#96a9c0;stroke-width:2;rx:14}.hub{fill:#e8f0ff;stroke:#155eef;stroke-width:3;rx:18}
+      .blue{fill:#155eef}.teal{fill:#087e8b}.purple{fill:#6741d9}.orange{fill:#bd541e}.green{fill:#248344}
+      .head{font:700 18px Arial,sans-serif;fill:#fff}.text{font:14px Arial,sans-serif;fill:#24364b}.small{font:13px Arial,sans-serif;fill:#40536d}
+      .line{fill:none;stroke:#71839a;stroke-width:2.2;marker-end:url(#arr)}.dashed{stroke-dasharray:7 6}.legend{font:13px Arial,sans-serif;fill:#51627a}
+    </style>
+    <marker id="arr" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#71839a"/></marker>
+  </defs>
+  <rect class="bg" width="1600" height="1120"/>
+  <text x="55" y="58" class="title">Funcionalidades e integrações do Cash4You</text>
+  <text x="55" y="88" class="sub">Visão dos principais caminhos do usuário e dos dados compartilhados entre módulos</text>
+
+  <!-- connections behind cards -->
+  <path class="line" d="M800 160 L800 205"/>
+  <path class="line" d="M245 340 C245 385 420 380 510 430"/>
+  <path class="line" d="M545 340 C545 390 650 385 690 430"/>
+  <path class="line" d="M845 340 L845 430"/>
+  <path class="line" d="M1145 340 C1145 385 1005 390 945 430"/>
+  <path class="line" d="M705 560 C650 605 420 590 300 650"/>
+  <path class="line" d="M800 560 L800 650"/>
+  <path class="line" d="M895 560 C950 605 1170 590 1300 650"/>
+  <path class="line" d="M300 780 C380 850 575 830 665 900"/>
+  <path class="line" d="M800 780 L800 900"/>
+  <path class="line" d="M1300 780 C1220 850 1025 830 935 900"/>
+  <path class="line dashed" d="M440 960 C480 1020 610 1030 700 1040"/>
+  <path class="line dashed" d="M800 960 L800 1040"/>
+  <path class="line dashed" d="M1160 960 C1120 1020 990 1030 900 1040"/>
+  <path class="line dashed" d="M1255 280 C1450 335 1465 520 1405 650"/>
+
+  <!-- Home -->
+  <g transform="translate(610 105)"><rect class="hub" width="380" height="100"/><text x="190" y="40" text-anchor="middle" style="font:700 23px Arial,sans-serif;fill:#1547a5">HOME / DASHBOARD</text><text x="190" y="70" text-anchor="middle" class="text">Agenda · indicadores · atalhos · gráficos</text></g>
+
+  <!-- source/master modules -->
+  <g transform="translate(90 230)"><rect class="card" width="310" height="110"/><path class="blue" d="M14 0h282a14 14 0 0 1 14 14v32H0V14A14 14 0 0 1 14 0"/><text x="18" y="30" class="head">Cadastros</text><text x="18" y="69" class="text">Clientes · cadastro e busca</text><text x="18" y="92" class="small">Usados no atendimento e na agenda</text></g>
+  <g transform="translate(425 230)"><rect class="card" width="260" height="110"/><path class="teal" d="M14 0h232a14 14 0 0 1 14 14v32H0V14A14 14 0 0 1 14 0"/><text x="18" y="30" class="head">Produtos</text><text x="18" y="69" class="text">Preço · custo · estoque</text><text x="18" y="92" class="small">Estoque diminui nas vendas</text></g>
+  <g transform="translate(715 230)"><rect class="card" width="260" height="110"/><path class="teal" d="M14 0h232a14 14 0 0 1 14 14v32H0V14A14 14 0 0 1 14 0"/><text x="18" y="30" class="head">Serviços</text><text x="18" y="69" class="text">Preço · custo · percentuais</text><text x="18" y="92" class="small">Disponíveis no caixa e na agenda</text></g>
+  <g transform="translate(1005 230)"><rect class="card" width="280" height="110"/><path class="purple" d="M14 0h252a14 14 0 0 1 14 14v32H0V14A14 14 0 0 1 14 0"/><text x="18" y="30" class="head">Configurações</text><text x="18" y="69" class="text">Estabelecimento · teto de gastos</text><text x="18" y="92" class="small">Identificação usada nos comprovantes</text></g>
+
+  <!-- operational modules -->
+  <g transform="translate(90 430)"><rect class="card" width="420" height="130"/><path class="purple" d="M14 0h392a14 14 0 0 1 14 14v34H0V14A14 14 0 0 1 14 0"/><text x="18" y="30" class="head">Agenda</text><text x="18" y="72" class="text">Agendamentos · horários de 30 minutos</text><text x="18" y="98" class="text">Serviço e funcionário/responsável opcionais</text><text x="18" y="119" class="small">Aparece na Home por dia, semana ou mês</text></g>
+  <g transform="translate(590 430)"><rect class="card" width="420" height="130"/><path class="blue" d="M14 0h392a14 14 0 0 1 14 14v34H0V14A14 14 0 0 1 14 0"/><text x="18" y="30" class="head">Frente de caixa</text><text x="18" y="72" class="text">Carrinho de produtos e serviços · quantidades</text><text x="18" y="98" class="text">Valida disponibilidade de estoque e pagamento</text><text x="18" y="119" class="small">Permite pagamentos múltiplos e calcula troco</text></g>
+  <g transform="translate(1090 430)"><rect class="card" width="420" height="130"/><path class="orange" d="M14 0h392a14 14 0 0 1 14 14v34H0V14A14 14 0 0 1 14 0"/><text x="18" y="30" class="head">Gastos a pagar</text><text x="18" y="72" class="text">Novo gasto · vencimento · status pago/pendente</text><text x="18" y="98" class="text">Cadastro, edição, quitação, reabertura e exclusão</text><text x="18" y="119" class="small">Home mostra pendências e vencimentos</text></g>
+
+  <!-- output/data modules -->
+  <g transform="translate(90 650)"><rect class="card" width="420" height="130"/><path class="teal" d="M14 0h392a14 14 0 0 1 14 14v34H0V14A14 14 0 0 1 14 0"/><text x="18" y="30" class="head">Precificação</text><text x="18" y="72" class="text">Calcula preço sugerido a partir de custo,</text><text x="18" y="98" class="text">despesas variáveis e lucro desejado</text><text x="18" y="119" class="small">Aplica-se ao planejamento de produto/serviço</text></g>
+  <g transform="translate(590 650)"><rect class="card" width="420" height="130"/><path class="blue" d="M14 0h392a14 14 0 0 1 14 14v34H0V14A14 14 0 0 1 14 0"/><text x="18" y="30" class="head">Venda e comprovante</text><text x="18" y="72" class="text">Grava venda, itens e formas de pagamento</text><text x="18" y="98" class="text">Atualiza estoque de produtos de forma transacional</text><text x="18" y="119" class="small">Detalhe da venda pode gerar link de comprovante WhatsApp</text></g>
+  <g transform="translate(1090 650)"><rect class="card" width="420" height="130"/><path class="orange" d="M14 0h392a14 14 0 0 1 14 14v34H0V14A14 14 0 0 1 14 0"/><text x="18" y="30" class="head">Teto e análise de gastos</text><text x="18" y="72" class="text">Compara gastos pendentes ao teto configurado</text><text x="18" y="98" class="text">Bloqueia operações que ultrapassariam o teto</text><text x="18" y="119" class="small">Exibe percentual por gasto e gráfico de colunas</text></g>
+
+  <!-- reporting and supporting -->
+  <g transform="translate(250 900)"><rect class="card" width="380" height="100"/><path class="green" d="M14 0h352a14 14 0 0 1 14 14v32H0V14A14 14 0 0 1 14 0"/><text x="18" y="30" class="head">Relatório de estoque</text><text x="18" y="69" class="text">Consulta quantidades, faltas e baixo estoque</text><text x="18" y="90" class="small">Dados do cadastro de produtos</text></g>
+  <g transform="translate(610 900)"><rect class="card" width="380" height="100"/><path class="green" d="M14 0h352a14 14 0 0 1 14 14v32H0V14A14 14 0 0 1 14 0"/><text x="18" y="30" class="head">Relatório de caixa</text><text x="18" y="69" class="text">Filtra vendas por datas e pagamentos</text><text x="18" y="90" class="small">Resume itens, valores e formas de pagamento</text></g>
+  <g transform="translate(970 900)"><rect class="card" width="380" height="100"/><path class="green" d="M14 0h352a14 14 0 0 1 14 14v32H0V14A14 14 0 0 1 14 0"/><text x="18" y="30" class="head">Home / indicadores</text><text x="18" y="69" class="text">Vendas, estoque, agenda e gastos pendentes</text><text x="18" y="90" class="small">Gráficos de produtos, serviços e pagamentos</text></g>
+
+  <rect x="120" y="1040" width="1360" height="48" rx="12" fill="#e9edf4" stroke="#c4cfdd"/>
+  <text x="800" y="1070" text-anchor="middle" class="small">Setas contínuas indicam fluxo de dados ou dependência; setas tracejadas indicam consultas consolidadas exibidas em relatórios e indicadores.</text>
+</svg>

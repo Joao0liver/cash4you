@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1680" height="1120" viewBox="0 0 1680 1120" role="img" aria-labelledby="titulo descricao">
+  <title id="titulo">Modelo relacional do Cash4You</title>
+  <desc id="descricao">Diagrama das entidades de vendas, catálogo, agenda, gastos a pagar e configurações do estabelecimento e seus relacionamentos.</desc>
+  <defs>
+    <style>
+      .bg{fill:#f4f7fb}.title{font:700 30px Arial,sans-serif;fill:#172b4d}.subtitle{font:15px Arial,sans-serif;fill:#51627a}
+      .box{fill:#fff;stroke:#8da4c2;stroke-width:2;rx:12}.head{fill:#155eef}.head2{fill:#087e8b}.head3{fill:#6741d9}.head4{fill:#c05621}
+      .tbl{font:700 18px Arial,sans-serif;fill:#fff}.field{font:14px Consolas,monospace;fill:#24364b}.key{font-weight:bold;fill:#155eef}
+      .rel{stroke:#60758f;stroke-width:2.3;fill:none}.dash{stroke-dasharray:7 6}.card{font:700 13px Arial,sans-serif;fill:#344966}.note{font:13px Arial,sans-serif;fill:#40536d}
+    </style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#60758f"/></marker>
+  </defs>
+  <rect class="bg" width="1680" height="1120"/>
+  <text x="56" y="58" class="title" style="font-size:30px">Modelo relacional do Cash4You</text>
+  <text x="56" y="88" class="subtitle">Entidades do domínio e chaves estrangeiras definidas nos modelos Django</text>
+
+  <!-- relações atrás das tabelas -->
+  <path class="rel" d="M375 550 C420 550 420 780 465 780" marker-end="url(#arrow)"/><text x="388" y="670" class="card">1 : N</text>
+  <path class="rel" d="M780 375 L820 395 L820 680 L800 690" marker-end="url(#arrow)"/><text x="824" y="675" class="card">1 : N</text>
+  <path class="rel" d="M665 650 L665 690" marker-end="url(#arrow)"/><text x="675" y="675" class="card">1 : N</text>
+  <path class="rel" d="M800 420 C825 420 820 300 845 300" marker-end="url(#arrow)"/><text x="812" y="380" class="card">1 : N</text>
+  <path class="rel" d="M1205 760 L1205 850" marker-end="url(#arrow)"/><text x="1215" y="812" class="card">1 : N</text>
+  <path class="rel" d="M1325 940 L1370 940" marker-end="url(#arrow)"/><text x="1330" y="928" class="card">1 : N</text>
+  <path class="rel dash" d="M800 350 C860 350 1035 350 1035 800 L1035 1084 L1370 1084" marker-end="url(#arrow)"/><text x="1050" y="1070" class="card">M : N*</text>
+
+  <!-- Cliente -->
+  <g transform="translate(70 170)"><rect class="box" width="305" height="210"/><path class="head" d="M12 0h281a12 12 0 0 1 12 12v34H0V12A12 12 0 0 1 12 0"/><text x="18" y="30" class="tbl">cliente_cliente</text>
+    <text x="18" y="76" class="field"><tspan class="key">PK</tspan> id : BigAutoField</text><text x="18" y="104" class="field">nome : varchar(100)</text><text x="18" y="132" class="field">cpf : varchar(11)</text><text x="18" y="160" class="field">telefone : varchar(11)</text><text x="18" y="190" class="note">CPF validado na aplicação</text></g>
+  <!-- Produto -->
+  <g transform="translate(70 440)"><rect class="box" width="305" height="235"/><path class="head2" d="M12 0h281a12 12 0 0 1 12 12v34H0V12A12 12 0 0 1 12 0"/><text x="18" y="30" class="tbl">produto_produto</text>
+    <text x="18" y="76" class="field"><tspan class="key">PK</tspan> id : BigAutoField</text><text x="18" y="104" class="field">descricao : varchar(100)</text><text x="18" y="132" class="field">preco_custo, preco_venda</text><text x="18" y="160" class="field">quantidade : integer</text><text x="18" y="188" class="field">despesas_variaveis_percentual</text><text x="18" y="216" class="field">lucro_desejado_percentual</text></g>
+  <!-- Serviço -->
+  <g transform="translate(465 170)"><rect class="box" width="335" height="205"/><path class="head2" d="M12 0h311a12 12 0 0 1 12 12v34H0V12A12 12 0 0 1 12 0"/><text x="18" y="30" class="tbl">servico_servico</text>
+    <text x="18" y="76" class="field"><tspan class="key">PK</tspan> id : BigAutoField</text><text x="18" y="104" class="field">descricao : varchar(100)</text><text x="18" y="132" class="field">custo_direto : decimal(10,2), opcional</text><text x="18" y="160" class="field">preco_venda : decimal(10,2)</text><text x="18" y="188" class="field">percentuais de despesa e lucro</text></g>
+  <!-- Venda -->
+  <g transform="translate(465 400)"><rect class="box" width="335" height="250"/><path class="head" d="M12 0h311a12 12 0 0 1 12 12v34H0V12A12 12 0 0 1 12 0"/><text x="18" y="30" class="tbl">venda_venda</text>
+    <text x="18" y="76" class="field"><tspan class="key">PK</tspan> id : BigAutoField</text><text x="18" y="104" class="field">criada_em, forma_pagamento</text><text x="18" y="132" class="field">nome_cliente, telefone_whatsapp</text><text x="18" y="160" class="field">total, valor_recebido, troco</text><text x="18" y="188" class="field">nome/endereço/horário do estabelecimento</text><text x="18" y="220" class="note">Dados de recibo são snapshots</text></g>
+  <!-- Item -->
+  <g transform="translate(465 690)"><rect class="box" width="335" height="245"/><path class="head" d="M12 0h311a12 12 0 0 1 12 12v34H0V12A12 12 0 0 1 12 0"/><text x="18" y="30" class="tbl">venda_itemvenda</text>
+    <text x="18" y="76" class="field"><tspan class="key">PK</tspan> id : BigAutoField</text><text x="18" y="104" class="field"><tspan class="key">FK</tspan> venda_id → venda_venda</text><text x="18" y="132" class="field"><tspan class="key">FK</tspan> produto_id → produto (opcional)</text><text x="18" y="160" class="field"><tspan class="key">FK</tspan> servico_id → servico (opcional)</text><text x="18" y="188" class="field">tipo, descricao, preco_unitario</text><text x="18" y="216" class="field">quantidade, subtotal</text></g>
+  <!-- Pagamento -->
+  <g transform="translate(845 170)"><rect class="box" width="240" height="175"/><path class="head" d="M12 0h216a12 12 0 0 1 12 12v34H0V12A12 12 0 0 1 12 0"/><text x="15" y="30" class="tbl">venda_pagamentovenda</text>
+    <text x="16" y="76" class="field"><tspan class="key">PK</tspan> id</text><text x="16" y="104" class="field"><tspan class="key">FK</tspan> venda_id</text><text x="16" y="132" class="field">forma_pagamento, valor</text><text x="16" y="158" class="field">troco</text></g>
+  <!-- Dados estabelecimento -->
+  <g transform="translate(1085 170)"><rect class="box" width="480" height="205"/><path class="head3" d="M12 0h456a12 12 0 0 1 12 12v34H0V12A12 12 0 0 1 12 0"/><text x="18" y="30" class="tbl">venda_dadosestabelecimento</text>
+    <text x="18" y="76" class="field"><tspan class="key">PK</tspan> id : BigAutoField (pk=1 usado por convenção)</text><text x="18" y="104" class="field">nome, horario_funcionamento, endereco</text><text x="18" y="132" class="field">limite_gastos : decimal(12,2), opcional</text><text x="18" y="170" class="note">Configuração sem FK para as vendas</text><text x="18" y="190" class="note">Vendas guardam cópia dos dados de recibo</text></g>
+  <!-- gasto -->
+  <g transform="translate(1085 420)"><rect class="box" width="240" height="180"/><path class="head4" d="M12 0h216a12 12 0 0 1 12 12v34H0V12A12 12 0 0 1 12 0"/><text x="18" y="30" class="tbl">conta_pagar_contapagar</text>
+    <text x="16" y="76" class="field"><tspan class="key">PK</tspan> id</text><text x="16" y="104" class="field">descricao, valor</text><text x="16" y="132" class="field">vencimento, paga</text><text x="16" y="160" class="field">criada_em</text></g>
+  <!-- Funcionário -->
+  <g transform="translate(1085 630)"><rect class="box" width="240" height="130"/><path class="head4" d="M12 0h216a12 12 0 0 1 12 12v34H0V12A12 12 0 0 1 12 0"/><text x="18" y="30" class="tbl">conta_pagar_funcionario</text><text x="16" y="76" class="field"><tspan class="key">PK</tspan> id</text><text x="16" y="104" class="field">nome, funcao</text></g>
+  <!-- Agendamento -->
+  <g transform="translate(1085 850)"><rect class="box" width="240" height="210"/><path class="head3" d="M12 0h216a12 12 0 0 1 12 12v34H0V12A12 12 0 0 1 12 0"/><text x="18" y="30" class="tbl">agenda_agendamento</text><text x="16" y="76" class="field"><tspan class="key">PK</tspan> id</text><text x="16" y="104" class="field"><tspan class="key">FK</tspan> funcionario_id (opcional)</text><text x="16" y="132" class="field">data, nome, telefone, email</text><text x="16" y="160" class="field">descricao_agendar_para</text><text x="16" y="188" class="field">criado_em</text></g>
+  <!-- Horario -->
+  <g transform="translate(1370 850)"><rect class="box" width="250" height="180"/><path class="head3" d="M12 0h226a12 12 0 0 1 12 12v34H0V12A12 12 0 0 1 12 0"/><text x="18" y="30" class="tbl">agenda_horarioagendado</text><text x="16" y="76" class="field"><tspan class="key">PK</tspan> id</text><text x="16" y="104" class="field"><tspan class="key">FK</tspan> agendamento_id</text><text x="16" y="132" class="field">data, inicio, fim</text><text x="16" y="160" class="field">agenda_key</text></g>
+  <!-- M2M join -->
+  <g transform="translate(1370 1060)"><rect class="box" width="250" height="48"/><text x="12" y="29" class="field">agenda_agendamento_servicos (M:N)</text></g>
+
+  <text x="70" y="1015" class="note">PK = chave primária · FK = chave estrangeira · 1:N = um para muitos · N:M = muitos para muitos</text>
+  <text x="70" y="1045" class="note">* A relação Agendamento–Serviço é muitos-para-muitos e usa tabela intermediária automática do Django.</text>
+  <text x="70" y="1075" class="note">Cliente não possui FK em Venda ou Agendamento: nesses fluxos os dados são registrados diretamente.</text>
+</svg>
