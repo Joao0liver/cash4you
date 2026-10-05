@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from .models import Produto, Servico
 from .forms import ProdutoForm
 
+# Views de Produto
 def listar_produto(request):
     produtos = Produto.objects.all()
     return render(request, 'catalogo/produto/listar_produto.html', {'produtos' : produtos})
@@ -44,6 +45,7 @@ def excluir_produto(request, id):
 
     return render(request, 'catalogo/produto/confirmar_exclusao.html', {'produto' : produto})
 
+# Views de Serviço
 def servico(request):
     servicos = Servico.objects.all()
     return render(request, 'catalogo/servico/listar_servico.html', {'servicos' : servicos})

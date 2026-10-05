@@ -31,3 +31,58 @@ class ProdutoForm(forms.ModelForm):
                 'maxlength': '10'
             }),
         }
+
+    def clean_descricao(self):
+        descricao = self.cleaned_data['descricao'].strip()
+
+        if not descricao:
+            raise forms.ValidationError(
+                'O nome do produto é obrigatório.'
+            )
+        
+        return descricao
+
+    def clean_preco_venda(self):
+        preco_venda = self.cleaned_data['preco_venda']
+
+        if preco_venda <= 0:
+            raise forms.ValidationError(
+                'O preço de venda deve ser maior que 0.'
+            )
+
+        return preco_venda
+
+    def clean_preco_custo(self):
+        preco_custo = self.cleaned_data['preco_custo']
+
+        if preco_custo <= 0:
+            raise forms.ValidationError(
+                'O preço de custo deve ser maior que 0.'
+            )
+
+        return preco_custo
+
+    def clean_quantidade(self):
+        quantidade = self.cleaned_data['quantidade']
+
+        if quantidade < 0:
+            raise forms.ValidationError(
+                'A quantidade não pode ser negativa.'
+            )
+
+        return quantidade
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        preco_venda = cleaned_data.get('preco_venda')
+        preco_custo = cleaned_data.get('preco_custo')
+
+        if preco_venda is not None and preco_custo is not None:
+
+            if preco_venda < preco_custo:
+                raise forms.ValidationError(
+                    'O preço de venda não pode ser menor que o preço de custo.'
+                )
+
+        return cleaned_data
