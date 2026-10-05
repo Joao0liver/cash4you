@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from .models import Cliente
 from .forms import ClienteForm
 
@@ -19,4 +19,19 @@ def cadastrar_cliente(request):
     else:
         form = ClienteForm()
 
-    return render(request, 'cadastrar_cliente.html', {'form' : form})
+    return render(request, 'form_cliente.html', {'form' : form, 'titulo' : 'Cadastrar Cliente'})
+
+def editar_cliente(request, id):
+    cliente = get_object_or_404(Cliente, id=id)
+
+    if request.method == 'POST':
+        form = ClienteForm(request.POST, instance=cliente)
+
+        if form.is_valid():
+            form.save()
+            return redirect('listar_cliente')
+    
+    else:
+        form = ClienteForm(instance=cliente)
+
+    return render(request, 'form_cliente.html', {'form' : form, 'titulo' : 'Editar Cliente'})
