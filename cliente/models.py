@@ -8,3 +8,6 @@ class Cliente(models.Model):
 
     def __str__(self):
         return self.nome
+
+    def cpf_mascarado(self):
+        return f'***.***.{self.cpf[6:9]}-{self.cpf[9:]}'
