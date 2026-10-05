@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+    <h1>{{ titulo|default:"Cadastrar Serviço" }}</h1>
+    <p>Preencha os dados do serviço.</p>
+
+    <form method="POST">
+        {% csrf_token %}
+        
+        <div class="mb-3">
+            <label for="{{ form.descricao.id_for_label }}" class="form-label">
+                Nome do Serviço
+            </label>
+
+            {{ form.descricao }}
+
+            {% if form.descricao.errors %}
+                <div class="text-danger mt-1">
+                    {{ form.descricao.errors }}
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="mb-3">
+            <label for="{{ form.preco_venda.id_for_label }}" class="form-label">
+                Preço de Venda
+            </label>
+
+            {{ form.preco_venda }}
+
+            {% if form.preco_venda.errors %}
+                <div class="text-danger mt-1">
+                    {{ form.preco_venda.errors }}
+                </div>
+            {% endif %}
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+            Cadastrar
+        </button>
+
+        <a href="{% url 'listar_servico' %}" class="btn btn-secondary">
+            Cancelar
+        </a>
+    </form>
+
+</div>
+
+{% endblock %}

@@ -11,7 +11,7 @@ class Item(models.Model):
 class Produto(Item):
 
     preco_custo = models.DecimalField(max_digits=10, decimal_places=2)
-    quantidade = models.IntegerField()
+    quantidade = models.PositiveIntegerField()
 
 class Servico(Item):
     pass

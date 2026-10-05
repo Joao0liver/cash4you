@@ -13,7 +13,7 @@
             </p>
         </div>
 
-        <a href="#" class="btn btn-primary">
+        <a href="{% url 'cadastrar_produto' %}" class="btn btn-primary">
             + Novo produto
         </a>
 
@@ -29,8 +29,8 @@
                         <tr>
                             <th scope="col">Código</th>
                             <th scope="col">Descrição</th>
-                            <th scope="col">Preço Custo</th>
                             <th scope="col">Preço Venda</th>
+                            <th scope="col">Preço Custo</th>
                             <th scope="col">Quantidade</th>
                             <th scope="col" class="text-end">Ações</th>
                         </tr>
@@ -41,12 +41,12 @@
                         <tr>
                             <td>{{ produto.id }}</td>
                             <td><strong>{{ produto.descricao }}</strong></td>
-                            <td class="text-muted">{{ produto.preco_custo }}</td>
                             <td>{{ produto.preco_venda }}</td>
+                            <td class="text-muted">{{ produto.preco_custo }}</td>
                             <td>{{ produto.quantidade }}</td>
                             <td class="text-end">
-                                <a href="#" class="btn btn-sm btn-outline-primary">Editar</a>
-                                <a href="#" class="btn btn-sm btn-outline-secondary">Excluir</a>
+                                <a href="{% url 'editar_produto' produto.id %}" class="btn btn-sm btn-outline-primary">Editar</a>
+                                <a href="{% url 'excluir_produto' produto.id %}" class="btn btn-sm btn-outline-secondary">Excluir</a>
                             </td>
                         </tr>
                         {% endfor %}
