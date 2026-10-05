@@ -86,3 +86,42 @@ class ProdutoForm(forms.ModelForm):
                 )
 
         return cleaned_data
+
+class ServicoForm(forms.ModelForm):
+
+    class Meta:
+        model = Servico
+        fields = ['descricao', 'preco_venda']
+
+        widgets = {
+            'descricao': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Nome do produto'
+            }),
+
+            'preco_venda': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Somente números',
+                'maxlength': '10'
+            }),
+        }
+
+    def clean_descricao(self):
+        descricao = self.cleaned_data['descricao'].strip()
+
+        if not descricao:
+            raise forms.ValidationError(
+                'O nome do serviço é obrigatório.'
+            )
+        
+        return descricao
+
+    def clean_preco_venda(self):
+        preco_venda = self.cleaned_data['preco_venda']
+
+        if preco_venda <= 0:
+            raise forms.ValidationError(
+                'O preço de venda deve ser maior que 0.'
+            )
+
+        return preco_venda

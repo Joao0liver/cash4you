@@ -9,5 +9,8 @@ urlpatterns = [
     path('produto/excluir/<int:id>', views.excluir_produto, name='excluir_produto'),
 
     # Caminhos de Serviço
-    path('servico/', views.servico, name='listar_servico'),
+    path('servico/', views.listar_servico, name='listar_servico'),
+    path('servico/cadastrar/', views.cadastrar_servico, name='cadastrar_servico'),
+    path('servico/editar/<int:id>', views.editar_servico, name='editar_servico'),
+    path('servico/excluir/<int:id>', views.excluir_servico, name='excluir_servico'),
 ]
