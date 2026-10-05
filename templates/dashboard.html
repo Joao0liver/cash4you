@@ -17,12 +17,12 @@
             <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
                 <div>
                     <h2 id="calendario-titulo" class="h5 mb-1">{{ titulo_calendario }}</h2>
-                    <p class="text-muted small mb-0">Agenda e contas a pagar.</p>
+                    <p class="text-muted small mb-0">Agenda e gastos a pagar.</p>
                 </div>
                 <div class="d-flex flex-wrap gap-2">
                     <a href="?visao={{ visao_calendario }}&data={{ data_anterior }}&periodo={{ periodo }}" class="btn btn-outline-secondary btn-sm" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Exibir o mês anterior no calendário" aria-label="Período anterior">‹</a>
                     <a href="{% url 'criar_agendamento' %}" class="btn btn-outline-primary btn-sm">Novo agendamento</a>
-                    <a href="{% url 'criar_conta_pagar' %}" class="btn btn-outline-primary btn-sm">Nova conta</a>
+                    <a href="{% url 'criar_conta_pagar' %}" class="btn btn-outline-primary btn-sm">Novo gasto</a>
                     <a href="?visao={{ visao_calendario }}&data={{ data_proxima }}&periodo={{ periodo }}" class="btn btn-outline-secondary btn-sm" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Exibir o próximo mês no calendário" aria-label="Próximo período">›</a>
                 </div>
             </div>
@@ -55,7 +55,7 @@
                 <span><span class="badge text-bg-primary me-1">A</span>Agendamento</span>
                 <span><span class="badge text-bg-warning me-1">R$</span>Conta pendente</span>
                 <span><span class="badge text-bg-success me-1">✓</span>Conta paga</span>
-                <a href="{% url 'listar_contas_pagar' %}" class="ms-auto">Gerenciar contas a pagar</a>
+                <a href="{% url 'listar_contas_pagar' %}" class="ms-auto">Gerenciar gastos a pagar</a>
             </div>
 
             <div class="table-responsive">
@@ -145,16 +145,16 @@
 
     <div class="row g-3 mb-4">
         <div class="col-12 col-md-6">
-            <a href="{% url 'listar_contas_pagar' %}" class="card shadow-sm border-warning h-100 text-decoration-none" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Acesse Cadastrar → Contas a pagar para consultar e atualizar as contas pendentes.">
+            <a href="{% url 'listar_contas_pagar' %}" class="card shadow-sm border-warning h-100 text-decoration-none" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Acesse Cadastrar → Gastos a pagar para consultar e atualizar os gastos pendentes.">
                 <div class="card-body py-3">
-                    <div class="small text-muted">Contas a pagar (pendentes)</div>
+                    <div class="small text-muted">Gastos a pagar (pendentes)</div>
                     <div class="h5 mb-0 mt-1">R$ {{ total_contas_pendentes|floatformat:2 }}</div>
                     <div class="small text-muted mt-1">{{ quantidade_contas_pendentes }} conta(s)</div>
                 </div>
             </a>
         </div>
         <div class="col-12 col-md-6">
-            <a href="{% url 'listar_contas_pagar' %}" class="card shadow-sm border-success h-100 text-decoration-none" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Acesse Cadastrar → Contas a pagar para consultar o histórico de contas pagas.">
+            <a href="{% url 'listar_contas_pagar' %}" class="card shadow-sm border-success h-100 text-decoration-none" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Acesse Cadastrar → Gastos a pagar para consultar o histórico de gastos pagos.">
                 <div class="card-body py-3">
                     <div class="small text-muted">Contas pagas</div>
                     <div class="h5 mb-0 mt-1">R$ {{ total_contas_pagas|floatformat:2 }}</div>

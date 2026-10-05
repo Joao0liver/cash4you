@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Contas a pagar | Cash4You{% endblock %}
+{% block title %}Gastos a pagar | Cash4You{% endblock %}
 
 {% block content %}
 <style>
@@ -13,10 +13,10 @@
 <div class="container-fluid">
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
         <div>
-            <h1 class="h3 mb-1">Contas a pagar</h1>
+            <h1 class="h3 mb-1">Gastos a pagar</h1>
             <p class="text-secondary mb-0">Cadastre vencimentos e acompanhe pagamentos.</p>
         </div>
-        <a href="{% url 'criar_conta_pagar' %}" class="btn btn-primary">Nova conta</a>
+        <a href="{% url 'criar_conta_pagar' %}" class="btn btn-primary">Novo gasto</a>
     </div>
 
     {% if messages %}
@@ -37,7 +37,7 @@
         <div class="col-12 col-md-6">
             <section class="card c4y-table-card shadow-sm h-100" aria-label="Valor total das contas">
                 <div class="card-body">
-                    <div class="small text-muted">Valor total das contas</div>
+                    <div class="small text-muted">Valor total dos gastos</div>
                     <div class="h4 mb-0 mt-1">R$ {{ valor_total_contas|floatformat:2 }}</div>
                 </div>
             </section>
@@ -117,7 +117,7 @@
 <script>
     const percentisContas = JSON.parse(document.getElementById("contas-percentil-dados").textContent);
     new Chart(document.getElementById("contas-percentil-chart"), {
-        type: "pie",
+        type: "bar",
         data: {
             labels: percentisContas.map(conta => conta.descricao),
             datasets: [{
@@ -133,7 +133,10 @@
         },
         options: {
             maintainAspectRatio: false,
-            plugins: { tooltip: { callbacks: { label: contexto => `${contexto.label}: ${contexto.raw.toFixed(2)}% do teto` } } }
+            plugins: {
+                legend: { display: false },
+                tooltip: { callbacks: { label: contexto => `${contexto.label}: ${contexto.raw.toFixed(2)}% do teto` } }
+            }
         }
     });
 </script>
