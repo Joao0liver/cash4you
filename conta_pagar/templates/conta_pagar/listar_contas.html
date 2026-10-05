@@ -52,6 +52,7 @@
                         <th class="text-center">Descrição</th>
                         <th class="text-center">Vencimento</th>
                         <th class="text-center">Valor</th>
+                        <th class="text-center">Percentual do teto</th>
                         <th class="text-center">Situação</th>
                         <th class="text-center">Ações</th>
                     </tr>
@@ -62,6 +63,7 @@
                         <td class="text-center">{{ conta.descricao }}</td>
                         <td class="text-center">{{ conta.vencimento|date:"d/m/Y" }}</td>
                         <td class="text-center">R$ {{ conta.valor|floatformat:2 }}</td>
+                        <td class="text-center">{% if conta.percentil_teto != None %}{{ conta.percentil_teto|floatformat:2 }}%{% else %}<span class="text-muted">—</span>{% endif %}</td>
                         <td class="text-center">
                             {% if conta.paga %}
                             <span class="badge text-bg-success">Paga</span>
@@ -85,12 +87,55 @@
                         </td>
                     </tr>
                     {% empty %}
-                    <tr><td colspan="5" class="text-center c4y-empty py-5">Nenhuma conta cadastrada. Use <strong>Nova conta</strong> para incluir o primeiro vencimento.</td></tr>
+                    <tr><td colspan="6" class="text-center c4y-empty py-5">Nenhuma conta cadastrada. Use <strong>Nova conta</strong> para incluir o primeiro vencimento.</td></tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
     </div>
 
+    <section class="card c4y-table-card shadow-sm mt-4" aria-label="Percentual do teto por conta">
+        <div class="card-body">
+            <h2 class="h5 mb-1">Percentual do teto por conta</h2>
+            {% if limite_gastos is None %}
+            <p class="text-secondary mb-0"><a href="{% url 'configurar_estabelecimento' %}" class="text-reset text-decoration-none">Defina a margem máxima de gastos em Configurações &gt; Dados do estabelecimento para visualizar o gráfico.</a></p>
+            {% elif limite_gastos == 0 %}
+            <p class="text-secondary mb-0">O teto está definido como R$ 0,00; não é possível calcular percentuais.</p>
+            {% elif not dados_grafico_percentis %}
+            <p class="text-secondary mb-0">Cadastre uma conta para visualizar o gráfico.</p>
+            {% else %}
+            <p class="text-secondary">Cada barra representa o valor da conta como percentual da margem máxima de R$ {{ limite_gastos|floatformat:2 }}.</p>
+            <div style="height: 320px"><canvas id="contas-percentil-chart" aria-label="Gráfico do percentual do teto representado por cada conta"></canvas></div>
+            {% endif %}
+        </div>
+    </section>
+
 </div>
+{% if limite_gastos and dados_grafico_percentis %}
+{{ dados_grafico_percentis|json_script:"contas-percentil-dados" }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const percentisContas = JSON.parse(document.getElementById("contas-percentil-dados").textContent);
+    new Chart(document.getElementById("contas-percentil-chart"), {
+        type: "pie",
+        data: {
+            labels: percentisContas.map(conta => conta.descricao),
+            datasets: [{
+                label: "% da margem máxima",
+                data: percentisContas.map(conta => conta.percentil),
+                backgroundColor: [
+                    "#0d6efd", "#198754", "#ffc107", "#dc3545", "#6f42c1",
+                    "#0dcaf0", "#fd7e14", "#20c997", "#d63384", "#6c757d"
+                ],
+                borderColor: "#ffffff",
+                borderWidth: 1
+            }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            plugins: { tooltip: { callbacks: { label: contexto => `${contexto.label}: ${contexto.raw.toFixed(2)}% do teto` } } }
+        }
+    });
+</script>
+{% endif %}
 {% endblock %}
