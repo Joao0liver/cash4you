@@ -13,22 +13,24 @@ class ProdutoForm(forms.ModelForm):
                 'placeholder': 'Nome do produto'
             }),
 
-            'preco_venda': forms.TextInput(attrs={
+            'preco_venda': forms.NumberInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'Somente números',
-                'maxlength': '10'
+                'placeholder': '0.00',
+                'step': '0.01',
+                'min': '0'
             }),
 
-            'preco_custo': forms.TextInput(attrs={
+            'preco_custo': forms.NumberInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'Somente números',
-                'maxlength': '10'
+                'placeholder': '0.00',
+                'step': '0.01',
+                'min': '0'
             }),
 
-            'quantidade': forms.TextInput(attrs={
+            'quantidade': forms.NumberInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Somente números',
-                'maxlength': '10'
+                'min': '0'
             }),
         }
 
@@ -99,10 +101,11 @@ class ServicoForm(forms.ModelForm):
                 'placeholder': 'Nome do produto'
             }),
 
-            'preco_venda': forms.TextInput(attrs={
+            'preco_venda': forms.NumberInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'Somente números',
-                'maxlength': '10'
+                'placeholder': '0.00',
+                'step': '0.01',
+                'min': '0'
             }),
         }
 
