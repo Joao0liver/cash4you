@@ -18,7 +18,7 @@ from .forms import (
     FiltroVendasForm,
     FinalizarVendaForm,
 )
-from .models import DadosEstabelecimento, ItemVenda, Venda
+from .models import DadosEstabelecimento, ItemVenda, PagamentoVenda, Venda
 
 
 CART_SESSION_KEY = "venda_cart"
@@ -216,8 +216,23 @@ def caixa(request):
                 dados_estabelecimento = DadosEstabelecimento.objects.filter(pk=1).first()
                 try:
                     with transaction.atomic():
+                        pagamentos = form._pagamentos()
+                        if not pagamentos:
+                            raise ValueError("Nenhum pagamento foi informado.")
+
+                        valor_recebido_total = None
+                        if pagamentos and pagamentos[0]["forma_pagamento"] == Venda.FormaPagamento.DINHEIRO:
+                            valor_recebido_total = sum(
+                                (pagamento["valor"] for pagamento in pagamentos),
+                                Decimal("0.00"),
+                            )
+                        troco_total = sum(
+                            (pagamento["troco"] for pagamento in pagamentos),
+                            Decimal("0.00"),
+                        )
+
                         venda = Venda.objects.create(
-                            forma_pagamento=form.cleaned_data["forma_pagamento"],
+                            forma_pagamento=pagamentos[0]["forma_pagamento"],
                             nome_cliente=form.cleaned_data["nome_cliente"],
                             telefone_whatsapp=form.cleaned_data["telefone_whatsapp"],
                             nome_estabelecimento=(
@@ -232,19 +247,21 @@ def caixa(request):
                                 dados_estabelecimento.endereco if dados_estabelecimento else ""
                             ),
                             total=total,
-                            valor_recebido=(
-                                form.cleaned_data["valor_recebido"]
-                                if form.cleaned_data["forma_pagamento"]
-                                == Venda.FormaPagamento.DINHEIRO
-                                else None
-                            ),
-                            troco=(
-                                form.cleaned_data["valor_recebido"] - total
-                                if form.cleaned_data["forma_pagamento"]
-                                == Venda.FormaPagamento.DINHEIRO
-                                else Decimal("0.00")
-                            ),
+                            valor_recebido=valor_recebido_total,
+                            troco=troco_total,
                         )
+                        PagamentoVenda.objects.bulk_create(
+                            [
+                                PagamentoVenda(
+                                    venda=venda,
+                                    forma_pagamento=pagamento["forma_pagamento"],
+                                    valor=pagamento["valor"],
+                                    troco=pagamento["troco"],
+                                )
+                                for pagamento in pagamentos
+                            ]
+                        )
+
                         for linha in linhas:
                             tipo, item_id = linha["chave"].split(":", 1)
                             if tipo == ItemVenda.Tipo.PRODUTO:
@@ -277,7 +294,7 @@ def caixa(request):
                                     quantidade=linha["quantidade"],
                                     subtotal=linha["subtotal"],
                                 )
-                except EstoqueInsuficiente as exc:
+                except (EstoqueInsuficiente, ValueError) as exc:
                     messages.error(request, str(exc))
                     return redirect("caixa")
 
@@ -315,8 +332,17 @@ def listar_vendas(request):
 def detalhe_venda(request, pk):
     venda = get_object_or_404(Venda.objects.prefetch_related("itens"), pk=pk)
     whatsapp_url = None
+    pagamentos = list(venda.pagamentos.all())
     if venda.telefone_whatsapp:
         data_completa = date_format(venda.criada_em, r"l, j \d\e F \d\e Y")
+        pagamentos_formatados = (
+            ", ".join(
+                f"{pagamento.get_forma_pagamento_display()} — R$ {_formatar_moeda(pagamento.valor)}"
+                for pagamento in pagamentos
+            )
+            if pagamentos
+            else f"{venda.get_forma_pagamento_display()} — R$ {_formatar_moeda(venda.total)}"
+        )
         mensagem = [
             f"Olá {venda.nome_cliente}," if venda.nome_cliente else "Olá,",
             "Segue o comprovante de pagamento solicitado:",
@@ -334,10 +360,10 @@ def detalhe_venda(request, pk):
                 ],
                 "",
                 f"Valor total: R$ {_formatar_moeda(venda.total)}",
-                f"Pagamento: {venda.get_forma_pagamento_display()}",
+                f"Pagamento: {pagamentos_formatados}",
             ]
         )
-        if venda.forma_pagamento == Venda.FormaPagamento.DINHEIRO:
+        if venda.troco:
             mensagem.append(f"Troco: R$ {_formatar_moeda(venda.troco)}")
         mensagem.extend(
             [
@@ -360,7 +386,7 @@ def detalhe_venda(request, pk):
     return render(
         request,
         "venda/detalhe_venda.html",
-        {"venda": venda, "whatsapp_url": whatsapp_url},
+        {"venda": venda, "whatsapp_url": whatsapp_url, "pagamentos": pagamentos},
     )
 
 

@@ -10,7 +10,7 @@ from django.utils.formats import date_format
 from produto.models import Produto
 from servico.models import Servico
 
-from .models import DadosEstabelecimento, ItemVenda, Venda
+from .models import DadosEstabelecimento, ItemVenda, PagamentoVenda, Venda
 
 
 class CaixaTests(TestCase):
@@ -94,6 +94,10 @@ class CaixaTests(TestCase):
         self.assertContains(response, "Finalizar venda")
         self.assertContains(response, 'name="forma_pagamento"')
         self.assertContains(response, 'id="valor-recebido"')
+        self.assertContains(
+            response,
+            'id="painel-pagamentos-multiplos" class="checkout-payment-card p-3 mb-3" hidden',
+        )
         self.assertContains(response, 'name="telefone_whatsapp"')
         self.assertContains(response, 'name="nome_cliente"')
         self.assertContains(response, reverse("configurar_estabelecimento"))
@@ -177,6 +181,54 @@ class CaixaTests(TestCase):
         self.produto.refresh_from_db()
         self.assertEqual(self.produto.quantidade, 4)
         self.assertEqual(sale.itens.get().subtotal, Decimal("25.00"))
+
+    def test_sale_can_be_split_across_multiple_payment_methods(self):
+        self.adicionar("produto", self.produto)
+
+        response = self.finalizar(
+            forma_pagamento="dinheiro",
+            valor_recebido="15,00",
+            forma_pagamento_2="pix",
+            valor_pagamento_2="10,00",
+        )
+
+        sale = Venda.objects.get()
+        self.assertRedirects(response, reverse("detalhe_venda", args=[sale.pk]))
+        self.assertEqual(sale.total, Decimal("25.00"))
+        self.assertEqual(sale.valor_recebido, Decimal("25.00"))
+        self.assertEqual(sale.troco, Decimal("0.00"))
+        self.assertEqual(sale.pagamentos.count(), 2)
+        self.assertEqual(
+            list(sale.pagamentos.values_list("forma_pagamento", flat=True)),
+            [Venda.FormaPagamento.DINHEIRO, Venda.FormaPagamento.PIX],
+        )
+        self.assertEqual(
+            list(sale.pagamentos.values_list("valor", flat=True)),
+            [Decimal("15.00"), Decimal("10.00")],
+        )
+        self.assertTrue(PagamentoVenda.objects.filter(venda=sale).exists())
+
+    def test_multiple_payment_mode_allows_cash_change_when_cash_is_used(self):
+        self.adicionar("produto", self.produto)
+
+        response = self.finalizar(
+            pagamento_multiplo="on",
+            quantidade_pagamentos_adicionais="1",
+            forma_pagamento_2="dinheiro",
+            valor_pagamento_2="30,00",
+        )
+
+        sale = Venda.objects.get()
+        self.assertRedirects(response, reverse("detalhe_venda", args=[sale.pk]))
+        self.assertEqual(sale.total, Decimal("25.00"))
+        self.assertEqual(sale.valor_recebido, Decimal("30.00"))
+        self.assertEqual(sale.troco, Decimal("5.00"))
+        self.assertEqual(sale.pagamentos.count(), 1)
+        self.assertEqual(
+            sale.pagamentos.get().forma_pagamento,
+            Venda.FormaPagamento.DINHEIRO,
+        )
+        self.assertEqual(sale.pagamentos.get().troco, Decimal("5.00"))
 
     def test_checkout_records_mixed_sale_and_service_quantity_without_stock_change(self):
         self.adicionar("produto", self.produto)

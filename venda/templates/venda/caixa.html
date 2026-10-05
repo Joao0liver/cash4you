@@ -12,6 +12,16 @@
     .checkout-payment { position: sticky; top: 5.5rem; }
     .checkout-total { font-size: clamp(1.75rem, 3vw, 2.25rem); font-weight: 700; }
     .checkout-payment-method label { min-height: 42px; display: flex; align-items: center; justify-content: center; }
+    .checkout-payment-card {
+        background: var(--c4y-panel);
+        border: 1px solid var(--c4y-line);
+        border-radius: 0.75rem;
+    }
+    .checkout-field-label { color: var(--c4y-ink-soft); font-size: 0.78rem; }
+    .checkout-money-line {
+        background: rgba(59, 130, 246, 0.06);
+        border: 1px solid rgba(59, 130, 246, 0.2);
+    }
     @media (max-width: 1199.98px) {
         .checkout-payment { position: static; }
     }
@@ -187,27 +197,65 @@
                             <output class="checkout-total d-block" aria-live="polite">R$ {{ total|floatformat:2 }}</output>
                         </div>
 
-                        <fieldset class="mb-3">
-                            <legend class="form-label small mb-2">{{ form.forma_pagamento.label }}</legend>
-                            <div class="row g-2 checkout-payment-method">
-                                {% for value, label in form.forma_pagamento.field.choices %}
-                                <div class="col-6">
-                                    <input class="btn-check" type="radio" name="forma_pagamento" id="forma-pagamento-{{ forloop.counter }}" value="{{ value }}" {% if form.forma_pagamento.value == value or not form.is_bound and forloop.first %}checked{% endif %}>
-                                    <label class="btn btn-outline-secondary w-100" for="forma-pagamento-{{ forloop.counter }}">{{ label }}</label>
+                        <div class="mb-3">
+                            <div class="form-check form-switch d-flex align-items-center gap-2">
+                                {{ form.pagamento_multiplo }}
+                                <label class="form-check-label mb-0" for="{{ form.pagamento_multiplo.id_for_label }}">{{ form.pagamento_multiplo.label }}</label>
+                            </div>
+                            {% if form.pagamento_multiplo.errors %}<div class="text-danger small mt-1">{{ form.pagamento_multiplo.errors }}</div>{% endif %}
+                        </div>
+
+                        <div id="pagamento-principal" class="checkout-payment-card p-3 mb-3">
+                            <fieldset class="mb-3">
+                                <legend class="form-label small mb-2">{{ form.forma_pagamento.label }}</legend>
+                                <div class="row g-2 checkout-payment-method">
+                                    {% for value, label in form.forma_pagamento.field.choices %}
+                                    <div class="col-6">
+                                        <input class="btn-check" type="radio" name="forma_pagamento" id="forma-pagamento-{{ forloop.counter }}" value="{{ value }}" {% if form.forma_pagamento.value == value or not form.is_bound and forloop.first %}checked{% endif %}>
+                                        <label class="btn btn-outline-secondary w-100" for="forma-pagamento-{{ forloop.counter }}">{{ label }}</label>
+                                    </div>
+                                    {% endfor %}
                                 </div>
+                                {% if form.forma_pagamento.errors %}<div class="text-danger small mt-1">{{ form.forma_pagamento.errors }}</div>{% endif %}
+                            </fieldset>
+
+                            <div class="mb-3" id="campo-dinheiro">
+                                <label for="{{ form.valor_recebido.id_for_label }}" class="form-label small mb-1">Valor recebido do cliente</label>
+                                {{ form.valor_recebido }}
+                                {% if form.valor_recebido.errors %}<div class="text-danger small">{{ form.valor_recebido.errors }}</div>{% endif %}
+                                <small class="form-text text-muted">Informe o valor que o cliente entregou para o pagamento principal. O troco será calculado automaticamente.</small>
+                            </div>
+                        </div>
+
+                        <div id="painel-pagamentos-multiplos" class="checkout-payment-card p-3 mb-3" hidden>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="small fw-semibold text-muted">Múltiplos Pagamentos</span>
+                                <span class="small text-muted">Opcional</span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="{{ form.quantidade_pagamentos_adicionais.id_for_label }}" class="form-label small mb-1">Quantidade de múltiplos pagamentos</label>
+                                {{ form.quantidade_pagamentos_adicionais }}
+                                {% if form.quantidade_pagamentos_adicionais.errors %}<div class="text-danger small mt-1">{{ form.quantidade_pagamentos_adicionais.errors }}</div>{% endif %}
+                            </div>
+
+                            <div id="pagamentos-adicionais-container" class="row g-2">
+                                {% for pagamento in form.pagamentos_adicionais %}
+                                <div class="col-6">
+                                    {{ pagamento.forma }}
+                                </div>
+                                <div class="col-6">
+                                    {{ pagamento.valor }}
+                                </div>
+                                {% empty %}
+                                <div class="col-12 small text-muted">Nenhum pagamento adicional.</div>
                                 {% endfor %}
                             </div>
-                            {% if form.forma_pagamento.errors %}<div class="text-danger small mt-1">{{ form.forma_pagamento.errors }}</div>{% endif %}
-                        </fieldset>
-
-                        <div class="mb-3" id="campo-dinheiro">
-                            <label for="{{ form.valor_recebido.id_for_label }}" class="form-label small mb-1">{{ form.valor_recebido.label }}</label>
-                            {{ form.valor_recebido }}
-                            {% if form.valor_recebido.errors %}<div class="text-danger small">{{ form.valor_recebido.errors }}</div>{% endif %}
                         </div>
+
                         <div class="mb-3" id="area-troco">
-                            <span class="small text-muted d-block">Troco</span>
-                            <strong id="troco-estimado" aria-live="polite">R$ 0,00</strong>
+                            <label for="troco-estimado" class="form-label small mb-1">Troco</label>
+                            <input id="troco-estimado" class="form-control" type="text" value="R$ 0,00" readonly aria-live="polite">
                         </div>
 
                         <div class="mb-3">
@@ -234,11 +282,138 @@
 <script>
     (function () {
         const pagamentos = document.querySelectorAll('input[type="radio"]');
+        const pagamentoMultiplo = document.getElementById("id_pagamento_multiplo");
+        const pagamentoPrincipal = document.getElementById("pagamento-principal");
+        const painelPagamentosMultiplos = document.getElementById("painel-pagamentos-multiplos");
         const campoDinheiro = document.getElementById("campo-dinheiro");
         const areaTroco = document.getElementById("area-troco");
         const recebido = document.getElementById("valor-recebido");
         const troco = document.getElementById("troco-estimado");
         const total = Number("{{ total|floatformat:2 }}".replace(",", "."));
+        const quantidadePagamentos = document.getElementById("quantidade-pagamentos-adicionais");
+        const containerPagamentos = document.getElementById("pagamentos-adicionais-container");
+        const opcoesPagamento = [
+            {% for value, label in form.forma_pagamento.field.choices %}
+            { value: "{{ value }}", label: "{{ label }}" },
+            {% endfor %}
+        ];
+
+        function renderizarPagamentosAdicionais() {
+            if (!containerPagamentos || !quantidadePagamentos) {
+                return;
+            }
+
+            const valoresExistentes = {};
+            document.querySelectorAll('[name^="forma_pagamento_"]').forEach(function (campo) {
+                valoresExistentes[campo.name] = campo.value;
+            });
+            document.querySelectorAll('[name^="valor_pagamento_"]').forEach(function (campo) {
+                valoresExistentes[campo.name] = campo.value;
+                valoresExistentes[`${campo.name}_auto`] = campo.dataset.autoDistribuido === "true";
+            });
+            document.querySelectorAll('[name^="valor_recebido_"]').forEach(function (campo) {
+                valoresExistentes[campo.name] = campo.value;
+            });
+
+            const quantidade = Math.max(0, Math.min(Number(quantidadePagamentos.value || 0), 6));
+            const linhas = [];
+
+            for (let indice = 2; indice <= quantidade + 1; indice += 1) {
+                const nomeForma = `forma_pagamento_${indice}`;
+                const nomeValor = `valor_pagamento_${indice}`;
+                const nomeRecebido = `valor_recebido_${indice}`;
+                    const opcoes = opcoesPagamento.map(function (opcao) {
+                        const selecionado = valoresExistentes[nomeForma] === opcao.value ? " selected" : "";
+                        return `<option value="${opcao.value}"${selecionado}>${opcao.label}</option>`;
+                    }).join("");
+                    const valorSelecionado = valoresExistentes[nomeForma] || "";
+                    const valorRecebido = valoresExistentes[nomeRecebido] || "";
+                    const valorParcela = converterMoeda(valoresExistentes[nomeValor] || "");
+                    const trocoAtual = Math.max(0, converterMoeda(valorRecebido) - valorParcela);
+                    const blocoDinheiro = `
+                            <div class="col-12 mt-2 checkout-cash-fields" ${valorSelecionado === "dinheiro" ? "" : "hidden"}>
+                                <div class="row g-2 align-items-end">
+                                    <div class="col-6">
+                                        <label class="form-label checkout-field-label mb-1" for="valor-recebido-${indice}">Valor recebido</label>
+                                        <input id="valor-recebido-${indice}" class="form-control" type="text" name="${nomeRecebido}" value="${valorRecebido}" inputmode="decimal" placeholder="R$ 0,00" aria-label="Valor recebido do cliente ${indice}">
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label checkout-field-label mb-1" for="troco-pagamento-${indice}">Troco</label>
+                                        <input id="troco-pagamento-${indice}" class="form-control" type="text" value="${formatarMoeda(trocoAtual)}" readonly aria-label="Troco do pagamento ${indice}">
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+
+                    linhas.push(
+                        `<div class="col-12 checkout-money-line rounded p-2">
+                            <div class="row g-2 align-items-end">
+                                <div class="col-6">
+                                    <label class="form-label checkout-field-label mb-1">Forma</label>
+                                    <select class="form-select" name="${nomeForma}" aria-label="Forma de pagamento ${indice}">${opcoes}</select>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label checkout-field-label mb-1">Valor da parcela</label>
+                                    <input class="form-control" type="text" name="${nomeValor}" value="${valoresExistentes[nomeValor] || ""}" data-auto-distribuido="${valoresExistentes[`${nomeValor}_auto`] ? "true" : "false"}" inputmode="decimal" placeholder="R$ 0,00" aria-label="Valor do pagamento ${indice}">
+                                </div>
+                            </div>
+                            ${blocoDinheiro}
+                        </div>`
+                    );
+            }
+
+            containerPagamentos.innerHTML = linhas.length ? linhas.join("") : '<div class="col-12 small text-muted">Nenhum pagamento adicional.</div>';
+            distribuirValoresRestantes();
+            atualizarPagamento();
+        }
+
+        function formatarMoeda(valor) {
+            return new Intl.NumberFormat("pt-BR", {
+                style: "currency",
+                currency: "BRL"
+            }).format(Number.isFinite(valor) ? valor : 0);
+        }
+
+        function distribuirValoresRestantes(campoAlterado) {
+            if (!containerPagamentos || !pagamentoMultiplo || !pagamentoMultiplo.checked) {
+                return;
+            }
+
+            const camposValor = Array.from(containerPagamentos.querySelectorAll('input[name^="valor_pagamento_"]'));
+            if (!camposValor.length) {
+                return;
+            }
+
+            if (campoAlterado) {
+                campoAlterado.dataset.autoDistribuido = campoAlterado.value.trim() === "" ? "true" : "false";
+            }
+
+            const camposEditaveis = camposValor.filter(function (campo) {
+                return campo.value.trim() === "" || campo.dataset.autoDistribuido === "true";
+            });
+            const totalFixado = camposValor.reduce(function (soma, campo) {
+                if (camposEditaveis.includes(campo)) {
+                    return soma;
+                }
+                return soma + converterMoeda(campo.value);
+            }, 0);
+
+            if (!camposEditaveis.length) {
+                return;
+            }
+
+            const restante = Math.max(0, total - totalFixado);
+            const valorPorCampo = Math.floor((restante / camposEditaveis.length) * 100) / 100;
+            let centavosDistribuidos = Math.round(restante * 100) - Math.round(valorPorCampo * 100) * camposEditaveis.length;
+            camposEditaveis.forEach(function (campo) {
+                const valor = valorPorCampo + (centavosDistribuidos > 0 ? 0.01 : 0);
+                if (centavosDistribuidos > 0) {
+                    centavosDistribuidos -= 1;
+                }
+                campo.value = formatarMoeda(valor);
+                campo.dataset.autoDistribuido = "true";
+            });
+        }
 
         function converterMoeda(valor) {
             let normalizado = (valor || "").replace(/[^\d,.-]/g, "");
@@ -256,22 +431,96 @@
         }
 
         function atualizarPagamento() {
+            const multiplo = !!(pagamentoMultiplo && pagamentoMultiplo.checked);
+            painelPagamentosMultiplos.hidden = !multiplo;
+            painelPagamentosMultiplos.querySelectorAll("input, select").forEach(function (campo) {
+                campo.disabled = !multiplo;
+            });
+            if (pagamentoPrincipal) {
+                pagamentoPrincipal.hidden = multiplo;
+            }
+            if (multiplo) {
+                distribuirValoresRestantes();
+                areaTroco.hidden = true;
+                if (recebido) {
+                    recebido.required = false;
+                }
+                containerPagamentos.querySelectorAll('select[name^="forma_pagamento_"]').forEach(function (select) {
+                    const indice = select.name.replace("forma_pagamento_", "");
+                    const campoDinheiroPagamento = containerPagamentos.querySelector(
+                        `.checkout-cash-fields input[name="valor_recebido_${indice}"]`
+                    );
+                    if (!campoDinheiroPagamento) {
+                        return;
+                    }
+                    const areaDinheiroPagamento = campoDinheiroPagamento.closest(".checkout-cash-fields");
+                    const valorParcela = containerPagamentos.querySelector(`input[name="valor_pagamento_${indice}"]`);
+                    const campoTroco = containerPagamentos.querySelector(`#troco-pagamento-${indice}`);
+                    areaDinheiroPagamento.hidden = select.value !== "dinheiro";
+                    campoDinheiroPagamento.required = select.value === "dinheiro";
+                    if (select.value === "dinheiro" && campoTroco) {
+                        const valorRecebido = converterMoeda(campoDinheiroPagamento.value);
+                        const valorCobrado = converterMoeda(valorParcela ? valorParcela.value : "");
+                        campoTroco.value = formatarMoeda(Math.max(0, valorRecebido - valorCobrado));
+                    }
+                });
+                return;
+            }
+
+            areaTroco.hidden = false;
             const dinheiro = obterFormaPagamento() === "dinheiro";
-            campoDinheiro.hidden = !dinheiro;
+            campoDinheiro.hidden = false;
             areaTroco.hidden = !dinheiro;
             recebido.required = dinheiro;
             const entrada = converterMoeda(recebido.value);
             const valorTroco = Math.max(0, entrada - total);
-            troco.textContent = new Intl.NumberFormat("pt-BR", {
-                style: "currency",
-                currency: "BRL"
-            }).format(valorTroco);
+            troco.value = formatarMoeda(valorTroco);
         }
 
         pagamentos.forEach(function (pagamento) {
             pagamento.addEventListener("change", atualizarPagamento);
         });
-        recebido.addEventListener("input", atualizarPagamento);
+        if (pagamentoMultiplo) {
+            pagamentoMultiplo.addEventListener("change", atualizarPagamento);
+        }
+        if (recebido) {
+            recebido.addEventListener("input", atualizarPagamento);
+        }
+        if (quantidadePagamentos) {
+            quantidadePagamentos.addEventListener("input", function () {
+                renderizarPagamentosAdicionais();
+                atualizarPagamento();
+            });
+        }
+        document.addEventListener("keydown", function (event) {
+            const nome = event.target && event.target.name ? event.target.name : "";
+            if (event.key === "Enter" && (
+                nome.startsWith("valor_pagamento_") ||
+                nome.startsWith("forma_pagamento_") ||
+                nome.startsWith("valor_recebido_") ||
+                nome === "quantidade_pagamentos_adicionais" ||
+                nome === "valor_recebido"
+            )) {
+                event.preventDefault();
+                return false;
+            }
+        });
+        document.addEventListener("input", function (event) {
+            const nome = event.target && event.target.name ? event.target.name : "";
+            if (nome.startsWith("valor_pagamento_")) {
+                distribuirValoresRestantes(event.target);
+                atualizarPagamento();
+            } else if (nome.startsWith("forma_pagamento_") || nome.startsWith("valor_recebido_")) {
+                atualizarPagamento();
+            }
+        });
+        document.addEventListener("change", function (event) {
+            const nome = event.target && event.target.name ? event.target.name : "";
+            if (nome.startsWith("forma_pagamento_")) {
+                atualizarPagamento();
+            }
+        });
+        renderizarPagamentosAdicionais();
         atualizarPagamento();
     })();
 </script>

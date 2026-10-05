@@ -42,6 +42,28 @@ class Venda(models.Model):
         return f"Venda #{self.pk} - R$ {self.total}"
 
 
+class PagamentoVenda(models.Model):
+    venda = models.ForeignKey(Venda, related_name="pagamentos", on_delete=models.CASCADE)
+    forma_pagamento = models.CharField(max_length=10, choices=Venda.FormaPagamento.choices)
+    valor = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        validators=[MinValueValidator(0)],
+    )
+    troco = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=0,
+        validators=[MinValueValidator(0)],
+    )
+
+    class Meta:
+        ordering = ("id",)
+
+    def __str__(self):
+        return f"{self.get_forma_pagamento_display()} - R$ {self.valor}"
+
+
 class DadosEstabelecimento(models.Model):
     nome = models.CharField(max_length=120, blank=True, default="")
     horario_funcionamento = models.CharField(max_length=120, blank=True, default="")
