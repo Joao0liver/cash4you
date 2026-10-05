@@ -35,6 +35,15 @@ def editar_produto(request, id):
 
     return render(request, 'catalogo/produto/form_produto.html', {'form' : form, 'titulo' : 'Editar Produto'})
 
+def excluir_produto(request, id):
+    produto = get_object_or_404(Produto, id=id)
+
+    if request.method == 'POST':
+        produto.delete()
+        return redirect('listar_produto')
+
+    return render(request, 'catalogo/produto/confirmar_exclusao.html', {'produto' : produto})
+
 def servico(request):
     servicos = Servico.objects.all()
     return render(request, 'catalogo/servico/listar_servico.html', {'servicos' : servicos})
