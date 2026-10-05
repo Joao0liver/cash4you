@@ -43,8 +43,12 @@ class PricingPageTests(TestCase):
             "Produtos no Estoque",
             "Serviços Prestados",
             "Carteira de Clientes",
+            "Funcionários",
+            "Contas a pagar",
         ):
             self.assertContains(response, label)
+        self.assertContains(response, f'href="{reverse("listar_funcionarios")}"')
+        self.assertContains(response, f'href="{reverse("listar_contas_pagar")}"')
         self.assertNotContains(response, ">Precificar<")
 
     def test_vendas_link_opens_cashier_and_keeps_sales_menu_expanded(self):
