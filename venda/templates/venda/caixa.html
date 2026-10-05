@@ -469,7 +469,7 @@
 
             areaTroco.hidden = false;
             const dinheiro = obterFormaPagamento() === "dinheiro";
-            campoDinheiro.hidden = false;
+            campoDinheiro.hidden = !dinheiro;
             areaTroco.hidden = !dinheiro;
             recebido.required = dinheiro;
             const entrada = converterMoeda(recebido.value);

@@ -94,6 +94,8 @@ class CaixaTests(TestCase):
         self.assertContains(response, "Finalizar venda")
         self.assertContains(response, 'name="forma_pagamento"')
         self.assertContains(response, 'id="valor-recebido"')
+        self.assertContains(response, "campoDinheiro.hidden = !dinheiro;")
+        self.assertContains(response, "areaTroco.hidden = !dinheiro;")
         self.assertContains(
             response,
             'id="painel-pagamentos-multiplos" class="checkout-payment-card p-3 mb-3" hidden',
