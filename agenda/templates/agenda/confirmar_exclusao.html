@@ -3,9 +3,6 @@
 {% block title %}Excluir agendamento | Cash4You{% endblock %}
 
 {% block content %}
-<style>
-    .c4y-confirm-card { max-width: 680px; background: var(--c4y-panel); border: 1px solid var(--c4y-line) !important; }
-</style>
 <div class="container-fluid">
     <div class="mb-4">
         <h1 class="h3 mb-1">Excluir agendamento</h1>
@@ -20,7 +17,7 @@
             <form method="post" class="d-flex flex-wrap gap-2">
                 {% csrf_token %}
                 <button type="submit" class="btn btn-danger">Confirmar exclusão</button>
-                <a href="{% url 'listar_agendamentos' %}" class="btn btn-outline-secondary">Cancelar</a>
+                <a href="{% url 'listar_agendamento' %}" class="btn btn-outline-secondary">Cancelar</a>
             </form>
         </div>
     </div>

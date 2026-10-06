@@ -116,12 +116,12 @@ def _data_selecionada(valor, fallback):
     data = parse_date(valor or "")
     return data or fallback
 
-def listar_agendamentos(request):
+def listar_agendamento(request):
     agendamentos = Agendamento.objects.select_related("funcionario").prefetch_related(
         "servicos", "horarios"
     )
     
-    return render(request, "agenda/listar_agendamentos.html", {"agendamentos": agendamentos})
+    return render(request, "agenda/listar_agendamento.html", {"agendamentos": agendamentos})
 
 def criar_agendamento(request):
     data_selecionada = _data_selecionada(
@@ -168,7 +168,7 @@ def criar_agendamento(request):
 
             HorarioAgendado.objects.create(agendamento=agendamento, inicio=inicio, fim=fim)
 
-        return redirect('listar_agendamentos')
+        return redirect('listar_agendamento')
 
     return render(
         request,
@@ -239,7 +239,7 @@ def editar_agendamento(request, id):
 
             HorarioAgendado.objects.create(agendamento=agendamento, inicio=inicio, fim=fim)
 
-        return redirect('listar_agendamentos')
+        return redirect('listar_agendamento')
 
     return render(
         request,
@@ -268,7 +268,7 @@ def excluir_agendamento(request, id):
 
     if request.method == "POST":
         agendamento.delete()
-        return redirect("listar_agendamentos")
+        return redirect("listar_agendamento")
 
     return render(
         request,

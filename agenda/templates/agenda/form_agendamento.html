@@ -3,15 +3,6 @@
 {% block title %}{{ titulo }} | Cash4You{% endblock %}
 
 {% block content %}
-<style>
-    .c4y-surface-card { background: var(--c4y-panel); border: 1px solid var(--c4y-line) !important; }
-    .c4y-surface-card .form-label, .c4y-surface-card legend { color: var(--c4y-ink-soft); }
-    .c4y-surface-card input:not([type="checkbox"]):not([type="radio"]), .c4y-surface-card select, .c4y-surface-card textarea {
-        display: block; width: 100%; padding: .375rem .75rem; border-radius: .375rem;
-        background: var(--c4y-bg); color: var(--c4y-ink); border: 1px solid var(--c4y-line);
-    }
-    .c4y-slot { border-color: var(--c4y-line) !important; }
-</style>
 <div class="container-fluid">
     <div class="mb-4">
         <h1 class="h3 mb-1">{{ titulo }}</h1>
@@ -75,8 +66,10 @@
 
         <div class="mb-4">
             <h2 class="h5">Horários disponíveis</h2>
-            {% if agenda_key or agendamento %}
-            <p class="text-secondary">Selecione um ou mais blocos. Horários já ocupados nesta agenda aparecem riscados; outros funcionários e descrições têm disponibilidade independente.</p>
+            {% if tipo_filtro or agendamento %}
+            <p class="text-secondary">
+                Selecione um ou mais blocos de 30 minutos. Os horários já ocupados para este funcionário ou descrição aparecem indisponíveis.
+            </p>
             {% if form.horarios.errors %}<div class="alert alert-danger" role="alert">{{ form.horarios.errors }}</div>{% endif %}
             <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6 g-2">
                 {% for horario in horarios %}
@@ -143,7 +136,7 @@
 
         <div class="d-flex flex-wrap gap-2">
             <button type="submit" class="btn btn-primary">{{ botao }}</button>
-            <a href="{% url 'listar_agendamentos' %}" class="btn btn-outline-secondary">Cancelar</a>
+            <a href="{% url 'listar_agendamento' %}" class="btn btn-outline-secondary">Cancelar</a>
         </div>
         </div>
     </form>
