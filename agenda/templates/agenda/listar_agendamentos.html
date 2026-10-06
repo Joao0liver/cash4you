@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Agendamentos | Cash4You{% endblock %}
+
+{% block content %}
+<style>
+    .c4y-table-card { background: var(--c4y-panel); border: 1px solid var(--c4y-line) !important; }
+    .c4y-table-card thead th { color: var(--c4y-ink-soft); border-bottom-color: var(--c4y-line); font-size: .8rem; white-space: nowrap; }
+    .c4y-table-card tbody td { color: var(--c4y-ink); border-color: var(--c4y-line); }
+    .c4y-actions { display: inline-flex; flex-wrap: wrap; justify-content: flex-end; gap: .4rem; }
+    .c4y-empty { background: var(--c4y-panel); border: 1px dashed var(--c4y-line); color: var(--c4y-ink); }
+</style>
+<div class="container-fluid">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div>
+            <h1 class="h3 mb-1">Agendamentos</h1>
+            <p class="text-secondary mb-0">Consulte e gerencie os horários reservados.</p>
+        </div>
+        <a href="{% url 'criar_agendamento' %}" class="btn btn-primary">+ Novo agendamento</a>
+    </div>
+
+    {% if agendamentos %}
+    <div class="card c4y-table-card shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Data e horários</th>
+                        <th>Cliente</th>
+                        <th>Agendar para</th>
+                        <th>Telefone (WhatsApp)</th>
+                        <th>E-mail</th>
+                        <th>Serviços</th>
+                        <th class="text-end">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for agendamento in agendamentos %}
+                    <tr>
+                        <td>
+                            <strong>{{ agendamento.data|date:"d/m/Y" }}</strong><br>
+                            {% for horario in agendamento.horarios.all %}
+                            {{ horario.inicio|time:"H:i" }}–{{ horario.fim|time:"H:i" }}{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                        </td>
+                        <td>{{ agendamento.nome }}</td>
+                        <td>{{ agendamento.agendar_para_display }}</td>
+                        <td>
+                            <a href="https://wa.me/{{ agendamento.whatsapp_numero }}" target="_blank" rel="noopener noreferrer">{{ agendamento.telefone }}</a>
+                        </td>
+                        <td>{{ agendamento.email|default:"—" }}</td>
+                        <td>
+                            {% for servico in agendamento.servicos.all %}
+                            {{ servico.descricao }}{% if not forloop.last %}, {% endif %}
+                            {% empty %}
+                            —
+                            {% endfor %}
+                        </td>
+                        <td class="text-end text-nowrap">
+                            <span class="c4y-actions">
+                            <a href="{% url 'editar_agendamento' agendamento.pk %}" class="btn btn-sm btn-outline-primary">Editar</a>
+                            <a href="{% url 'excluir_agendamento' agendamento.pk %}" class="btn btn-sm btn-outline-danger">Excluir</a>
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert c4y-empty p-4 mb-0" role="status">Nenhum agendamento cadastrado. Use <strong>Novo agendamento</strong> para reservar o primeiro horário.</div>
+    {% endif %}
+</div>
+{% endblock %}
