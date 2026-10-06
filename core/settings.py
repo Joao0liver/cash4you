@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'dashboard',
     'catalogo',
     'vendaitem',
+    'agenda',
 ]
 
 MIDDLEWARE = [

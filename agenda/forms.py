@@ -1,11 +1,7 @@
 from datetime import date, datetime, time, timedelta
-
 from django import forms
-
-from conta_pagar.models import Funcionario
-
+# from conta_pagar.models import Funcionario
 from .models import Agendamento, HorarioAgendado
-
 
 def horarios_disponiveis():
     horarios = []
@@ -16,7 +12,6 @@ def horarios_disponiveis():
         horarios.append((inicio.strftime("%H:%M"), f"{inicio:%H:%M}–{fim:%H:%M}"))
         inicio = fim
     return horarios
-
 
 class AgendamentoForm(forms.ModelForm):
     data = forms.DateField(widget=forms.HiddenInput, label="Data")

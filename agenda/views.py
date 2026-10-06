@@ -1,14 +1,10 @@
 from datetime import date, datetime, timedelta
-
 from django.db import IntegrityError, transaction
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.dateparse import parse_date
-
-from conta_pagar.models import Funcionario
-
+# from conta_pagar.models import Funcionario
 from .forms import AgendamentoForm, horarios_disponiveis
 from .models import Agendamento, HorarioAgendado
-
 
 def _obter_horarios(
     data_selecionada,
