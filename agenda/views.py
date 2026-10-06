@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.dateparse import parse_date
 from .forms import AgendamentoForm, horarios_disponiveis
 from .models import Agendamento, HorarioAgendado
-from usuario import Usuario
+from usuario.models import Usuario
 
 def obter_horarios(data_selecionada, funcionario_id=None, descricao_agendar_para=None, agendamento=None, selecionados=None):
     horarios_ocupados = HorarioAgendado.objects.filter(
