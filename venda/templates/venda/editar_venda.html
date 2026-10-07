@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% load venda_fields %}
+
+{% block title %}Editar venda #{{ venda.pk }} | Cash4You{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="mb-4">
+        <h1 class="h3 mb-1">Editar venda #{{ venda.pk }}</h1>
+        <p class="text-muted mb-0">Informe as quantidades finais. Os preços são atualizados conforme o cadastro atual; o estoque vendido anteriormente será considerado disponível nesta edição.</p>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        {% if form.errors %}
+        <div class="alert alert-danger">Revise os campos destacados. Nenhuma alteração foi salva.</div>
+        {% endif %}
+
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-body">
+                <h2 class="h5">Produtos no Estoque</h2>
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                            <tr><th>Produto</th><th class="text-end">Preço atual</th><th class="text-center">Estoque disponível para edição</th><th style="width: 160px">Quantidade final</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for campo in produto_campos %}
+                            <tr>
+                                <td>{{ campo.item.descricao }}</td>
+                                <td class="text-end">R$ {{ campo.item.preco_venda|floatformat:2 }}</td>
+                                <td class="text-center">{{ campo.estoque_disponivel }}</td>
+                                <td>
+                                    {{ form|field:campo.nome }}
+                                    {% if form.errors|get_item:campo.nome %}<div class="text-danger small">{{ form.errors|get_item:campo.nome }}</div>{% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="4" class="text-muted">Nenhum produto cadastrado.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-body">
+                <h2 class="h5">Serviços Prestados</h2>
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead><tr><th>Serviço</th><th class="text-end">Preço atual</th><th style="width: 160px">Quantidade final</th></tr></thead>
+                        <tbody>
+                            {% for campo in servico_campos %}
+                            <tr>
+                                <td>{{ campo.item.descricao }}</td>
+                                <td class="text-end">R$ {{ campo.item.preco_venda|floatformat:2 }}</td>
+                                <td>
+                                    {{ form|field:campo.nome }}
+                                    {% if form.errors|get_item:campo.nome %}<div class="text-danger small">{{ form.errors|get_item:campo.nome }}</div>{% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="3" class="text-muted">Nenhum serviço cadastrado.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-body">
+                <h2 class="h5">Pagamento e contato</h2>
+                <div class="row g-3">
+                    <div class="col-12 col-md-3">
+                        <label for="{{ form.forma_pagamento.id_for_label }}" class="form-label">{{ form.forma_pagamento.label }}</label>
+                        {{ form.forma_pagamento }}
+                        {% if form.forma_pagamento.errors %}<div class="text-danger">{{ form.forma_pagamento.errors }}</div>{% endif %}
+                    </div>
+                    <div class="col-12 col-md-3">
+                        <label for="{{ form.valor_recebido.id_for_label }}" class="form-label">{{ form.valor_recebido.label }}</label>
+                        {{ form.valor_recebido }}
+                        {% if form.valor_recebido.errors %}<div class="text-danger">{{ form.valor_recebido.errors }}</div>{% endif %}
+                    </div>
+                    <div class="col-12 col-md-3">
+                        <label for="{{ form.nome_cliente.id_for_label }}" class="form-label">{{ form.nome_cliente.label }}</label>
+                        {{ form.nome_cliente }}
+                        {% if form.nome_cliente.errors %}<div class="text-danger">{{ form.nome_cliente.errors }}</div>{% endif %}
+                    </div>
+                    <div class="col-12 col-md-3">
+                        <label for="{{ form.telefone_whatsapp.id_for_label }}" class="form-label">{{ form.telefone_whatsapp.label }}</label>
+                        {{ form.telefone_whatsapp }}
+                        {% if form.telefone_whatsapp.errors %}<div class="text-danger">{{ form.telefone_whatsapp.errors }}</div>{% endif %}
+                    </div>
+                </div>
+                <p class="mt-3 mb-0"><strong>Total recalculado:</strong> R$ {{ form.total|floatformat:2 }}</p>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2 mb-4">
+            <button type="submit" class="btn btn-primary">Salvar alterações</button>
+            <a href="{% url 'detalhe_venda' venda.pk %}" class="btn btn-outline-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
