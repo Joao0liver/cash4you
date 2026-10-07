@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+
+{% block title %}{{ titulo }} | Cash4You{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="mb-4">
+        <h1 class="h3 mb-1">{{ titulo }}</h1>
+        <p class="text-secondary mb-0">Os horários funcionam em blocos de 30 minutos, todos os dias, das 07:00 às 23:00.</p>
+    </div>
+
+    <div class="card c4y-surface-card shadow-sm mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-end">
+                <input type="hidden" name="tipo_agendar_para" value="{{ tipo_filtro }}">
+                <input type="hidden" name="funcionario" value="{{ funcionario_filtro }}">
+                <input type="hidden" name="descricao_agendar_para" value="{{ descricao_filtro }}">
+                <div class="col-12 col-sm-6 col-lg-4">
+                    <label for="data-calendario" class="form-label">Selecione a data</label>
+                    <input
+                        type="date"
+                        id="data-calendario"
+                        name="data"
+                        class="form-control"
+                        value="{{ data_selecionada|date:'Y-m-d' }}"
+                    >
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <form method="post" class="card c4y-surface-card shadow-sm">
+        <div class="card-body">
+        {% csrf_token %}
+        {{ form.data }}
+        {% if form.data.errors %}<div class="alert alert-danger mb-3" role="alert">{{ form.data.errors }}</div>{% endif %}
+        {% if form.non_field_errors %}<div class="alert alert-danger" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+
+        <div class="row g-3 mb-4">
+            <div class="col-12">
+                <fieldset>
+                    <legend class="form-label">{{ form.tipo_agendar_para.label }}</legend>
+                    {% for radio in form.tipo_agendar_para %}
+                    <div class="form-check form-check-inline">
+                        {{ radio.tag }}
+                        <label class="form-check-label" for="{{ radio.id_for_label }}">{{ radio.choice_label }}</label>
+                    </div>
+                    {% endfor %}
+                    {% if form.tipo_agendar_para.help_text %}<div class="form-text">{{ form.tipo_agendar_para.help_text }}</div>{% endif %}
+                    {% for error in form.tipo_agendar_para.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                </fieldset>
+            </div>
+            <div class="col-12 col-md-6" data-agendar-para-campo="funcionario">
+                <label for="{{ form.funcionario.id_for_label }}" class="form-label">{{ form.funcionario.label }}</label>
+                {{ form.funcionario }}
+                {% if form.funcionario.help_text %}<div class="form-text">{{ form.funcionario.help_text }}</div>{% endif %}
+                {% for error in form.funcionario.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+            </div>
+            <div class="col-12 col-md-6" data-agendar-para-campo="manual">
+                <label for="{{ form.descricao_agendar_para.id_for_label }}" class="form-label">{{ form.descricao_agendar_para.label }}</label>
+                {{ form.descricao_agendar_para }}
+                {% if form.descricao_agendar_para.help_text %}<div class="form-text">{{ form.descricao_agendar_para.help_text }}</div>{% endif %}
+                {% for error in form.descricao_agendar_para.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+            </div>
+        </div>
+
+        <div class="mb-4">
+            <h2 class="h5">Horários disponíveis</h2>
+            {% if tipo_filtro or agendamento %}
+            <p class="text-secondary">
+                Selecione um ou mais blocos de 30 minutos. Os horários já ocupados para este funcionário ou descrição aparecem indisponíveis.
+            </p>
+            {% if form.horarios.errors %}<div class="alert alert-danger" role="alert">{{ form.horarios.errors }}</div>{% endif %}
+            <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6 g-2">
+                {% for horario in horarios %}
+                    <div class="col">
+                        {% if horario.disponivel %}
+                        <label class="form-check border rounded p-2 d-flex gap-2 align-items-center h-100 c4y-slot">
+                            <input
+                                class="form-check-input mt-0"
+                                type="checkbox"
+                                name="horarios"
+                                value="{{ horario.valor }}"
+                                {% if horario.selecionado %}checked{% endif %}
+                            >
+                            <span>{{ horario.rotulo }}</span>
+                        </label>
+                        {% else %}
+                        <div class="border rounded p-2 text-muted text-decoration-line-through" aria-label="{{ horario.rotulo }} indisponível">
+                            {{ horario.rotulo }}
+                        </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="alert alert-info mb-0">Escolha um funcionário ou informe uma descrição para consultar os horários disponíveis nessa agenda.</p>
+            {% endif %}
+        </div>
+
+        <div class="mb-4">
+            <h2 class="h5">Serviços (opcional)</h2>
+            {% if form.servicos.errors %}{% for error in form.servicos.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}{% endif %}
+            <div class="d-flex flex-wrap gap-3">
+                {% for checkbox in form.servicos %}
+                <div class="form-check">
+                    {{ checkbox.tag }}
+                    <label class="form-check-label" for="{{ checkbox.id_for_label }}">{{ checkbox.choice_label }}</label>
+                </div>
+                {% empty %}
+                <p class="text-secondary mb-0">Nenhum serviço cadastrado.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-12 col-md-6">
+                <label for="{{ form.nome.id_for_label }}" class="form-label">{{ form.nome.label }}</label>
+                {{ form.nome }}
+                {% if form.nome.help_text %}<div class="form-text">{{ form.nome.help_text }}</div>{% endif %}
+                {% for error in form.nome.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+            </div>
+            <div class="col-12 col-md-6">
+                <label for="{{ form.telefone.id_for_label }}" class="form-label">{{ form.telefone.label }}</label>
+                {{ form.telefone }}
+                {% if form.telefone.help_text %}<div class="form-text">{{ form.telefone.help_text }}</div>{% endif %}
+                {% for error in form.telefone.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+            </div>
+            <div class="col-12 col-md-6">
+                <label for="{{ form.email.id_for_label }}" class="form-label">{{ form.email.label }}</label>
+                {{ form.email }}
+                {% if form.email.help_text %}<div class="form-text">{{ form.email.help_text }}</div>{% endif %}
+                {% for error in form.email.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+            </div>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2">
+            <button type="submit" class="btn btn-primary">{{ botao }}</button>
+            <a href="{% url 'listar_agendamento' %}" class="btn btn-outline-secondary">Cancelar</a>
+        </div>
+        </div>
+    </form>
+</div>
+<script>
+    (function () {
+        const radios = document.querySelectorAll('input[name="tipo_agendar_para"]');
+        const campos = document.querySelectorAll("[data-agendar-para-campo]");
+        const formularioDisponibilidade = document.querySelector('form[method="get"]');
+        const formularioAgendamento = document.querySelector('form[method="post"]');
+
+        function atualizarCampos() {
+            const selecionado = document.querySelector('input[name="tipo_agendar_para"]:checked');
+            campos.forEach(function (campo) {
+                const ativo = selecionado && campo.dataset.agendarParaCampo === selecionado.value;
+                campo.hidden = !ativo;
+                campo.querySelector("input, select").disabled = !ativo;
+            });
+        }
+
+        function sincronizarFiltros() {
+            const selecionado = document.querySelector('input[name="tipo_agendar_para"]:checked');
+            formularioDisponibilidade.elements.tipo_agendar_para.value = selecionado ? selecionado.value : "";
+            formularioDisponibilidade.elements.funcionario.value = formularioAgendamento.elements.funcionario.value;
+            formularioDisponibilidade.elements.descricao_agendar_para.value = formularioAgendamento.elements.descricao_agendar_para.value;
+        }
+
+        function atualizarDisponibilidade() {
+            sincronizarFiltros();
+            formularioDisponibilidade.submit();
+        }
+
+        radios.forEach(function (radio) {
+            radio.addEventListener("change", atualizarCampos);
+            radio.addEventListener("change", atualizarDisponibilidade);
+        });
+        formularioAgendamento.elements.funcionario.addEventListener("change", atualizarDisponibilidade);
+        formularioAgendamento.elements.descricao_agendar_para.addEventListener("change", atualizarDisponibilidade);
+        formularioDisponibilidade.elements.data.addEventListener("change", atualizarDisponibilidade);
+        atualizarCampos();
+    })();
+</script>
+{% endblock %}

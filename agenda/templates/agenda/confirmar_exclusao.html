@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Excluir agendamento | Cash4You{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="mb-4">
+        <h1 class="h3 mb-1">Excluir agendamento</h1>
+        <p class="text-secondary mb-0">Revise os dados antes de confirmar a exclusão.</p>
+    </div>
+    <div class="card c4y-confirm-card shadow-sm">
+        <div class="card-body">
+            <div class="alert alert-danger" role="alert">
+                <h2 class="h5 alert-heading">Esta ação não pode ser desfeita</h2>
+                <p class="mb-0">Você está prestes a excluir o agendamento de <strong>{{ agendamento.nome }}</strong> em {{ agendamento.data|date:"d/m/Y" }}.</p>
+            </div>
+            <form method="post" class="d-flex flex-wrap gap-2">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">Confirmar exclusão</button>
+                <a href="{% url 'listar_agendamento' %}" class="btn btn-outline-secondary">Cancelar</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
