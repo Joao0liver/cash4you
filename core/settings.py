@@ -50,6 +50,8 @@ INSTALLED_APPS = [
     'catalogo',
     'vendaitem',
     'agenda',
+    'venda',
+    'configuracao',
 ]
 
 MIDDLEWARE = [
