@@ -220,26 +220,37 @@ def editar_agendamento(request, id):
     funcionario_id, descricao_agendar_para = recurso_selecionado(request, agendamento,)
 
     if request.method == "POST" and form.is_valid():
+        try:
+            with transaction.atomic():
 
-        agendamento = form.save()
+                agendamento = form.save()
 
-        # Remove os horários antigos
-        agendamento.horarios.all().delete
+                # Remove os horários antigos
+                agendamento.horarios.all().delete()
 
-        inicio_horarios = [
-            datetime.strptime(valor, '%H:%M').time()
-            for valor in form.cleaned_data['horarios']
-        ]
+                inicio_horarios = [
+                    datetime.strptime(valor, '%H:%M').time()
+                    for valor in form.cleaned_data['horarios']
+                ]
 
-        for inicio in inicio_horarios:
-
-            fim = (
-                datetime.combine(agendamento.data, inicio) + timedelta(minutes=30)
-            ).time()
-
-            HorarioAgendado.objects.create(agendamento=agendamento, inicio=inicio, fim=fim)
-
-        return redirect('listar_agendamento')
+                HorarioAgendado.objects.bulk_create(
+                    [
+                        HorarioAgendado(
+                            agendamento = agendamento,
+                            inicio = inicio,
+                            fim = (datetime.combine(agendamento.data, inicio) + timedelta(minutes=30)).time()
+                        )
+                        for inicio in inicio_horarios
+                    ]
+                )
+        except IntegrityError:
+            form.add_error(
+                'horarios', 
+                'Um ou mais horários acabaram de ser reservados. ',
+                'Atualize a página e tente novamente.'
+            )
+        else:
+            return redirect('listar_agendamento')
 
     return render(
         request,
