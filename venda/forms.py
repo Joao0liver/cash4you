@@ -2,35 +2,46 @@ from decimal import Decimal, InvalidOperation
 
 from django import forms
 
-from produto.models import Produto
-from servico.models import Servico
+from catalogo.models import Produto, Servico 
+from configuracao.models import DadosEstabelecimento
 
-from .models import DadosEstabelecimento, Venda
-
+from .models import PagamentoVenda
 
 class ValorMoedaField(forms.CharField):
+
     def to_python(self, value):
         value = super().to_python(value)
+
         if not value:
             return None
 
         valor = value.replace("R$", "").replace(" ", "").strip()
+
         if "," in valor:
             valor = valor.replace(".", "").replace(",", ".")
+
         try:
             return Decimal(valor)
         except InvalidOperation as exc:
-            raise forms.ValidationError("Informe um valor monetário válido.") from exc
-
+            raise forms.ValidationError(
+                "Informe um valor monetário válido."
+            ) from exc
 
 class FinalizarVendaForm(forms.Form):
+
     MAX_PAGAMENTOS_ADICIONAIS = 6
 
     forma_pagamento = forms.ChoiceField(
-        choices=Venda.FormaPagamento.choices,
+        choices=PagamentoVenda.FormaPagamento.choices,
         label="Forma de pagamento",
-        widget=forms.Select(attrs={"class": "form-select", "id": "forma-pagamento"}),
+        widget=forms.Select(
+            attrs={
+                "class": "form-select", 
+                "id": "forma-pagamento"
+            }
+        ),
     )
+
     valor_recebido = ValorMoedaField(
         required=False,
         label="Valor do pagamento principal",
@@ -43,12 +54,13 @@ class FinalizarVendaForm(forms.Form):
             }
         ),
     )
+
     quantidade_pagamentos_adicionais = forms.IntegerField(
         required=False,
         min_value=0,
         max_value=MAX_PAGAMENTOS_ADICIONAIS,
         initial=0,
-        label="Quantidade de múltiplos pagamentos",
+        label="Quantidade de pagamentos adicionais",
         widget=forms.NumberInput(
             attrs={
                 "class": "form-control",
@@ -59,6 +71,7 @@ class FinalizarVendaForm(forms.Form):
             }
         ),
     )
+
     pagamento_multiplo = forms.BooleanField(
         required=False,
         label="Múltiplos Pagamentos",
@@ -69,6 +82,7 @@ class FinalizarVendaForm(forms.Form):
             }
         ),
     )
+
     nome_cliente = forms.CharField(
         required=False,
         max_length=120,
@@ -81,6 +95,7 @@ class FinalizarVendaForm(forms.Form):
             }
         ),
     )
+
     telefone_whatsapp = forms.CharField(
         required=False,
         label="Telefone do cliente para WhatsApp (opcional)",
@@ -95,15 +110,20 @@ class FinalizarVendaForm(forms.Form):
     )
 
     def __init__(self, *args, total, **kwargs):
-        self.total = total
-        super().__init__(*args, **kwargs)
-        self.quantidade_pagamentos_adicionais = self._obter_quantidade_pagamentos_adicionais()
-        self._configurar_pagamentos_adicionais()
+        self.total = Decimal(total or '0.00')
 
-    def _obter_quantidade_pagamentos_adicionais(self):
+        super().__init__(*args, **kwargs)
+
+        self.quantidade_pagamentos_adicionais = self.obter_quantidade_pagamentos_adicionais()
+        self.configurar_pagamentos_adicionais()
+
+    # PAGAMENTO ADICIONAIS ===============================================================
+    def obter_quantidade_pagamentos_adicionais(self):
         quantidade = 0
+
         if self.is_bound:
             valor = self.data.get("quantidade_pagamentos_adicionais")
+
             if valor not in (None, ""):
                 try:
                     quantidade = int(valor)
@@ -111,17 +131,24 @@ class FinalizarVendaForm(forms.Form):
                     quantidade = 0
 
             indices_presentes = []
+
             for chave in self.data:
+
                 if chave.startswith("forma_pagamento_") or chave.startswith("valor_pagamento_"):
                     partes = chave.split("_")
+
                     if len(partes) >= 3 and partes[-1].isdigit():
                         indices_presentes.append(int(partes[-1]))
+
             if indices_presentes:
                 quantidade = max(quantidade, max(indices_presentes) - 1)
+
         else:
             valor = self.initial.get("quantidade_pagamentos_adicionais")
+
             if valor is None:
                 valor = self.fields["quantidade_pagamentos_adicionais"].initial
+
             if valor not in (None, ""):
                 try:
                     quantidade = int(valor)
@@ -130,20 +157,28 @@ class FinalizarVendaForm(forms.Form):
 
         return max(0, min(quantidade, self.MAX_PAGAMENTOS_ADICIONAIS))
 
-    def _configurar_pagamentos_adicionais(self):
+    def configurar_pagamentos_adicionais(self):
         for nome in list(self.fields):
+
             if nome.startswith("forma_pagamento_") and nome != "forma_pagamento":
                 del self.fields[nome]
-            if nome.startswith("valor_pagamento_"):
+
+            elif nome.startswith("valor_pagamento_"):
                 del self.fields[nome]
 
         for indice in range(2, self.quantidade_pagamentos_adicionais + 2):
+
             self.fields[f"forma_pagamento_{indice}"] = forms.ChoiceField(
-                choices=Venda.FormaPagamento.choices,
+                choices=PagamentoVenda.FormaPagamento.choices,
                 required=False,
                 label=f"Pagamento {indice}",
-                widget=forms.Select(attrs={"class": "form-select"}),
+                widget=forms.Select(
+                    attrs={
+                        "class": "form-select"
+                    }
+                ),
             )
+
             self.fields[f"valor_pagamento_{indice}"] = ValorMoedaField(
                 required=False,
                 label=f"Valor do pagamento {indice}",
@@ -165,218 +200,265 @@ class FinalizarVendaForm(forms.Form):
             for indice in range(2, self.quantidade_pagamentos_adicionais + 2)
         ]
 
-    def _pagamentos_adicionais_indices(self):
+    def pagamentos_adicionais_indices(self):
         quantidade = self.cleaned_data.get(
             "quantidade_pagamentos_adicionais",
             self.quantidade_pagamentos_adicionais,
         )
+
         indices = []
+
         for chave in self.data:
+
             if chave.startswith("forma_pagamento_") or chave.startswith("valor_pagamento_"):
                 partes = chave.split("_")
+
                 if len(partes) >= 3 and partes[-1].isdigit():
                     indices.append(int(partes[-1]))
+
         if indices:
             return range(2, max(indices) + 1)
+        
         return range(2, (quantidade or 0) + 2)
 
-    def _pagamentos(self):
+    # CONSTRUÇÃO DOS PAGAMENTOS =============================================================
+    def pagamentos(self):
         pagamentos = []
-        valor_principal = self.cleaned_data.get("valor_recebido")
+
         forma_principal = self.cleaned_data.get("forma_pagamento")
+        valor_principal = self.cleaned_data.get("valor_recebido")
+
+        # Pagamentos adicionais
         pagamentos_adicionais = []
-        pagamento_multiplo = self.cleaned_data.get("pagamento_multiplo", False)
 
         for indice in self._pagamentos_adicionais_indices():
+
             forma_pagamento = self.cleaned_data.get(f"forma_pagamento_{indice}")
             valor_pagamento = self.cleaned_data.get(f"valor_pagamento_{indice}")
-            if forma_pagamento and valor_pagamento is not None:
-                pagamento_adicional = {
-                    "forma_pagamento": forma_pagamento,
-                    "valor": valor_pagamento,
-                    "troco": Decimal("0.00"),
-                }
-                pagamentos_adicionais.append(pagamento_adicional)
-                pagamentos.append(pagamento_adicional)
 
-        if pagamento_multiplo:
-            total_outros = sum(
-                (
-                    pagamento["valor"]
-                    for pagamento in pagamentos
-                    if pagamento["forma_pagamento"] != Venda.FormaPagamento.DINHEIRO
-                ),
-                Decimal("0.00"),
-            )
-            dinheiro = next(
-                (
-                    pagamento["valor"]
-                    for pagamento in pagamentos
-                    if pagamento["forma_pagamento"] == Venda.FormaPagamento.DINHEIRO
-                ),
-                None,
-            )
-            if dinheiro is not None:
-                pagamento_dinheiro = next(
-                    (
-                        pagamento
-                        for pagamento in pagamentos
-                        if pagamento["forma_pagamento"] == Venda.FormaPagamento.DINHEIRO
-                    ),
-                    None,
+            if forma_pagamento and valor_pagamento is not None:
+                pagamentos_adicionais.append(
+                    {
+                        'forma_pagamento': forma_pagamento,
+                        'valor_pagamento': valor_pagamento
+                    }
                 )
-                if pagamento_dinheiro is not None:
-                    parcela_necessaria = max(self.total - total_outros, Decimal("0.00"))
-                    pagamento_dinheiro["troco"] = max(dinheiro - parcela_necessaria, Decimal("0.00"))
+
+        # Soma dos pagamentos adicionais
+        total_adicionais = sum(
+            (
+                pagamento['valor']
+                for pagamento in pagamentos_adicionais
+            ),
+            Decimal('0.00')
+        )
+
+        # Nenhuma forma de pagamento
+        if not forma_principal:
+            return []
+
+        # PAGAMENTO ÚNICO
+        if not self.cleaned_data.get(
+            'pagamento_multiplo',
+            False
+        ):
+            if (
+                forma_principal == PagamentoVenda.FormaPagamento.DINHEIRO
+            ):
+                if valor_principal is None:
+                    return []
+
+                valor = self.total
+
+                troco = max(
+                    valor_principal - valor,
+                    Decimal('0.00')
+                )
+
+                pagamentos.append(
+                    {
+                        'forma_pagamento': forma_principal,
+                        'valor_pagamento': valor_pagamento,
+                        'valor_recebido': valor_principal,
+                        'troco': troco
+                    }
+                )
+
+            else:
+                pagamentos.append(
+                    {
+                        'forma_pagamento': forma_principal,
+                        'valor_pagamento': self.total,
+                        'valor_recebido': self.total,
+                        'troco': Decimal('0.00')
+                    }
+                )
+
             return pagamentos
 
-        if forma_principal:
-            if forma_principal == Venda.FormaPagamento.DINHEIRO:
-                if valor_principal is None:
-                    return pagamentos
-                principal_valor = valor_principal
-                principal_troco = max(valor_principal - self.total, Decimal("0.00"))
-            else:
-                if valor_principal is not None:
-                    principal_valor = valor_principal
-                elif not pagamentos_adicionais:
-                    principal_valor = self.total
-                else:
-                    principal_valor = None
-                principal_troco = Decimal("0.00")
+        # PAGAMENTO DIVIDIDO
+        restante = self.total - total_adicionais
 
-            if principal_valor is not None:
-                pagamentos.insert(
-                    0,
-                    {
-                        "forma_pagamento": forma_principal,
-                        "valor": principal_valor,
-                        "troco": principal_troco,
-                    },
-                )
+        if restante <= 0:
+            return []
+
+        # Principal em dinheiro
+        if (
+            forma_principal == PagamentoVenda.FormaPagamento.DINHEIRO
+        ):
+            if self.valor_principal is None:
+                return []
+
+            valor_principal_pagamento = restante
+
+            troco = max(
+                valor_principal - valor_principal_pagamento,
+                Decimal('0.00')
+            )
+
+            pagamentos.append(
+                {
+                    'forma_pagamento': forma_principal,
+                    'valor_pagamento': valor_principal_pagamento,
+                    'valor_recebido': valor_principal,
+                    'troco': troco
+                }
+            )
+
+        # Principal não monetário
+        else:
+            pagamentos.append(
+                {
+                    'forma_pagamento': forma_principal,
+                    'valor_pagamento': restante,
+                    'valor_recebido': restante,
+                    'troco': Decimal('0.00')  
+                }
+            )
+
+        # Adicionais
+        for pagamento in pagamentos_adicionais:
+            pagamentos.append(
+                {
+                    'forma_pagamento': pagamento['forma_pagamento'],
+                    'valor_pagamento': pagamento['valor_pagamento'],
+                    'valor_recebido': pagamento['valor_pagamento'],
+                    'troco': Decimal('0.00')
+                }
+            )
 
         return pagamentos
 
+    # VALIDAÇÕES ========================================================================
     def clean_valor_recebido(self):
         valor_recebido = self.cleaned_data["valor_recebido"]
+
         if valor_recebido is not None and valor_recebido < 0:
             raise forms.ValidationError("O valor recebido não pode ser negativo.")
+        
         return valor_recebido
-
-    def clean_valor_pagamento_2(self):
-        valor = self.cleaned_data.get("valor_pagamento_2")
-        if valor is not None and valor < 0:
-            raise forms.ValidationError("O valor do pagamento não pode ser negativo.")
-        return valor
-
-    def clean_valor_pagamento_3(self):
-        valor = self.cleaned_data.get("valor_pagamento_3")
-        if valor is not None and valor < 0:
-            raise forms.ValidationError("O valor do pagamento não pode ser negativo.")
-        return valor
 
     def clean_telefone_whatsapp(self):
         telefone = self.cleaned_data["telefone_whatsapp"]
         digitos = "".join(caractere for caractere in telefone if caractere.isdigit())
+
         if not digitos:
             return ""
+        
         if digitos.startswith("55") and len(digitos) in (12, 13):
             digitos = digitos[2:]
+
         if len(digitos) not in (10, 11):
             raise forms.ValidationError(
                 "Informe um telefone com DDD e 10 ou 11 dígitos para o WhatsApp."
             )
+        
         return digitos
 
     def clean(self):
         cleaned_data = super().clean()
-        forma_pagamento = cleaned_data.get("forma_pagamento")
-        valor_recebido = cleaned_data.get("valor_recebido")
+
+        forma_principal = cleaned_data.get("forma_pagamento")
+        valor_principal = cleaned_data.get("valor_recebido")
         pagamento_multiplo = cleaned_data.get("pagamento_multiplo", False)
+
         pagamentos_adicionais = []
 
-        for indice in self._pagamentos_adicionais_indices():
-            forma_pagamento_extra = cleaned_data.get(f"forma_pagamento_{indice}")
-            valor_pagamento_extra = cleaned_data.get(f"valor_pagamento_{indice}")
-            if forma_pagamento_extra and valor_pagamento_extra is not None:
-                if valor_pagamento_extra < 0:
+        for indice in self.pagamentos_adicionais_indices():
+
+            forma_pagamento = cleaned_data.get(f"forma_pagamento_{indice}")
+            valor_pagamento = cleaned_data.get(f"valor_pagamento_{indice}")
+
+            # Forma sem valor
+            if forma_pagamento and valor_pagamento is None:
                     self.add_error(
                         f"valor_pagamento_{indice}",
-                        "O valor do pagamento não pode ser negativo.",
+                        "Informe o valor desse pagamento.",
                     )
-                pagamentos_adicionais.append(valor_pagamento_extra)
+                    continue
 
-        if pagamento_multiplo:
-            if not pagamentos_adicionais:
-                self.add_error(
-                    "quantidade_pagamentos_adicionais",
-                    "Informe ao menos um pagamento adicional para o modo de múltiplos pagamentos.",
-                )
-                return cleaned_data
+            # Valor sem forma
+            if valor_pagamento is not None and not forma_pagamento:
+                    self.add_error(
+                        f'valor_pagamento_{indice}',
+                        'Informe o valor desse pagamento.'
+                    )
+                    continue
 
-            total_outros = sum(
-                (
-                    cleaned_data.get(f"valor_pagamento_{indice}")
-                    for indice in self._pagamentos_adicionais_indices()
-                    if cleaned_data.get(f"forma_pagamento_{indice}")
-                    and cleaned_data.get(f"forma_pagamento_{indice}")
-                    != Venda.FormaPagamento.DINHEIRO
-                ),
-                Decimal("0.00"),
-            )
-            total_dinheiro = sum(
-                (
-                    cleaned_data.get(f"valor_pagamento_{indice}")
-                    for indice in self._pagamentos_adicionais_indices()
-                    if cleaned_data.get(f"forma_pagamento_{indice}")
-                    == Venda.FormaPagamento.DINHEIRO
-                ),
-                Decimal("0.00"),
-            )
-            total_pagamentos = total_dinheiro + total_outros
-            if total_pagamentos < self.total:
-                self.add_error(
-                    None,
-                    "A soma dos pagamentos deve cobrir o total da venda.",
+            if forma_pagamento and valor_pagamento is not None:
+                if valor_pagamento <= 0:
+                    self.add_error(
+                        f'valor_pagamento_{indice}',
+                        'O valor do pagamento deve ser maior que zero.'
+                    )
+
+                pagamentos_adicionais.append(
+                    {
+                        'forma_pagamento': forma_pagamento,
+                        'valor_pagamento': valor_pagamento
+                    }
                 )
+
+        total_adicionais = sum(
+            (
+                pagamento['valor']
+                for pagamento in pagamentos_adicionais
+            ),
+            Decimal('0.00')
+        )
+
+        # PAGAMENTO ÚNICO
+        if not pagamento_multiplo:
+
+            if pagamentos_adicionais:
+                self.add_error(
+                    'pagamento_multiplo',
+                    'Ative a opção de múltiplos pagamentos para informar pagamentos adicionais.'
+                )
+
+            if (
+                forma_principal == PagamentoVenda.FormaPagamento.DINHEIRO
+            ):
+                if valor_principal is None:
+                    self.add_error(
+                        'valor_recebido',
+                        'Informe quanto foi recebido para calcular o troco.'
+                    )
+
+                elif valor_principal < self.total:
+                    self.add_error(
+                        'valor_recebido',
+                        'O valor recebido deve ser igual ou maior que o total da venda.'
+                    )
+            
+            elif forma_principal:
+                # Para cartão/pix o valor da venda é quitado integralmente pelo pagamento
+                pass
+                
             return cleaned_data
 
-        if forma_pagamento == Venda.FormaPagamento.DINHEIRO:
-            if valor_recebido is None and not pagamentos_adicionais:
-                self.add_error(
-                    "valor_recebido",
-                    "Informe quanto foi recebido para calcular o troco.",
-                )
-            elif valor_recebido is not None and valor_recebido < self.total and not pagamentos_adicionais:
-                self.add_error(
-                    "valor_recebido",
-                    "O valor recebido deve ser igual ou maior que o total da venda.",
-                )
-            elif pagamentos_adicionais:
-                total_pagamentos = (valor_recebido or Decimal("0.00")) + sum(
-                    pagamentos_adicionais,
-                    Decimal("0.00"),
-                )
-                if total_pagamentos != self.total:
-                    self.add_error(
-                        None,
-                        "A soma dos pagamentos deve ser igual ao total da venda.",
-                    )
-        else:
-            if valor_recebido is None and not pagamentos_adicionais:
-                cleaned_data["valor_recebido"] = None
-            else:
-                total_pagamentos = (valor_recebido or Decimal("0.00")) + sum(
-                    pagamentos_adicionais,
-                    Decimal("0.00"),
-                )
-                if total_pagamentos != self.total:
-                    self.add_error(
-                        None,
-                        "A soma dos pagamentos deve ser igual ao total da venda.",
-                    )
-        return cleaned_data
-
+        # PAGAMENTO DIVIDIDO
+        
 
 class DadosEstabelecimentoForm(forms.ModelForm):
     class Meta:

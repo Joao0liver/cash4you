@@ -9,8 +9,9 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.formats import date_format
 
-from produto.models import Produto
-from servico.models import Servico
+from catalogo.models import Item, Produto, Servico
+from vendaitem.models import VendaItem
+from configuracao.models import DadosEstabelecimento
 
 from .forms import (
     DadosEstabelecimentoForm,
@@ -18,49 +19,50 @@ from .forms import (
     FiltroVendasForm,
     FinalizarVendaForm,
 )
-from .models import DadosEstabelecimento, ItemVenda, PagamentoVenda, Venda
 
+from .models import PagamentoVenda, Venda
 
 CART_SESSION_KEY = "venda_cart"
-
 
 class EstoqueInsuficiente(Exception):
     pass
 
-
-def _formatar_moeda(valor):
+def formatar_moeda(valor):
     return f"{valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
-
-def _carrinho_sessao(request):
+def carrinho_sessao(request):
     return dict(request.session.get(CART_SESSION_KEY, {}))
 
-
-def _salvar_carrinho(request, carrinho):
+def salvar_carrinho(request, carrinho):
     request.session[CART_SESSION_KEY] = carrinho
     request.session.modified = True
 
-
-def _obter_item(tipo, item_id):
-    if tipo == ItemVenda.Tipo.PRODUTO:
-        return Produto.objects.filter(pk=item_id).first()
-    if tipo == ItemVenda.Tipo.SERVICO:
-        return Servico.objects.filter(pk=item_id).first()
+def obter_item(tipo, item_id):
+    if tipo == 'produto':
+        return Produto.objects.filter(id=item_id).first()
+    
+    if tipo == 'servico':
+        return Servico.objects.filter(id=item_id).first()
+    
     return None
 
+def montar_carrinho(request):
+    carrinho = carrinho_sessao(request)
 
-def _montar_carrinho(request):
-    carrinho = _carrinho_sessao(request)
     linhas = []
     total = Decimal("0.00")
     invalido = False
+
     for chave, quantidade in carrinho.items():
+
         try:
             tipo, item_id = chave.split(":", 1)
             quantidade = int(quantidade)
             item_id = int(item_id)
+
         except (ValueError, TypeError):
             invalido = True
+
             linhas.append(
                 {
                     "chave": chave,
@@ -71,9 +73,11 @@ def _montar_carrinho(request):
             )
             continue
 
-        item = _obter_item(tipo, item_id)
+        item = obter_item(tipo, item_id)
+
         if item is None or quantidade < 1:
             invalido = True
+
             linhas.append(
                 {
                     "chave": chave,
@@ -86,26 +90,31 @@ def _montar_carrinho(request):
 
         preco = item.preco_venda
         subtotal = preco * quantidade
+
         total += subtotal
+
         linhas.append(
             {
                 "chave": chave,
                 "tipo": tipo,
+                "item_id": item_id,
                 "descricao": item.descricao,
                 "preco_unitario": preco,
                 "quantidade": quantidade,
                 "subtotal": subtotal,
                 "disponivel": True,
-                "estoque": item.quantidade if tipo == ItemVenda.Tipo.PRODUTO else None,
+                "estoque": item.quantidade if tipo == 'produto' else None,
             }
         )
+
     return linhas, total, invalido
 
+def render_caixa(request, form=None):
+    linhas, total, invalido = montar_carrinho(request)
 
-def _render_caixa(request, form=None):
-    linhas, total, invalido = _montar_carrinho(request)
     if form is None:
         form = FinalizarVendaForm(total=total)
+
     return render(
         request,
         "venda/caixa.html",
@@ -120,11 +129,10 @@ def _render_caixa(request, form=None):
         },
     )
 
-
 def configurar_estabelecimento(request):
-    dados_estabelecimento = DadosEstabelecimento.objects.filter(pk=1).first()
+    dados_estabelecimento = DadosEstabelecimento.objects.filter(id=1).first()
     if dados_estabelecimento is None:
-        dados_estabelecimento = DadosEstabelecimento(pk=1)
+        dados_estabelecimento = DadosEstabelecimento(id=1)
     form = DadosEstabelecimentoForm(
         request.POST or None,
         instance=dados_estabelecimento,
@@ -142,68 +150,91 @@ def configurar_estabelecimento(request):
         {"form": form},
     )
 
-
 def caixa(request):
-    carrinho = _carrinho_sessao(request)
+    carrinho = carrinho_sessao(request)
+
     if request.method == "POST":
         acao = request.POST.get("acao")
 
+        # ADICIONAR ITEM AO CARRINHO =======================================================
         if acao == "adicionar":
             tipo = request.POST.get("tipo")
             item_id = request.POST.get("item_id")
+
             try:
                 item_id = int(item_id)
             except (TypeError, ValueError):
                 return HttpResponseBadRequest("Item inválido.")
-            item = _obter_item(tipo, item_id)
+            
+            item = obter_item(tipo, item_id)
+
             if item is None:
                 messages.error(request, "O item selecionado não existe mais.")
+
             else:
-                chave = f"{tipo}:{item.pk}"
+                chave = f"{tipo}:{item.id}"
                 quantidade = int(carrinho.get(chave, 0)) + 1
-                if tipo == ItemVenda.Tipo.PRODUTO and quantidade > item.quantidade:
+
+                # Somente produtos possuem controle de estoque
+                if tipo == 'produto' and quantidade > item.quantidade:
                     messages.error(
                         request,
                         f"Estoque insuficiente para {item.descricao}. "
                         f"Disponível: {item.quantidade}.",
                     )
+
                 else:
                     carrinho[chave] = quantidade
-                    _salvar_carrinho(request, carrinho)
+                    salvar_carrinho(request, carrinho)
+
             return redirect("caixa")
 
+        # ATUALIZAR QUANTIDADE =============================================================
         if acao == "atualizar":
             chave = request.POST.get("chave", "")
+
             try:
                 tipo, item_id = chave.split(":", 1)
-                item = _obter_item(tipo, int(item_id))
+                item_id = int(item_id)
+                item = obter_item(tipo, item_id)
                 quantidade = int(request.POST.get("quantidade", ""))
             except (ValueError, TypeError):
                 item = None
                 quantidade = 0
+                tipo = None
+                
             if chave not in carrinho or item is None or quantidade < 1:
                 messages.error(request, "Informe uma quantidade válida para um item do carrinho.")
-            elif tipo == ItemVenda.Tipo.PRODUTO and quantidade > item.quantidade:
+
+            elif tipo == 'produto' and quantidade > item.quantidade:
                 messages.error(
                     request,
                     f"Estoque insuficiente para {item.descricao}. "
                     f"Disponível: {item.quantidade}.",
                 )
+
             else:
                 carrinho[chave] = quantidade
-                _salvar_carrinho(request, carrinho)
+                salvar_carrinho(request, carrinho)
+
             return redirect("caixa")
 
+        # REMOVER ITEM DO CARRINHO =========================================================
         if acao == "remover":
             chave = request.POST.get("chave", "")
+
             if chave in carrinho:
                 del carrinho[chave]
-                _salvar_carrinho(request, carrinho)
+                salvar_carrinho(request, carrinho)
+
                 messages.success(request, "Item removido do carrinho.")
+
             return redirect("caixa")
 
+        # FINALIZAR VENDA ==================================================================
         if acao == "finalizar":
-            linhas, total, invalido = _montar_carrinho(request)
+            linhas, total, invalido = montar_carrinho(request)
+
             if not linhas or invalido:
                 messages.error(
                     request,
@@ -212,205 +243,203 @@ def caixa(request):
                 return redirect("caixa")
 
             form = FinalizarVendaForm(request.POST, total=total)
+
             if form.is_valid():
-                dados_estabelecimento = DadosEstabelecimento.objects.filter(pk=1).first()
                 try:
                     with transaction.atomic():
+
+                        # Pagamentos
                         pagamentos = form._pagamentos()
+
                         if not pagamentos:
                             raise ValueError("Nenhum pagamento foi informado.")
 
-                        valor_recebido_total = None
-                        if pagamentos and pagamentos[0]["forma_pagamento"] == Venda.FormaPagamento.DINHEIRO:
-                            valor_recebido_total = sum(
-                                (pagamento["valor"] for pagamento in pagamentos),
-                                Decimal("0.00"),
-                            )
-                        troco_total = sum(
-                            (pagamento["troco"] for pagamento in pagamentos),
-                            Decimal("0.00"),
-                        )
-
+                        # Criação da venda
                         venda = Venda.objects.create(
-                            forma_pagamento=pagamentos[0]["forma_pagamento"],
-                            nome_cliente=form.cleaned_data["nome_cliente"],
-                            telefone_whatsapp=form.cleaned_data["telefone_whatsapp"],
-                            nome_estabelecimento=(
-                                dados_estabelecimento.nome if dados_estabelecimento else ""
-                            ),
-                            horario_funcionamento=(
-                                dados_estabelecimento.horario_funcionamento
-                                if dados_estabelecimento
-                                else ""
-                            ),
-                            endereco_estabelecimento=(
-                                dados_estabelecimento.endereco if dados_estabelecimento else ""
-                            ),
-                            total=total,
-                            valor_recebido=valor_recebido_total,
-                            troco=troco_total,
-                        )
-                        PagamentoVenda.objects.bulk_create(
-                            [
-                                PagamentoVenda(
-                                    venda=venda,
-                                    forma_pagamento=pagamento["forma_pagamento"],
-                                    valor=pagamento["valor"],
-                                    troco=pagamento["troco"],
-                                )
-                                for pagamento in pagamentos
-                            ]
+                            nome_cliente = form.cleaned_data['nome_cliente'],
+                            telefone_whatsapp = form.cleaned_data['telefone_whatsapp'],
+                            total = total
                         )
 
+                        # Criação dos pagamentos
+                        for pagamento in pagamentos:
+                            PagamentoVenda.objects.create(
+                                venda = venda,
+                                forma_pagamento = pagamento['forma_pagamento'],
+                                valor = pagamento['valor'],
+                                valor_recebido = pagamento.get('valor_recebido', pagamento['valor_recebido']),
+                                troco = pagamento.get('troco', Decimal('0.00'))
+                            )
+
+                        # Criação dos itens da venda + baixa no estoque
                         for linha in linhas:
+
                             tipo, item_id = linha["chave"].split(":", 1)
-                            if tipo == ItemVenda.Tipo.PRODUTO:
+
+                            item = Item.objects.filter(
+                                id = item_id
+                            ).first()
+
+                            if item is None:
+                                raise ValueError(
+                                    f'O item "{linha['descricao']}" '
+                                    'não existe mais no catálogo.'
+                                )
+
+                            # Produtos possuem estoque
+                            if tipo == 'produto':
                                 atualizado = Produto.objects.filter(
-                                    pk=item_id,
+                                    id=item_id,
                                     quantidade__gte=linha["quantidade"],
-                                ).update(quantidade=F("quantidade") - linha["quantidade"])
+                                ).update(
+                                    quantidade=F("quantidade") - linha["quantidade"]
+                                )
+
                                 if atualizado != 1:
                                     raise EstoqueInsuficiente(
                                         f"Estoque insuficiente para {linha['descricao']}; "
                                         "a venda não foi concluída."
                                     )
-                                produto = Produto.objects.get(pk=item_id)
-                                ItemVenda.objects.create(
-                                    venda=venda,
-                                    tipo=tipo,
-                                    produto=produto,
-                                    descricao=linha["descricao"],
-                                    preco_unitario=linha["preco_unitario"],
-                                    quantidade=linha["quantidade"],
-                                    subtotal=linha["subtotal"],
+                                
+                                VendaItem.objects.create(
+                                    venda = venda,
+                                    item = item,
+                                    quantidade = linha['quantidade'],
+                                    valor_unitario = linha['preco_unitario']
                                 )
-                            else:
-                                ItemVenda.objects.create(
-                                    venda=venda,
-                                    tipo=tipo,
-                                    servico=Servico.objects.get(pk=item_id),
-                                    descricao=linha["descricao"],
-                                    preco_unitario=linha["preco_unitario"],
-                                    quantidade=linha["quantidade"],
-                                    subtotal=linha["subtotal"],
-                                )
+
                 except (EstoqueInsuficiente, ValueError) as exc:
                     messages.error(request, str(exc))
+
                     return redirect("caixa")
 
-                _salvar_carrinho(request, {})
-                return redirect("detalhe_venda", pk=venda.pk)
+                # Venda concluída com sucesso
+                salvar_carrinho(request, {})
 
-            return _render_caixa(request, form=form)
+                return redirect("detalhe_venda", id=venda.id)
 
+            # Formulário inválido
+            return render_caixa(request, form=form)
+
+        # AÇÃO INVÁLIDA ====================================================================
         messages.error(request, "Ação inválida.")
+
         return redirect("caixa")
 
-    return _render_caixa(request)
-
+    # Por GET
+    return render_caixa(request)
 
 def listar_vendas(request):
     form = FiltroVendasForm(request.GET or None)
-    vendas = Venda.objects.prefetch_related("itens")
+
+    vendas = Venda.objects.prefetch_related("itens", 'pagamentos')
+
     if form.is_valid():
         pagamentos = form.cleaned_data["pagamentos"]
         data_inicial = form.cleaned_data["data_inicial"]
         data_final = form.cleaned_data["data_final"]
+
         if pagamentos:
-            vendas = vendas.filter(forma_pagamento__in=pagamentos)
+            vendas = vendas.filter(pagamentos__forma_pagamento__in=pagamentos).distinct()
+
         if data_inicial:
             vendas = vendas.filter(criada_em__date__gte=data_inicial)
+
         if data_final:
             vendas = vendas.filter(criada_em__date__lte=data_final)
-    return render(
-        request,
-        "venda/listar_vendas.html",
-        {"vendas": vendas, "form_filtro": form},
-    )
 
+    return render(request, "venda/listar_vendas.html", {"vendas" : vendas, "form_filtro" : form})
 
-def detalhe_venda(request, pk):
-    venda = get_object_or_404(Venda.objects.prefetch_related("itens"), pk=pk)
-    whatsapp_url = None
+def detalhe_venda(request, id):
+    venda = get_object_or_404(Venda.objects.prefetch_related("itens__item", 'pagamentos'), id=id)
     pagamentos = list(venda.pagamentos.all())
+
+    whatsapp_url = None
+
     if venda.telefone_whatsapp:
         data_completa = date_format(venda.criada_em, r"l, j \d\e F \d\e Y")
-        pagamentos_formatados = (
-            ", ".join(
-                f"{pagamento.get_forma_pagamento_display()} — R$ {_formatar_moeda(pagamento.valor)}"
-                for pagamento in pagamentos
+
+        pagamentos_formatados = ', '.join(
+            (
+                f'{pagamento.get_forma_pagamento_display()}'
+                f'- R$ {formatar_moeda(pagamento.valor)}'
             )
-            if pagamentos
-            else f"{venda.get_forma_pagamento_display()} — R$ {_formatar_moeda(venda.total)}"
+            for pagamento in pagamentos
         )
+
         mensagem = [
             f"Olá {venda.nome_cliente}," if venda.nome_cliente else "Olá,",
             "Segue o comprovante de pagamento solicitado:",
             "",
+            f'Data: {data_completa}',
+            '',
         ]
-        if venda.nome_estabelecimento:
-            mensagem.append(venda.nome_estabelecimento.upper())
-        mensagem.extend(
-            [
-                f"Data: {data_completa}",
-                "",
-                *[
-                    f"{item.descricao} x {item.quantidade} — R$ {_formatar_moeda(item.subtotal)}"
-                    for item in venda.itens.all()
-                ],
-                "",
-                f"Valor total: R$ {_formatar_moeda(venda.total)}",
-                f"Pagamento: {pagamentos_formatados}",
-            ]
+
+        for item in venda.itens.all():
+            subtotal = item.valor * item.quantidade
+
+            mensagem.append(
+                '',
+                f'{item.item.descricao} x {item.quantidade} '
+                f'- R$ {formatar_moeda(subtotal)}'
+            )
+
+        mensagem.extend([
+            '',
+            f'Valor total: R$ {formatar_moeda(venda.total)}'
+            f'Pagamento: {pagamentos_formatados}'
+        ])
+
+        troco_total = sum(
+            (pagamento.troco for pagamento in pagamentos),
+            Decimal('0.00'),
         )
-        if venda.troco:
-            mensagem.append(f"Troco: R$ {_formatar_moeda(venda.troco)}")
-        mensagem.extend(
-            [
-                "",
-                "Agradecemos por sua preferência!",
-                "É um prazer tê-lo como nosso cliente 🤩",
-            ]
-        )
-        if venda.nome_estabelecimento:
-            mensagem.append(venda.nome_estabelecimento)
-        if venda.horario_funcionamento:
-            mensagem.append(venda.horario_funcionamento)
-        if venda.endereco_estabelecimento:
-            mensagem.append(venda.endereco_estabelecimento)
+
+        if troco_total:
+            mensagem.append(
+                f'Troco: R$ {formatar_moeda(troco_total)}'
+            )
+
+        dados_estabelecimento = DadosEstabelecimento.objects.filter(id=1).first()
+
+        if dados_estabelecimento:
+            mensagem.extend([
+                '',
+                dados_estabelecimento.nome,
+                dados_estabelecimento.horario_funcionamento,
+                dados_estabelecimento.endereco
+            ])
+
         telefone = venda.telefone_whatsapp
+
         numero_whatsapp = f"55{telefone}" if len(telefone) in (10, 11) else telefone
         whatsapp_url = (
             f"https://wa.me/{numero_whatsapp}?text={quote(chr(10).join(mensagem))}"
         )
-    return render(
-        request,
-        "venda/detalhe_venda.html",
-        {"venda": venda, "whatsapp_url": whatsapp_url, "pagamentos": pagamentos},
-    )
 
+    return render(request, "venda/detalhe_venda.html", {"venda": venda, "whatsapp_url": whatsapp_url, "pagamentos": pagamentos})
 
-def editar_venda(request, pk):
+def editar_venda(request, id):
     venda = get_object_or_404(
         Venda.objects.prefetch_related("itens"),
-        pk=pk,
+        id=id,
     )
     form = EditarVendaForm(request.POST or None, venda=venda)
     if request.method == "POST" and form.is_valid():
         try:
             with transaction.atomic():
-                venda = Venda.objects.select_for_update().get(pk=venda.pk)
+                venda = Venda.objects.select_for_update().get(id=venda.id)
                 itens_antigos = list(venda.itens.select_related("produto", "servico"))
                 for item in itens_antigos:
                     if item.produto_id:
-                        Produto.objects.filter(pk=item.produto_id).update(
+                        Produto.objects.filter(id=item.produto_id).update(
                             quantidade=F("quantidade") + item.quantidade
                         )
 
                 for tipo, catalogo_item, quantidade in form.itens_selecionados():
                     if tipo == ItemVenda.Tipo.PRODUTO:
                         atualizado = Produto.objects.filter(
-                            pk=catalogo_item.pk,
+                            pk=catalogo_item.id,
                             quantidade__gte=quantidade,
                         ).update(quantidade=F("quantidade") - quantidade)
                         if atualizado != 1:
@@ -448,7 +477,7 @@ def editar_venda(request, pk):
             form.add_error(None, str(exc))
         else:
             messages.success(request, "Venda atualizada com sucesso.")
-            return redirect("detalhe_venda", pk=venda.pk)
+            return redirect("detalhe_venda", id=venda.id)
 
     return render(
         request,
