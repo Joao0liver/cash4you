@@ -435,7 +435,7 @@ def editar_venda(request, id):
 
                 for item in itens_antigos:
 
-                    if item.produto_id:
+                    if item.item_id:
                         Produto.objects.filter(id=item.item_id).update(
                             quantidade=F("quantidade") + item.quantidade
                         )
@@ -469,10 +469,10 @@ def editar_venda(request, id):
 
                     PagamentoVenda.objects.create(
                         venda = venda,
-                        forma_pagamente = pagamento['forma_pagamento'],
+                        forma_pagamento = pagamento['forma_pagamento'],
                         valor = pagamento['valor'],
                         valor_recebido = pagamento.get('valor_recebido', pagamento['valor']),
-                        troco = pagamento.get('troco', Decimal['0.00'])
+                        troco = pagamento.get('troco', Decimal('0.00'))
                     )
 
                 # Remove os itens antigos
