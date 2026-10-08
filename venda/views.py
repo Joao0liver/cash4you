@@ -424,59 +424,78 @@ def editar_venda(request, id):
         Venda.objects.prefetch_related("itens"),
         id=id,
     )
+
     form = EditarVendaForm(request.POST or None, venda=venda)
+
     if request.method == "POST" and form.is_valid():
         try:
             with transaction.atomic():
+                
                 venda = Venda.objects.select_for_update().get(id=venda.id)
-                itens_antigos = list(venda.itens.select_related("produto", "servico"))
+                itens_antigos = list(venda.itens.select_related('item'))
+
                 for item in itens_antigos:
+
                     if item.produto_id:
-                        Produto.objects.filter(id=item.produto_id).update(
+                        Produto.objects.filter(id=item.item_id).update(
                             quantidade=F("quantidade") + item.quantidade
                         )
 
                 for tipo, catalogo_item, quantidade in form.itens_selecionados():
-                    if tipo == ItemVenda.Tipo.PRODUTO:
+
+                    if tipo == 'produto':
                         atualizado = Produto.objects.filter(
-                            pk=catalogo_item.id,
+                            id=catalogo_item.id,
                             quantidade__gte=quantidade,
                         ).update(quantidade=F("quantidade") - quantidade)
+
                         if atualizado != 1:
                             raise EstoqueInsuficiente(
                                 f"Estoque insuficiente para {catalogo_item.descricao}; "
                                 "a edição não foi salva."
                             )
 
-                venda.forma_pagamento = form.cleaned_data["forma_pagamento"]
-                venda.nome_cliente = form.cleaned_data["nome_cliente"]
-                venda.telefone_whatsapp = form.cleaned_data["telefone_whatsapp"]
+                # Atualiza os dados da venda
+                venda.nome_cliente = form.cleaned_data['nome_cliente']
+                venda.telefone_whatsapp = form.cleaned_data['telefone_whatsapp']
                 venda.total = form.total
-                if venda.forma_pagamento == Venda.FormaPagamento.DINHEIRO:
-                    venda.valor_recebido = form.cleaned_data["valor_recebido"]
-                    venda.troco = venda.valor_recebido - venda.total
-                else:
-                    venda.valor_recebido = None
-                    venda.troco = Decimal("0.00")
                 venda.save()
 
-                venda.itens.all().delete()
-                for tipo, catalogo_item, quantidade in form.itens_selecionados():
-                    preco = catalogo_item.preco_venda
-                    ItemVenda.objects.create(
-                        venda=venda,
-                        tipo=tipo,
-                        produto=catalogo_item if tipo == ItemVenda.Tipo.PRODUTO else None,
-                        servico=catalogo_item if tipo == ItemVenda.Tipo.SERVICO else None,
-                        descricao=catalogo_item.descricao,
-                        preco_unitario=preco,
-                        quantidade=quantidade,
-                        subtotal=preco * quantidade,
+                # Atualiza os dados de pagamento da venda
+                pagamentos = form.pagamentos()
+
+                venda.pagamentos.all().delete()
+
+                for pagamento in pagamentos:
+
+                    PagamentoVenda.objects.create(
+                        venda = venda,
+                        forma_pagamente = pagamento['forma_pagamento'],
+                        valor = pagamento['valor'],
+                        valor_recebido = pagamento.get('valor_recebido', pagamento['valor']),
+                        troco = pagamento.get('troco', Decimal['0.00'])
                     )
+
+                # Remove os itens antigos
+                venda.itens.all().delete()
+
+                # Cria os novos itens
+                for tipo, catalogo_item, quantidade in form.itens_selecionados():
+
+                    preco = catalogo_item.preco_venda
+                    VendaItem.objects.create(
+                        venda=venda,
+                        item=catalogo_item,
+                        quantidade=quantidade,
+                        valor_unitario=preco,
+                    )
+
         except EstoqueInsuficiente as exc:
             form.add_error(None, str(exc))
+
         else:
             messages.success(request, "Venda atualizada com sucesso.")
+
             return redirect("detalhe_venda", id=venda.id)
 
     return render(
@@ -487,25 +506,35 @@ def editar_venda(request, id):
             "form": form,
             "produto_campos": form.produto_campos,
             "servico_campos": form.servico_campos,
+            "total": (
+                form.total if request.method == "POST" else venda.total
+            )
         },
     )
-
 
 def excluir_venda(request, pk):
     venda = get_object_or_404(
         Venda.objects.prefetch_related("itens"),
         pk=pk,
     )
+
     if request.method == "POST":
         with transaction.atomic():
-            venda = Venda.objects.select_for_update().get(pk=venda.pk)
+
+            venda = Venda.objects.select_for_update().get(id=venda.id)
+
             for item in venda.itens.all():
-                if item.produto_id:
-                    Produto.objects.filter(pk=item.produto_id).update(
-                        quantidade=F("quantidade") + item.quantidade
-                    )
+                Produto.objects.filter(
+                    id=item.item_id
+                ).update(
+                    quantidade=F('quantidade') + item.quantidade
+                )
+
+            venda.itens.all().delete()
             venda.delete()
+        
         messages.success(request, "Venda excluída e estoque dos produtos reposto.")
+        
         return redirect("listar_vendas")
 
     return render(request, "venda/confirmar_exclusao.html", {"venda": venda})

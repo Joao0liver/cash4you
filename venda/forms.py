@@ -536,7 +536,6 @@ class FiltroVendasForm(forms.Form):
 
         return cleaned_data
 
-
 class EditarVendaForm(FinalizarVendaForm):
 
     def __init__(self, *args, venda, **kwargs):

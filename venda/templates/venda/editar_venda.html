@@ -95,7 +95,7 @@
                         {% if form.telefone_whatsapp.errors %}<div class="text-danger">{{ form.telefone_whatsapp.errors }}</div>{% endif %}
                     </div>
                 </div>
-                <p class="mt-3 mb-0"><strong>Total recalculado:</strong> R$ {{ form.total|floatformat:2 }}</p>
+                <p class="mt-3 mb-0"><strong>Total recalculado:</strong> R$ {{ total|floatformat:2 }}</p>
             </div>
         </div>
 
