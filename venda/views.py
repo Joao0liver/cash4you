@@ -511,10 +511,10 @@ def editar_venda(request, id):
         },
     )
 
-def excluir_venda(request, pk):
+def excluir_venda(request, id):
     venda = get_object_or_404(
         Venda.objects.prefetch_related("itens"),
-        pk=pk,
+        id=id,
     )
 
     if request.method == "POST":
