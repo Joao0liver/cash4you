@@ -458,54 +458,51 @@ class FinalizarVendaForm(forms.Form):
             return cleaned_data
 
         # PAGAMENTO DIVIDIDO
-        
+        if not pagamentos_adicionais:
+            self.add_error(
+                'quantidade_pagamentos_adicionais',
+                'Informe ao menos um pagamento adicional para o modo de múltiplos pagamentos.'
+            )
 
-class DadosEstabelecimentoForm(forms.ModelForm):
-    class Meta:
-        model = DadosEstabelecimento
-        fields = ("nome", "horario_funcionamento", "endereco", "limite_gastos")
-        labels = {
-            "nome": "Nome do estabelecimento",
-            "horario_funcionamento": "Horário de funcionamento",
-            "endereco": "Endereço do estabelecimento",
-            "limite_gastos": "Margem máxima de gastos (R$)",
-        }
-        widgets = {
-            "nome": forms.TextInput(
-                attrs={
-                    "class": "form-control",
-                    "placeholder": "Nome do estabelecimento",
-                    "autocomplete": "organization",
-                }
-            ),
-            "horario_funcionamento": forms.TextInput(
-                attrs={
-                    "class": "form-control",
-                    "placeholder": "Ex.: Seg. a sex., das 9h às 18h",
-                }
-            ),
-            "endereco": forms.TextInput(
-                attrs={
-                    "class": "form-control",
-                    "placeholder": "Rua, número, bairro e cidade",
-                    "autocomplete": "street-address",
-                }
-            ),
-            "limite_gastos": forms.NumberInput(
-                attrs={
-                    "class": "form-control",
-                    "min": "0",
-                    "step": "0.01",
-                    "placeholder": "Ex.: 5000,00",
-                }
-            ),
-        }
+            return cleaned_data
 
+        # Os pagamentos adicionais não podem ultrapassar o total.
+        if total_adicionais > self.total:
+            self.add_error(
+                None,
+                'A soma dos pagamentos adicionais não pode ultrapassar o total da venda.'
+            )
+
+            return cleaned_data
+
+        restante = self.total - total_adicionais
+
+        # Principal em dinheiro
+        if (forma_principal == PagamentoVenda.FormaPagamento.DINHEIRO):
+
+            if valor_principal is None:
+                self.add_error(
+                    'valor_recebido',
+                    'Informe quanto foi recebido em dinheiro.'
+                )
+
+            elif valor_principal < restante:
+                self.add_error(
+                    'valor_recebido',
+                    'O valor recebido em dinheiro deve ser igual ou maior que a parte da venda paga em dinheiro.'
+                )
+
+        elif forma_principal:
+            # Nesse caso, o restante será atribuído ao pagamento principal automaticamente.
+            pass
+
+        return cleaned_data
 
 class FiltroVendasForm(forms.Form):
+
     pagamentos = forms.MultipleChoiceField(
         required=False,
-        choices=Venda.FormaPagamento.choices,
+        choices=PagamentoVenda.FormaPagamento.choices,
         label="Pagamento",
         widget=forms.SelectMultiple(
             attrs={
@@ -528,58 +525,81 @@ class FiltroVendasForm(forms.Form):
 
     def clean(self):
         cleaned_data = super().clean()
+
         data_inicial = cleaned_data.get("data_inicial")
         data_final = cleaned_data.get("data_final")
+
         if data_inicial and data_final and data_inicial > data_final:
             self.add_error(
                 "data_final",
                 "A data final deve ser igual ou posterior à data inicial.",
             )
+
         return cleaned_data
 
 
 class EditarVendaForm(FinalizarVendaForm):
+
     def __init__(self, *args, venda, **kwargs):
         self.venda = venda
         self.produtos = list(Produto.objects.order_by("descricao"))
         self.servicos = list(Servico.objects.order_by("descricao"))
         self.produtos_vendidos = {}
         self.servicos_vendidos = {}
-        for item in venda.itens.all():
-            if item.produto_id:
-                self.produtos_vendidos[item.produto_id] = (
-                    self.produtos_vendidos.get(item.produto_id, 0) + item.quantidade
-                )
-            elif item.servico_id:
-                self.servicos_vendidos[item.servico_id] = (
-                    self.servicos_vendidos.get(item.servico_id, 0) + item.quantidade
-                )
+
+        # VendaItem possui somente 'item'
+        for venda_item in venda.itens.select_related('item').all():
+
+            item_id = venda_item.item_id
+
+            if Produto.objects.filter(
+                id=item_id
+            ).exists():
+                
+                self.produtos_vendidos[item_id] = (self.produtos_vendidos.get(item_id, 0) + venda_item.quantidade)
+
+            elif Servico.objects.filter(
+                id=item_id
+            ).exists():
+
+                self.servicos_vendidos[item_id] = (self.servicos_vendidos.get(item_id, 0) + venda_item.quantidade)
 
         kwargs.setdefault(
             "initial",
             {
-                "forma_pagamento": venda.forma_pagamento,
-                "valor_recebido": venda.valor_recebido,
                 "telefone_whatsapp": venda.telefone_whatsapp,
                 "nome_cliente": venda.nome_cliente,
             },
         )
+
         super().__init__(*args, total=Decimal("0.00"), **kwargs)
 
         self.produto_campos = []
         self.servico_campos = []
+
+        # Produtos
         for produto in self.produtos:
-            nome = f"produto_{produto.pk}"
+
+            nome = f"produto_{produto.id}"
+
+            quantidade_vendida = (
+                self.produtos_vendidos.get(produto.id, 0)
+            )
+
+            estoque_disponivel = (
+                produto.quantidade + quantidade_vendida
+            )
+
             self.fields[nome] = forms.IntegerField(
                 label=produto.descricao,
                 min_value=0,
                 required=False,
-                initial=self.produtos_vendidos.get(produto.pk, 0),
+                initial=quantidade_vendida,
                 widget=forms.NumberInput(
                     attrs={
                         "class": "form-control",
                         "min": "0",
-                        "max": produto.quantidade + self.produtos_vendidos.get(produto.pk, 0),
+                        "max": estoque_disponivel,
                     }
                 ),
             )
@@ -588,52 +608,105 @@ class EditarVendaForm(FinalizarVendaForm):
                     "nome": nome,
                     "item": produto,
                     "estoque_disponivel": (
-                        produto.quantidade + self.produtos_vendidos.get(produto.pk, 0)
+                        estoque_disponivel
                     ),
                 }
             )
+
+        # Serviços
         for servico in self.servicos:
+
             nome = f"servico_{servico.pk}"
+
+            quantidade_vendida = (
+                self.servicos_vendidos.get(servico.id, 0)
+            )
+
             self.fields[nome] = forms.IntegerField(
                 label=servico.descricao,
                 min_value=0,
                 required=False,
-                initial=self.servicos_vendidos.get(servico.pk, 0),
-                widget=forms.NumberInput(attrs={"class": "form-control", "min": "0"}),
+                initial=quantidade_vendida,
+                widget=forms.NumberInput(
+                    attrs={
+                        "class": "form-control", 
+                        "min": "0"
+                    }
+                ),
             )
-            self.servico_campos.append({"nome": nome, "item": servico})
+            self.servico_campos.append(
+                {
+                    "nome": nome, 
+                    "item": servico,
+                }
+            )
 
     def clean(self):
+        # Validação básica dos campos
         cleaned_data = super(FinalizarVendaForm, self).clean()
+
         total = Decimal("0.00")
         quantidade_total = 0
+
+        # Produtos
         for campo in self.produto_campos:
+
             quantidade = cleaned_data.get(campo["nome"]) or 0
             quantidade_total += quantidade
+
             if quantidade > campo["estoque_disponivel"]:
                 self.add_error(
                     campo["nome"],
                     f"Estoque disponível para esta edição: {campo['estoque_disponivel']}.",
                 )
+
             total += campo["item"].preco_venda * quantidade
+
+        # Serviços
         for campo in self.servico_campos:
+
             quantidade = cleaned_data.get(campo["nome"]) or 0
             quantidade_total += quantidade
+
             total += campo["item"].preco_venda * quantidade
 
         if quantidade_total == 0:
-            self.add_error(None, "A venda deve conter pelo menos um item.")
+            self.add_error(
+                None, 
+                "A venda deve conter pelo menos um item."
+            )
+
         self.total = total
-        return FinalizarVendaForm.clean(self)
+
+        return cleaned_data
 
     def itens_selecionados(self):
         itens = []
+
         for campo in self.produto_campos:
+
             quantidade = self.cleaned_data.get(campo["nome"]) or 0
+
             if quantidade:
-                itens.append(("produto", campo["item"], quantidade))
+                itens.append(
+                    (
+                        "produto", 
+                        campo["item"], 
+                        quantidade
+                    )
+                )
+
         for campo in self.servico_campos:
+
             quantidade = self.cleaned_data.get(campo["nome"]) or 0
+
             if quantidade:
-                itens.append(("servico", campo["item"], quantidade))
+                itens.append(
+                    (
+                        "servico", 
+                        campo["item"], 
+                        quantidade
+                    )
+                )
+
         return itens
