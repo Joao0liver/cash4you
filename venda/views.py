@@ -249,7 +249,7 @@ def caixa(request):
                     with transaction.atomic():
 
                         # Pagamentos
-                        pagamentos = form._pagamentos()
+                        pagamentos = form.pagamentos()
 
                         if not pagamentos:
                             raise ValueError("Nenhum pagamento foi informado.")

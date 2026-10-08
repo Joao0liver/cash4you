@@ -230,7 +230,7 @@ class FinalizarVendaForm(forms.Form):
         # Pagamentos adicionais
         pagamentos_adicionais = []
 
-        for indice in self._pagamentos_adicionais_indices():
+        for indice in self.pagamentos_adicionais_indices():
 
             forma_pagamento = self.cleaned_data.get(f"forma_pagamento_{indice}")
             valor_pagamento = self.cleaned_data.get(f"valor_pagamento_{indice}")
@@ -239,7 +239,7 @@ class FinalizarVendaForm(forms.Form):
                 pagamentos_adicionais.append(
                     {
                         'forma_pagamento': forma_pagamento,
-                        'valor_pagamento': valor_pagamento
+                        'valor': valor_pagamento
                     }
                 )
 
@@ -277,7 +277,7 @@ class FinalizarVendaForm(forms.Form):
                 pagamentos.append(
                     {
                         'forma_pagamento': forma_principal,
-                        'valor_pagamento': valor_pagamento,
+                        'valor': valor,
                         'valor_recebido': valor_principal,
                         'troco': troco
                     }
@@ -287,7 +287,7 @@ class FinalizarVendaForm(forms.Form):
                 pagamentos.append(
                     {
                         'forma_pagamento': forma_principal,
-                        'valor_pagamento': self.total,
+                        'valor': self.total,
                         'valor_recebido': self.total,
                         'troco': Decimal('0.00')
                     }
@@ -318,7 +318,7 @@ class FinalizarVendaForm(forms.Form):
             pagamentos.append(
                 {
                     'forma_pagamento': forma_principal,
-                    'valor_pagamento': valor_principal_pagamento,
+                    'valor': valor_principal_pagamento,
                     'valor_recebido': valor_principal,
                     'troco': troco
                 }
@@ -329,7 +329,7 @@ class FinalizarVendaForm(forms.Form):
             pagamentos.append(
                 {
                     'forma_pagamento': forma_principal,
-                    'valor_pagamento': restante,
+                    'valor': restante,
                     'valor_recebido': restante,
                     'troco': Decimal('0.00')  
                 }
@@ -340,7 +340,7 @@ class FinalizarVendaForm(forms.Form):
             pagamentos.append(
                 {
                     'forma_pagamento': pagamento['forma_pagamento'],
-                    'valor_pagamento': pagamento['valor_pagamento'],
+                    'valor': pagamento['valor'],
                     'valor_recebido': pagamento['valor_pagamento'],
                     'troco': Decimal('0.00')
                 }
