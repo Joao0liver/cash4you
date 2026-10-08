@@ -8,5 +8,5 @@ class ProdutoAdmin(admin.ModelAdmin):
         "id",
         "item",
         "quantidade",
-        "valor",
+        "valor_unitario",
     )

@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Dados do estabelecimento | Cash4You{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div>
+            <h1 class="h3 mb-1">Dados do estabelecimento</h1>
+            <p class="text-muted mb-0">Informações opcionais exibidas nos comprovantes enviados pelo WhatsApp.</p>
+        </div>
+        <a href="{% url 'caixa' %}" class="btn btn-outline-secondary">Voltar ao caixa</a>
+    </div>
+
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags|default:'info' }}" role="alert">{{ message }}</div>
+    {% endfor %}
+    {% endif %}
+
+    <div class="card shadow-sm border-0" style="max-width: 900px">
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="{{ form.nome.id_for_label }}" class="form-label">{{ form.nome.label }}</label>
+                    {{ form.nome }}
+                    {% if form.nome.errors %}<div class="text-danger">{{ form.nome.errors }}</div>{% endif %}
+                </div>
+                <div class="mb-3">
+                    <label for="{{ form.horario_funcionamento.id_for_label }}" class="form-label">{{ form.horario_funcionamento.label }}</label>
+                    {{ form.horario_funcionamento }}
+                    {% if form.horario_funcionamento.errors %}<div class="text-danger">{{ form.horario_funcionamento.errors }}</div>{% endif %}
+                </div>
+                <div class="mb-3">
+                    <label for="{{ form.endereco.id_for_label }}" class="form-label">{{ form.endereco.label }}</label>
+                    {{ form.endereco }}
+                    {% if form.endereco.errors %}<div class="text-danger">{{ form.endereco.errors }}</div>{% endif %}
+                </div>
+                <div class="mb-3">
+                    <label for="{{ form.limite_gastos.id_for_label }}" class="form-label">{{ form.limite_gastos.label }}</label>
+                    {{ form.limite_gastos }}
+                    <div class="form-text">Teto para a soma das contas a pagar pendentes. Deixe em branco para não definir um limite.</div>
+                    {% if form.limite_gastos.errors %}<div class="text-danger">{{ form.limite_gastos.errors }}</div>{% endif %}
+                </div>
+                <button type="submit" class="btn btn-primary">Salvar dados do estabelecimento</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

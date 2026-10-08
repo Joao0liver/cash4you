@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}Registro de Vendas | Cash4You{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1">Registro de Vendas</h1>
+            <p class="text-muted mb-0">Vendas finalizadas no caixa.</p>
+        </div>
+        <a href="{% url 'caixa' %}" class="btn btn-primary">+ Nova venda</a>
+    </div>
+
+    <form method="get" class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+            <div class="row g-3 align-items-end">
+                <div class="col-12 col-md-4">
+                    <label for="{{ form_filtro.pagamentos.id_for_label }}" class="form-label">{{ form_filtro.pagamentos.label }}</label>
+                    {{ form_filtro.pagamentos }}
+                    {% if form_filtro.pagamentos.errors %}<div class="text-danger small">{{ form_filtro.pagamentos.errors }}</div>{% endif %}
+                </div>
+                <div class="col-12 col-md-3">
+                    <label for="{{ form_filtro.data_inicial.id_for_label }}" class="form-label">{{ form_filtro.data_inicial.label }}</label>
+                    {{ form_filtro.data_inicial }}
+                    {% if form_filtro.data_inicial.errors %}<div class="text-danger small">{{ form_filtro.data_inicial.errors }}</div>{% endif %}
+                </div>
+                <div class="col-12 col-md-3">
+                    <label for="{{ form_filtro.data_final.id_for_label }}" class="form-label">{{ form_filtro.data_final.label }}</label>
+                    {{ form_filtro.data_final }}
+                    {% if form_filtro.data_final.errors %}<div class="text-danger small">{{ form_filtro.data_final.errors }}</div>{% endif %}
+                </div>
+                <div class="col-12 col-md-2 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary flex-grow-1">Filtrar</button>
+                    <a href="{% url 'listar_vendas' %}" class="btn btn-outline-secondary">Limpar</a>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    {% if vendas %}
+    <div class="card shadow-sm border-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Venda</th>
+                        <th>Data e hora</th>
+                        <th>Itens</th>
+                        <th>Pagamento</th>
+                        <th class="text-end">Total</th>
+                        <th class="text-end">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for venda in vendas %}
+                    <tr>
+                        <td>#{{ venda.pk }}</td>
+                        <td>{{ venda.criada_em|date:"d/m/Y H:i" }}</td>
+                        <td>{{ venda.itens.count }}</td>
+                        <td>
+                            {% for pagamento in venda.pagamentos.all %}
+                                {{ pagamento.get_forma_pagamento_display }} — R$ {{ pagamento.valor|floatformat:2 }}{% if not forloop.last %}<br>{% endif %}
+                            {% empty %}
+                                —
+                            {% endfor %}
+                        </td>
+                        <td class="text-end">R$ {{ venda.total|floatformat:2 }}</td>
+                        <td class="text-end text-nowrap">
+                            <a href="{% url 'detalhe_venda' venda.pk %}" class="btn btn-sm btn-outline-secondary">Visualizar</a>
+                            <a href="{% url 'editar_venda' venda.pk %}" class="btn btn-sm btn-outline-primary">Editar</a>
+                            <a href="{% url 'excluir_venda' venda.pk %}" class="btn btn-sm btn-outline-danger">Excluir</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        {% if request.GET %}Nenhuma venda encontrada com os filtros selecionados.{% else %}Nenhuma venda finalizada ainda.{% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
