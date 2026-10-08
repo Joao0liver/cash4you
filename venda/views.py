@@ -376,10 +376,9 @@ def detalhe_venda(request, id):
         ]
 
         for item in venda.itens.all():
-            subtotal = item.valor * item.quantidade
+            subtotal = item.valor_unitario * item.quantidade
 
             mensagem.append(
-                '',
                 f'{item.item.descricao} x {item.quantidade} '
                 f'- R$ {formatar_moeda(subtotal)}'
             )
