@@ -3,44 +3,6 @@
 {% block title %}Frente de Caixa | Cash4You{% endblock %}
 
 {% block content %}
-<style>
-    .checkout-layout { --checkout-border: var(--c4y-line); }
-    .checkout-panel { background: var(--c4y-panel); border: 1px solid var(--checkout-border); }
-    .checkout-add-form { min-width: 250px; }
-    .checkout-table th { color: var(--c4y-ink-soft); font-size: 0.82rem; font-weight: 500; }
-    .checkout-table td, .checkout-table th { vertical-align: middle; }
-    .checkout-payment { position: sticky; top: 5.5rem; }
-    .checkout-total { font-size: clamp(1.75rem, 3vw, 2.25rem); font-weight: 700; }
-    .checkout-payment-method label { min-height: 42px; display: flex; align-items: center; justify-content: center; }
-    .checkout-payment-card {
-        background: var(--c4y-panel);
-        border: 1px solid var(--c4y-line);
-        border-radius: 0.75rem;
-    }
-    .checkout-field-label { color: var(--c4y-ink-soft); font-size: 0.78rem; }
-    .checkout-money-line {
-        background: rgba(59, 130, 246, 0.06);
-        border: 1px solid rgba(59, 130, 246, 0.2);
-    }
-    .checkout-total {
-        color: var(--bs-primary);
-        letter-spacing: -0.04em;
-        line-height: 1.15;
-    }
-    .checkout-payment-card { padding: 1rem; }
-    .checkout-add-form .input-group > .form-select { min-width: 0; }
-    .checkout-table tbody tr:last-child td { border-bottom-width: 0; }
-    .checkout-payment .btn-primary { min-height: 46px; font-size: 1rem; }
-    @media (max-width: 1199.98px) {
-        .checkout-payment { position: static; }
-    }
-    @media (max-width: 575.98px) {
-        .checkout-add-form { min-width: 0; }
-        .checkout-payment-method label { font-size: 0.88rem; padding-inline: 0.35rem; }
-        .checkout-money-line { padding: 0.7rem !important; }
-        .checkout-payment-card { padding: 0.8rem !important; }
-    }
-</style>
 
 <div class="container-fluid checkout-layout">
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
@@ -187,8 +149,18 @@
                                 <span class="text-muted">· {{ venda.criada_em|date:"d/m/Y H:i" }}</span>
                                 {% if venda.nome_cliente %}<div class="text-muted">{{ venda.nome_cliente }}</div>{% endif %}
                                 <div class="text-muted">
-                                    {% for item in venda.itens.all %}{{ item.descricao }} × {{ item.quantidade }}{% if not forloop.last %}, {% endif %}{% endfor %}
-                                    · {{ venda.get_forma_pagamento_display }}
+                                    {% for item in venda.itens.all %}
+                                        {{ item.item.descricao }} × {{ item.quantidade }}
+                                    {% if not forloop.last %}, {% endif %}
+                                    {% endfor %}
+
+                                    {% if venda.pagamentos.all %}
+                                        · 
+                                        {% for pagamento in venda.pagamentos.all %}
+                                            {{ pagamento.get_forma_pagamento_display }}
+                                            (R$ {{ pagamento.valor|floatformat:2 }}) {% if not forloop.last %}, {% endif %}
+                                        {% endfor %}
+                                    {% endif %}
                                 </div>
                             </div>
                             <span class="small fw-semibold text-nowrap">R$ {{ venda.total|floatformat:2 }}</span>
@@ -296,7 +268,7 @@
 
 <script>
     (function () {
-        const pagamentos = document.querySelectorAll('input[type="radio"]');
+        const pagamentos = document.querySelectorAll('input[name="forma_pagamento"]');
         const pagamentoMultiplo = document.getElementById("id_pagamento_multiplo");
         const pagamentoPrincipal = document.getElementById("pagamento-principal");
         const painelPagamentosMultiplos = document.getElementById("painel-pagamentos-multiplos");
@@ -304,7 +276,7 @@
         const areaTroco = document.getElementById("area-troco");
         const recebido = document.getElementById("valor-recebido");
         const troco = document.getElementById("troco-estimado");
-        const total = Number("{{ total|floatformat:2 }}".replace(",", "."));
+        const total = Number("{{ total|stringformat:'f' }}");
         const quantidadePagamentos = document.getElementById("quantidade-pagamentos-adicionais");
         const containerPagamentos = document.getElementById("pagamentos-adicionais-container");
         const opcoesPagamento = [
