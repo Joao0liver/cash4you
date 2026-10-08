@@ -14,11 +14,11 @@ from vendaitem.models import VendaItem
 from configuracao.models import DadosEstabelecimento
 
 from .forms import (
-    DadosEstabelecimentoForm,
     EditarVendaForm,
     FiltroVendasForm,
     FinalizarVendaForm,
 )
+from configuracao.forms import DadosEstabelecimentoForm
 
 from .models import PagamentoVenda, Venda
 

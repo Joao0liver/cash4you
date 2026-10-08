@@ -1,3 +1,7 @@
+from django import forms
+
+from .models import DadosEstabelecimento
+
 class DadosEstabelecimentoForm(forms.ModelForm):
 
     class Meta:

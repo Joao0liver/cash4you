@@ -2,8 +2,7 @@ from decimal import Decimal, InvalidOperation
 
 from django import forms
 
-from catalogo.models import Produto, Servico 
-from configuracao.models import DadosEstabelecimento
+from catalogo.models import Produto, Servico
 
 from .models import PagamentoVenda
 
