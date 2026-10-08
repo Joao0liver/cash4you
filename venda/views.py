@@ -301,12 +301,12 @@ def caixa(request):
                                         "a venda não foi concluída."
                                     )
                                 
-                                VendaItem.objects.create(
-                                    venda = venda,
-                                    item = item,
-                                    quantidade = linha['quantidade'],
-                                    valor_unitario = linha['preco_unitario']
-                                )
+                            VendaItem.objects.create(
+                                venda = venda,
+                                item = item,
+                                quantidade = linha['quantidade'],
+                                valor_unitario = linha['preco_unitario']
+                            )
 
                 except (EstoqueInsuficiente, ValueError) as exc:
                     messages.error(request, str(exc))
