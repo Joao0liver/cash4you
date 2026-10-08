@@ -39,8 +39,14 @@
                     <tbody>
                         {% for item in venda.itens.all %}
                         <tr>
-                            <td>{{ item.descricao }}</td>
-                            <td>{{ item.get_tipo_display }}</td>
+                            <td>{{ item.item.descricao }}</td>
+                            <td>
+                                {% if item.item.produto %}
+                                    Produto
+                                {% else %}
+                                    Serviço
+                                {% endif %}
+                            </td>
                             <td class="text-end">R$ {{ item.preco_unitario|floatformat:2 }}</td>
                             <td class="text-center">{{ item.quantidade }}</td>
                             <td class="text-end">R$ {{ item.subtotal|floatformat:2 }}</td>
@@ -61,14 +67,18 @@
                         {{ pagamento.get_forma_pagamento_display }} — R$ {{ pagamento.valor|floatformat:2 }}{% if not forloop.last %}, {% endif %}
                     {% endfor %}
                 {% else %}
-                    {{ venda.get_forma_pagamento_display }}
+                    Nenhum pagamento registrado.
                 {% endif %}
             </p>
             {% if venda.nome_cliente %}<p class="mb-1"><strong>Cliente:</strong> {{ venda.nome_cliente }}</p>{% endif %}
-            {% if venda.valor_recebido is not None %}
-            <p class="mb-1"><strong>Valor recebido:</strong> R$ {{ venda.valor_recebido|floatformat:2 }}</p>
-            <p class="mb-1"><strong>Troco:</strong> R$ {{ venda.troco|floatformat:2 }}</p>
-            {% endif %}
+            {% for pagamento in pagamentos %}
+                {% if pagamento.valor_recebido is not None %}
+                    <p class="mb-1"><strong>Valor recebido:</strong> R$ {{ pagamento.valor_recebido|floatformat:2 }}</p>
+                    {% if pagamento.troco > 0 %}
+                    <p class="mb-1"><strong>Troco:</strong> R$ {{ pagamento.troco|floatformat:2 }}</p>
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
             {% if venda.telefone_whatsapp %}
             <p class="mb-3"><strong>Telefone:</strong> {{ venda.telefone_whatsapp }}</p>
             <a href="{{ whatsapp_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-success">
