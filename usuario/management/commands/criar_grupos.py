@@ -43,9 +43,11 @@ class Command(BaseCommand):
             Permission.objects.filter(
                 content_type__app_label__in=[
                     "usuario",
-                    "produto",
-                    "servico",
+                    "catalogo",
                     "cliente",
+                    "venda",
+                    "vendaitem",
+                    "agenda",
                 ]
             )
         )
