@@ -8,6 +8,7 @@ from django.http import HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.formats import date_format
+from django.contrib.auth.decorators import login_required, permission_required
 
 from catalogo.models import Item, Produto, Servico
 from vendaitem.models import VendaItem
@@ -27,16 +28,20 @@ CART_SESSION_KEY = "venda_cart"
 class EstoqueInsuficiente(Exception):
     pass
 
+@login_required
 def formatar_moeda(valor):
     return f"{valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
+@login_required
 def carrinho_sessao(request):
     return dict(request.session.get(CART_SESSION_KEY, {}))
 
+@login_required
 def salvar_carrinho(request, carrinho):
     request.session[CART_SESSION_KEY] = carrinho
     request.session.modified = True
 
+@login_required
 def obter_item(tipo, item_id):
     if tipo == 'produto':
         return Produto.objects.filter(id=item_id).first()
@@ -46,6 +51,8 @@ def obter_item(tipo, item_id):
     
     return None
 
+@login_required
+@permission_required("venda.add_venda", raise_exception=True)
 def montar_carrinho(request):
     carrinho = carrinho_sessao(request)
 
@@ -109,6 +116,8 @@ def montar_carrinho(request):
 
     return linhas, total, invalido
 
+@login_required
+@permission_required("venda.add_venda", raise_exception=True)
 def render_caixa(request, form=None):
     linhas, total, invalido = montar_carrinho(request)
 
@@ -129,27 +138,8 @@ def render_caixa(request, form=None):
         },
     )
 
-def configurar_estabelecimento(request):
-    dados_estabelecimento = DadosEstabelecimento.objects.filter(id=1).first()
-    if dados_estabelecimento is None:
-        dados_estabelecimento = DadosEstabelecimento(id=1)
-    form = DadosEstabelecimentoForm(
-        request.POST or None,
-        instance=dados_estabelecimento,
-    )
-    if request.method == "POST" and form.is_valid():
-        form.save()
-        messages.success(
-            request,
-            "Dados do estabelecimento salvos para os próximos comprovantes.",
-        )
-        return redirect("configurar_estabelecimento")
-    return render(
-        request,
-        "venda/configurar_estabelecimento.html",
-        {"form": form},
-    )
-
+@login_required
+@permission_required("venda.add_venda", raise_exception=True)
 def caixa(request):
     carrinho = carrinho_sessao(request)
 
@@ -329,6 +319,8 @@ def caixa(request):
     # Por GET
     return render_caixa(request)
 
+@login_required
+@permission_required("venda.view_venda", raise_exception=True)
 def listar_vendas(request):
     form = FiltroVendasForm(request.GET or None)
 
@@ -350,6 +342,8 @@ def listar_vendas(request):
 
     return render(request, "venda/listar_vendas.html", {"vendas" : vendas, "form_filtro" : form})
 
+@login_required
+@permission_required("venda.view_venda", raise_exception=True)
 def detalhe_venda(request, id):
     venda = get_object_or_404(Venda.objects.prefetch_related("itens__item", 'pagamentos'), id=id)
     pagamentos = list(venda.pagamentos.all())
@@ -418,6 +412,8 @@ def detalhe_venda(request, id):
 
     return render(request, "venda/detalhe_venda.html", {"venda": venda, "whatsapp_url": whatsapp_url, "pagamentos": pagamentos})
 
+@login_required
+@permission_required("venda.change_venda", raise_exception=True)
 def editar_venda(request, id):
     venda = get_object_or_404(
         Venda.objects.prefetch_related("itens"),
@@ -511,6 +507,8 @@ def editar_venda(request, id):
         },
     )
 
+@login_required
+@permission_required("venda.delete_venda", raise_exception=True)
 def excluir_venda(request, id):
     venda = get_object_or_404(
         Venda.objects.prefetch_related("itens"),

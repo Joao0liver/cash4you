@@ -20,7 +20,7 @@
 
             <!-- Logo / Nome do sistema -->
             <div class="mb-4">
-                <h4 class="mb-0"><a href="{% url 'home' %}" class="nav-link text-white">Cash4You</a></h4>
+                <h4 class="mb-0"><a href="{% url 'dashboard:home' %}" class="nav-link text-white">Cash4You</a></h4>
                 <small class="text-secondary">Painel administrativo</small>
             </div>
 
@@ -29,15 +29,17 @@
                 <ul class="nav nav-pills flex-column gap-1">
 
                     <li class="nav-item">
-                        <a href="{% url 'home' %}" class="nav-link text-white">
+                        <a href="{% url 'dashboard:home' %}" class="nav-link text-white">
                             Dashboard
                         </a>
                     </li>
                     
                     <li class="nav-item">
+                        {% if perms.venda.add_venda %}
                         <a href="{% url 'caixa' %}" class="nav-link text-white">
                             Caixa
                         </a>
+                        {% endif %}
                     </li>
 
                     <li class="nav-item dropdown">
@@ -47,35 +49,45 @@
 
                         <ul class="dropdown-menu">
                             <li>
+                                {% if perms.cliente.view_cliente %}
                                 <a class="dropdown-item" href="{% url 'listar_cliente' %}">
                                     Clientes
                                 </a>
+                                {% endif %}
                             </li>
 
                             <li>
+                                {% if perms.catalogo.view_produto %}
                                 <a class="dropdown-item" href="{% url 'listar_produto' %}">
                                     Produtos
                                 </a>
+                                {% endif %}
                             </li>
 
                             <li>
+                                {% if perms.catalogo.view_servico %}
                                 <a class="dropdown-item" href="{% url 'listar_servico' %}">
                                     Serviços
                                 </a>
+                                {% endif %}
                             </li>
                         </ul>
                     </li>
 
                     <li class="nav-item">
+                        {% if perms.venda.view_venda %}
                         <a href="{% url 'listar_vendas' %}" class="nav-link text-white">
                             Vendas
                         </a>
+                        {% endif %}
                     </li>
 
                     <li class="nav-item">
+                        {% if perms.agenda.view_agenda %}
                         <a href="{% url 'listar_agendamento' %}" class="nav-link text-white">
                             Agenda
                         </a>
+                        {% endif %}
                     </li>
 
                     <li class="nav-item">
@@ -106,9 +118,13 @@
                         Meu perfil
                     </a>
                     <!-- Logout -->
-                    <a href="#" class="btn btn-outline-danger btn-sm">
-                        Sair
-                    </a>
+                    <form method="post" action="{% url 'autenticacao:logout' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                            Sair
+                        </button>
+                    </form>
+
                 </div>
             </header>
 

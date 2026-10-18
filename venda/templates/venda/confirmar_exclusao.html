@@ -13,11 +13,13 @@
             <h2 id="confirmar-exclusao-venda" class="h5">Confirmar exclusão</h2>
             <p>Confirma a exclusão da venda de <strong>R$ {{ venda.total|floatformat:2 }}</strong>, realizada em {{ venda.criada_em|date:"d/m/Y H:i" }}?</p>
             <div class="alert alert-warning mb-4" role="note">Os produtos desta venda serão repostos ao estoque.</div>
+            {% if perms.venda.delete_venda %}
             <form method="post" class="d-flex flex-wrap gap-2">
                 {% csrf_token %}
                 <button type="submit" class="btn btn-danger">Confirmar exclusão</button>
                 <a href="{% url 'detalhe_venda' venda.pk %}" class="btn btn-outline-secondary">Cancelar</a>
             </form>
+            {% endif %}
         </div>
     </section>
 </div>

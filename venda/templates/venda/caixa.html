@@ -11,13 +11,15 @@
             <p class="text-muted mb-0">Adicione produtos e serviços para iniciar uma venda.</p>
         </div>
         <div class="d-flex flex-wrap gap-2">
-            <a href="{% url 'configurar_estabelecimento' %}" class="btn btn-outline-secondary d-inline-flex align-items-center justify-content-center" aria-label="Configurar dados do estabelecimento" title="Configurar dados do estabelecimento">
+            <a href="{% url 'configuracao:configurar_estabelecimento' %}" class="btn btn-outline-secondary d-inline-flex align-items-center justify-content-center" aria-label="Configurar dados do estabelecimento" title="Configurar dados do estabelecimento">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-gear" viewBox="0 0 16 16" aria-hidden="true">
                     <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492M5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0"/>
                     <path d="M9.796 1.343c-.4-1.117-1.992-1.117-2.392 0l-.094.262a1.25 1.25 0 0 1-1.852.65l-.235-.144c-1.004-.615-2.13.51-1.515 1.515l.144.235a1.25 1.25 0 0 1-.65 1.852l-.262.094c-1.117.4-1.117 1.992 0 2.392l.262.094a1.25 1.25 0 0 1 .65 1.852l-.144.235c-.615 1.004.51 2.13 1.515 1.515l.235-.144a1.25 1.25 0 0 1 1.852.65l.094.262c.4 1.117 1.992 1.117 2.392 0l.094-.262a1.25 1.25 0 0 1 1.852-.65l.235.144c1.004.615 2.13-.51 1.515-1.515l-.144-.235a1.25 1.25 0 0 1 .65-1.852l.262-.094c1.117-.4 1.117-1.992 0-2.392l-.262-.094a1.25 1.25 0 0 1-.65-1.852l.144-.235a1.25 1.25 0 0 1-1.515-1.515l-.235.144a1.25 1.25 0 0 1-1.852-.65zM8 1.5a.25.25 0 0 1 .235.165l.094.262a2.25 2.25 0 0 0 3.334 1.17l.235-.144a.25.25 0 0 1 .303.394l-.144.235a2.25 2.25 0 0 0 1.17 3.334l.262.094a.25.25 0 0 1 0 .47l-.262.094a2.25 2.25 0 0 0-1.17 3.334l.144.235a.25.25 0 0 1-.303.303l-.235-.144a2.25 2.25 0 0 0-3.334 1.17l-.094.262a.25.25 0 0 1-.47 0l-.094-.262a2.25 2.25 0 0 0-3.334-1.17l-.235.144a.25.25 0 0 1-.303-.303l.144-.235a2.25 2.25 0 0 0-1.17-3.334l-.262-.094a.25.25 0 0 1 0-.47l.262-.094a2.25 2.25 0 0 0 1.17-3.334l-.144-.235a.25.25 0 0 1 .303-.303l.235.144a2.25 2.25 0 0 0 3.334-1.17l.094-.262A.25.25 0 0 1 8 1.5"/>
                 </svg>
             </a>
+            {% if perms.venda.view_venda %}
             <a href="{% url 'listar_vendas' %}" class="btn btn-outline-secondary">Registro de Vendas</a>
+            {% endif %}
         </div>
     </div>
 
@@ -34,8 +36,10 @@
                     <h2 class="h5 mb-3">Carrinho</h2>
                     <div class="row g-3 mb-4">
                         <div class="col-12 col-lg-6">
+                            {% if perms.venda.add_venda %}
                             <form method="post" class="checkout-add-form">
                                 {% csrf_token %}
+                                {% if perms.catalogo.view_produto %}
                                 <input type="hidden" name="acao" value="adicionar">
                                 <input type="hidden" name="tipo" value="produto">
                                 <label for="produto-selecionado" class="form-label">Buscar produto</label>
@@ -50,11 +54,15 @@
                                     </select>
                                     <button type="submit" class="btn btn-outline-primary">Adicionar</button>
                                 </div>
+                                {% endif %}
                             </form>
+                            {% endif %}
                         </div>
                         <div class="col-12 col-lg-6">
+                            {% if perms.venda.add_venda %}
                             <form method="post" class="checkout-add-form">
                                 {% csrf_token %}
+                                {% if perms.catalogo.view_servico %}
                                 <input type="hidden" name="acao" value="adicionar">
                                 <input type="hidden" name="tipo" value="servico">
                                 <label for="servico-selecionado" class="form-label">Buscar serviço</label>
@@ -69,7 +77,9 @@
                                     </select>
                                     <button type="submit" class="btn btn-outline-primary">Adicionar</button>
                                 </div>
+                                {% endif %}
                             </form>
+                            {% endif %}
                         </div>
                     </div>
 
@@ -96,6 +106,7 @@
                                     </td>
                                     <td class="text-center">
                                         {% if linha.disponivel %}
+                                        {% if perms.venda.add_venda %}
                                         <form method="post" class="d-flex gap-1 justify-content-center">
                                             {% csrf_token %}
                                             <input type="hidden" name="acao" value="atualizar">
@@ -103,6 +114,7 @@
                                             <input type="number" min="1" {% if linha.estoque != None %}max="{{ linha.estoque }}"{% endif %} name="quantidade" value="{{ linha.quantidade }}" class="form-control form-control-sm" style="width: 68px" aria-label="Quantidade de {{ linha.descricao }}">
                                             <button type="submit" class="btn btn-sm btn-outline-secondary" aria-label="Atualizar quantidade de {{ linha.descricao }}">↻</button>
                                         </form>
+                                        {% endif %}
                                         {% else %}
                                         {{ linha.quantidade }}
                                         {% endif %}
@@ -110,12 +122,14 @@
                                     <td class="text-end text-nowrap">{% if linha.disponivel %}R$ {{ linha.preco_unitario|floatformat:2 }}{% else %}—{% endif %}</td>
                                     <td class="text-end text-nowrap fw-medium">{% if linha.disponivel %}R$ {{ linha.subtotal|floatformat:2 }}{% else %}—{% endif %}</td>
                                     <td class="text-end">
+                                        {% if perms.venda.add_venda %}
                                         <form method="post">
                                             {% csrf_token %}
                                             <input type="hidden" name="acao" value="remover">
                                             <input type="hidden" name="chave" value="{{ linha.chave }}">
                                             <button type="submit" class="btn btn-sm btn-outline-danger" aria-label="Remover {{ linha.descricao }}">×</button>
                                         </form>
+                                        {% endif %}
                                     </td>
                                 </tr>
                                 {% endfor %}
@@ -135,6 +149,7 @@
                 </div>
             </section>
 
+            {% if perms.venda.view_venda %}
             <section class="card checkout-panel shadow-sm">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-2">
@@ -171,11 +186,13 @@
                     {% endfor %}
                 </div>
             </section>
+            {% endif %}
         </div>
 
         <div class="col-12 col-xl-4">
             <section class="card checkout-panel checkout-payment shadow-sm">
                 <div class="card-body p-3 p-lg-4">
+                    {% if perms.venda.add_venda %}
                     <form method="post">
                         {% csrf_token %}
                         <input type="hidden" name="acao" value="finalizar">
@@ -258,8 +275,11 @@
                         </div>
 
                         {% if form.non_field_errors %}<div class="alert alert-danger py-2 small">{{ form.non_field_errors }}</div>{% endif %}
+                        {% if perms.venda.add_venda %}
                         <button type="submit" class="btn btn-primary w-100" {% if not linhas or invalido %}disabled{% endif %}>Finalizar venda</button>
+                        {% endif %}
                     </form>
+                    {% endif %}
                 </div>
             </section>
         </div>

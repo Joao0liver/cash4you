@@ -9,6 +9,7 @@
     <h1>{{ titulo|default:"Cadastrar Serviço" }}</h1>
     <p>Preencha os dados do serviço.</p>
 
+    {% if perms.catalogo.add_servico %}
     <form method="POST">
         {% csrf_token %}
         
@@ -48,6 +49,7 @@
             Cancelar
         </a>
     </form>
+    {% endif %}
 
 </div>
 

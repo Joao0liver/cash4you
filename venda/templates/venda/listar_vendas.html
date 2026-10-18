@@ -9,9 +9,12 @@
             <h1 class="h3 mb-1">Registro de Vendas</h1>
             <p class="text-muted mb-0">Vendas finalizadas no caixa.</p>
         </div>
+        {% if perms.venda.add_venda %}
         <a href="{% url 'caixa' %}" class="btn btn-primary">+ Nova venda</a>
+        {% endif %}
     </div>
 
+    {% if perms.venda.view_venda %}
     <form method="get" class="card shadow-sm border-0 mb-4">
         <div class="card-body">
             <div class="row g-3 align-items-end">
@@ -37,6 +40,7 @@
             </div>
         </div>
     </form>
+    {% endif %}
 
     {% if vendas %}
     <div class="card shadow-sm border-0">
@@ -67,9 +71,15 @@
                         </td>
                         <td class="text-end">R$ {{ venda.total|floatformat:2 }}</td>
                         <td class="text-end text-nowrap">
+                            {% if perms.venda.view_venda %}
                             <a href="{% url 'detalhe_venda' venda.pk %}" class="btn btn-sm btn-outline-secondary">Visualizar</a>
+                            {% endif %}
+                            {% if perms.venda.change_venda %}
                             <a href="{% url 'editar_venda' venda.pk %}" class="btn btn-sm btn-outline-primary">Editar</a>
+                            {% endif %}
+                            {% if perms.venda.delete_venda %}
                             <a href="{% url 'excluir_venda' venda.pk %}" class="btn btn-sm btn-outline-danger">Excluir</a>
+                            {% endif %}
                         </td>
                     </tr>
                     {% endfor %}

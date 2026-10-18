@@ -9,6 +9,7 @@
     <h1>{{ titulo|default:"Cadastrar Produto" }}</h1>
     <p>Preencha os dados do produto.</p>
 
+    {% if perms.catalogo.add_produto %}
     <form method="POST">
         {% csrf_token %}
 
@@ -84,6 +85,7 @@
             Cancelar
         </a>
     </form>
+    {% endif %}
 
 </div>
 

@@ -15,9 +15,11 @@
             </p>
         </div>
 
+        {% if perms.catalogo.add_produto %}
         <a href="{% url 'cadastrar_produto' %}" class="btn btn-primary">
             + Novo produto
         </a>
+        {% endif %}
 
     </div>
 
@@ -47,8 +49,12 @@
                             <td class="text-muted">{{ produto.preco_custo }}</td>
                             <td>{{ produto.quantidade }}</td>
                             <td class="text-end">
+                                {% if perms.catalogo.change_produto %}
                                 <a href="{% url 'editar_produto' produto.id %}" class="btn btn-sm btn-outline-primary">Editar</a>
+                                {% endif %}
+                                {% if perms.catalogo.delete_produto %}
                                 <a href="{% url 'excluir_produto' produto.id %}" class="btn btn-sm btn-outline-secondary">Excluir</a>
+                                {% endif %}
                             </td>
                         </tr>
                         {% endfor %}
@@ -60,7 +66,9 @@
     {% else %}
     <div class="alert alert-warning" role="alert">
         Nenhum produto cadastrado ainda.
+        {% if perms.catalogo.add_produto %}
         <a href="" class="alert-link">Cadastre o primeiro!</a>
+        {% endif %}
     </div>
     {% endif %}
 </div>

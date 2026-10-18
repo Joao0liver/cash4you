@@ -15,9 +15,11 @@
             </p>
         </div>
 
+        {% if perms.cliente.add_cliente %}
         <a href="{% url 'cadastrar_cliente' %}" class="btn btn-primary">
             + Novo cliente
         </a>
+        {% endif %}
 
     </div>
 
@@ -45,8 +47,12 @@
                             <td>{{ cliente.cpf_mascarado }}</td>
                             <td>{{ cliente.telefone }}</td>
                             <td class="text-end">
+                                {% if perms.cliente.change_cliente %}
                                 <a href="{% url 'editar_cliente' cliente.id %}" class="btn btn-sm btn-outline-primary">Editar</a>
+                                {% endif %}
+                                {% if perms.cliente.delete_cliente %}
                                 <a href="{% url 'excluir_cliente' cliente.id %}" class="btn btn-sm btn-outline-secondary">Excluir</a>
+                                {% endif %}
                             </td>
                         </tr>
                         {% endfor %}
@@ -58,7 +64,9 @@
     {% else %}
     <div class="alert alert-warning" role="alert">
         Nenhum cliente cadastrado ainda.
+        {% if perms.cliente.add_cliente %}
         <a href="" class="alert-link">Cadastre o primeiro!</a>
+        {% endif %}
     </div>
     {% endif %}
 </div>
