@@ -9,7 +9,21 @@
         <h1 class="h2 mb-1">Dashboard</h1>
         <p class="text-body-secondary mb-0">
             Visão geral do sistema
-        </p>
+        </p></br>
+
+        <h2 class="h4 mb-3">
+            Bem-vindo, {{ request.user.nome }}!
+        </h2>
+
+        {% for grupo in request.user.groups.all %}
+            <span class="badge text-bg-primary me-1 mb-1">
+                {{ grupo.name }}
+            </span>
+        {% empty %}
+            <span class="badge text-bg-secondary">
+                Sem perfil definido
+            </span>
+        {% endfor %}
     </div>
 
     <!-- Indicadores -->
@@ -91,7 +105,15 @@
 
                     <div class="d-grid gap-2">
                         <a href="#" class="btn btn-primary">
-                            Grupo
+                            {% for grupo in request.user.groups.all %}
+                                <span>
+                                    {{ grupo.name }}
+                                </span>
+                            {% empty %}
+                                <span>
+                                    Sem perfil definido
+                                </span>
+                            {% endfor %}
                         </a>
                     </div>
                 </div>
