@@ -56,9 +56,11 @@ class Command(BaseCommand):
         gerente.permissions.set(
             Permission.objects.filter(
                 content_type__app_label__in=[
-                    "produto",
-                    "servico",
+                    "catalogo"
                     "cliente",
+                    "agenda",
+                    "venda",
+                    "vendaitem",
                 ]
             )
         )
@@ -66,9 +68,10 @@ class Command(BaseCommand):
         gerente.permissions.remove(
             *Permission.objects.filter(
                 content_type__app_label__in=[
-                    "produto",
-                    "servico",
+                    "catalogo"
                     "cliente",
+                    "venda",
+                    "vendaitem",
                 ],
                 codename__startswith="delete_",
             )
@@ -78,8 +81,7 @@ class Command(BaseCommand):
         funcionario.permissions.set(
             Permission.objects.filter(
                 content_type__app_label__in=[
-                    "produto",
-                    "servico",
+                    "catalogo"
                 ],
                 codename__startswith="view_",
             )
@@ -91,6 +93,28 @@ class Command(BaseCommand):
                     "add_cliente",
                     "change_cliente",
                 ],
+            )
+            |
+            Permission.objects.filter(
+                content_type__app_label="venda",
+                codename__in=[
+                    "view_venda",
+                    "add_venda",
+                ],
+            )
+            |
+            Permission.objects.filter(
+                content_type__app_label="vendaitem",
+                codename__in=[
+                    "view_vendaitem",
+                    "add_vendaitem",
+                ],
+            )
+            |
+            Permission.objects.filter(
+                content_type__app_label__in=[
+                    "agenda",
+                ]
             )
         )
 
