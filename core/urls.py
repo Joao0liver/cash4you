@@ -4,8 +4,9 @@ from django.views.debug import default_urlconf
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', include("autenticacao.urls")),
 
-    path('', include("dashboard.urls")),
+    path('dashboard/', include("dashboard.urls")),
     path('cliente/', include("cliente.urls")),
     path('catalogo/', include("catalogo.urls")),
     path('agenda/', include("agenda.urls")),

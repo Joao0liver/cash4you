@@ -20,7 +20,7 @@
 
             <!-- Logo / Nome do sistema -->
             <div class="mb-4">
-                <h4 class="mb-0"><a href="{% url 'home' %}" class="nav-link text-white">Cash4You</a></h4>
+                <h4 class="mb-0"><a href="{% url 'dashboard:home' %}" class="nav-link text-white">Cash4You</a></h4>
                 <small class="text-secondary">Painel administrativo</small>
             </div>
 
@@ -29,7 +29,7 @@
                 <ul class="nav nav-pills flex-column gap-1">
 
                     <li class="nav-item">
-                        <a href="{% url 'home' %}" class="nav-link text-white">
+                        <a href="{% url 'dashboard:home' %}" class="nav-link text-white">
                             Dashboard
                         </a>
                     </li>
@@ -106,9 +106,13 @@
                         Meu perfil
                     </a>
                     <!-- Logout -->
-                    <a href="#" class="btn btn-outline-danger btn-sm">
-                        Sair
-                    </a>
+                    <form method="post" action="{% url 'autenticacao:logout' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                            Sair
+                        </button>
+                    </form>
+
                 </div>
             </header>
 
