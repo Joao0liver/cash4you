@@ -15,9 +15,11 @@
             </p>
         </div>
 
+        {% if perms.catalogo.add_servico %}
         <a href="{% url 'cadastrar_servico' %}" class="btn btn-primary">
             + Novo serviço
         </a>
+        {% endif %}
 
     </div>
 
@@ -43,8 +45,12 @@
                             <td><strong>{{ servico.descricao }}</strong></td>
                             <td>{{ servico.preco_venda }}</td>
                             <td class="text-end">
+                                {% if perms.catalogo.change_servico %}
                                 <a href="{% url 'editar_servico' servico.id %}" class="btn btn-sm btn-outline-primary">Editar</a>
+                                {% endif %}
+                                {% if perms.catalogo.delete_servico %}
                                 <a href="{% url 'excluir_servico' servico.id %}" class="btn btn-sm btn-outline-secondary">Excluir</a>
+                                {% endif %}
                             </td>
                         </tr>
                         {% endfor %}
@@ -56,7 +62,9 @@
     {% else %}
     <div class="alert alert-warning" role="alert">
         Nenhum serviço cadastrado ainda.
+        {% if perms.catalogo.add_servico %}
         <a href="" class="alert-link">Cadastre o primeiro!</a>
+        {% endif %}
     </div>
     {% endif %}
 </div>
