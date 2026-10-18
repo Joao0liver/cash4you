@@ -1,12 +1,15 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Cliente
 from .forms import ClienteForm
+from django.contrib.auth.decorators import login_required
 
+@login_required
 def listar_cliente(request):
 
     clientes = Cliente.objects.all()
     return render(request, 'listar_cliente.html', {'clientes' : clientes})
 
+@login_required
 def cadastrar_cliente(request):
 
     if request.method == 'POST':
@@ -21,6 +24,7 @@ def cadastrar_cliente(request):
 
     return render(request, 'form_cliente.html', {'form' : form, 'titulo' : 'Cadastrar Cliente'})
 
+@login_required
 def editar_cliente(request, id):
     cliente = get_object_or_404(Cliente, id=id)
 
@@ -36,6 +40,7 @@ def editar_cliente(request, id):
 
     return render(request, 'form_cliente.html', {'form' : form, 'titulo' : 'Editar Cliente'})
 
+@login_required
 def excluir_cliente(request, id):
     cliente = get_object_or_404(Cliente, id=id)
 
