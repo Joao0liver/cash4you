@@ -44,14 +44,15 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     # Apps do projeto
-    'cliente',
     'usuario',
+    'autenticacao',
+    'configuracao',
+    'venda',
+    'vendaitem',
+    'cliente',
     'dashboard',
     'catalogo',
-    'vendaitem',
     'agenda',
-    'venda',
-    'configuracao',
 ]
 
 MIDDLEWARE = [
