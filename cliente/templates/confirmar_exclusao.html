@@ -19,6 +19,7 @@
                 Esta ação não poderá ser desfeita.
             </p>
 
+            {% if perms.cliente.delete_cliente %}
             <form method="POST">
                 {% csrf_token %}
 
@@ -30,6 +31,7 @@
                     Cancelar
                 </a>
             </form>
+            {% endif %}
 
         </div>
     </div>

@@ -9,6 +9,7 @@
     <h1>{{ titulo|default:"Cadastrar Cliente" }}</h1>
     <p>Preencha os dados do cliente.</p>
 
+    {% if perms.cliente.add_cliente %}
     <form method="POST">
         {% csrf_token %}
         <div class="mb-3">
@@ -61,6 +62,7 @@
             Cancelar
         </a>
     </form>
+    {% endif %}
 
 </div>
 
