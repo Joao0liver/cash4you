@@ -2,7 +2,7 @@ from datetime import date, datetime, timedelta
 from django.db import IntegrityError, transaction
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.dateparse import parse_date
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 
 from .forms import AgendamentoForm, horarios_disponiveis
 from .models import Agendamento, HorarioAgendado

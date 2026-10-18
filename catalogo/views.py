@@ -1,16 +1,18 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 
 from .models import Produto, Servico
 from .forms import ProdutoForm, ServicoForm
 
 # Views de Produto
 @login_required
+@permission_required("catalogo.view_produto", raise_exception=True)
 def listar_produto(request):
     produtos = Produto.objects.all()
     return render(request, 'catalogo/produto/listar_produto.html', {'produtos' : produtos})
 
 @login_required
+@permission_required("catalogo.add_produto", raise_exception=True)
 def cadastrar_produto(request):
 
     if request.method == 'POST':
@@ -26,6 +28,7 @@ def cadastrar_produto(request):
     return render(request, 'catalogo/produto/form_produto.html', {'form' : form, 'titulo' : 'Cadastrar Produto'})
 
 @login_required
+@permission_required("catalogo.change_produto", raise_exception=True)
 def editar_produto(request, id):
     produto = get_object_or_404(Produto, id=id)
 
@@ -42,6 +45,7 @@ def editar_produto(request, id):
     return render(request, 'catalogo/produto/form_produto.html', {'form' : form, 'titulo' : 'Editar Produto'})
 
 @login_required
+@permission_required("catalogo.delete_produto", raise_exception=True)
 def excluir_produto(request, id):
     produto = get_object_or_404(Produto, id=id)
 
@@ -53,11 +57,13 @@ def excluir_produto(request, id):
 
 # Views de Serviço
 @login_required
+@permission_required("catalogo.view_servico", raise_exception=True)
 def listar_servico(request):
     servicos = Servico.objects.all()
     return render(request, 'catalogo/servico/listar_servico.html', {'servicos' : servicos})
 
 @login_required
+@permission_required("catalogo.add_servico", raise_exception=True)
 def cadastrar_servico(request):
 
     if request.method == 'POST':
@@ -73,6 +79,7 @@ def cadastrar_servico(request):
     return render(request, 'catalogo/servico/form_servico.html', {'form' : form, 'titulo' : 'Cadastrar Serviço'})
 
 @login_required
+@permission_required("catalogo.change_servico", raise_exception=True)
 def editar_servico(request, id):
     servico = get_object_or_404(Servico, id=id)
 
@@ -89,6 +96,7 @@ def editar_servico(request, id):
     return render(request, 'catalogo/servico/form_servico.html', {'form' : form, 'titulo' : 'Editar Serviço'})
 
 @login_required
+@permission_required("catalogo.delete_servico", raise_exception=True)
 def excluir_servico(request, id):
     servico = get_object_or_404(Servico, id=id)
 
