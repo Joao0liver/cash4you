@@ -23,6 +23,6 @@ def configurar_estabelecimento(request):
         return redirect("configurar_estabelecimento")
     return render(
         request,
-        "venda/configurar_estabelecimento.html",
+        "dadosEstabelecimento/configurar_estabelecimento.html",
         {"form": form},
     )

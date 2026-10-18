@@ -17,7 +17,9 @@
                     <path d="M9.796 1.343c-.4-1.117-1.992-1.117-2.392 0l-.094.262a1.25 1.25 0 0 1-1.852.65l-.235-.144c-1.004-.615-2.13.51-1.515 1.515l.144.235a1.25 1.25 0 0 1-.65 1.852l-.262.094c-1.117.4-1.117 1.992 0 2.392l.262.094a1.25 1.25 0 0 1 .65 1.852l-.144.235c-.615 1.004.51 2.13 1.515 1.515l.235-.144a1.25 1.25 0 0 1 1.852.65l.094.262c.4 1.117 1.992 1.117 2.392 0l.094-.262a1.25 1.25 0 0 1 1.852-.65l.235.144c1.004.615 2.13-.51 1.515-1.515l-.144-.235a1.25 1.25 0 0 1 .65-1.852l.262-.094c1.117-.4 1.117-1.992 0-2.392l-.262-.094a1.25 1.25 0 0 1-.65-1.852l.144-.235a1.25 1.25 0 0 1-1.515-1.515l-.235.144a1.25 1.25 0 0 1-1.852-.65zM8 1.5a.25.25 0 0 1 .235.165l.094.262a2.25 2.25 0 0 0 3.334 1.17l.235-.144a.25.25 0 0 1 .303.394l-.144.235a2.25 2.25 0 0 0 1.17 3.334l.262.094a.25.25 0 0 1 0 .47l-.262.094a2.25 2.25 0 0 0-1.17 3.334l.144.235a.25.25 0 0 1-.303.303l-.235-.144a2.25 2.25 0 0 0-3.334 1.17l-.094.262a.25.25 0 0 1-.47 0l-.094-.262a2.25 2.25 0 0 0-3.334-1.17l-.235.144a.25.25 0 0 1-.303-.303l.144-.235a2.25 2.25 0 0 0-1.17-3.334l-.262-.094a.25.25 0 0 1 0-.47l.262-.094a2.25 2.25 0 0 0 1.17-3.334l-.144-.235a.25.25 0 0 1 .303-.303l.235.144a2.25 2.25 0 0 0 3.334-1.17l.094-.262A.25.25 0 0 1 8 1.5"/>
                 </svg>
             </a>
+            {% if perms.venda.view_venda %}
             <a href="{% url 'listar_vendas' %}" class="btn btn-outline-secondary">Registro de Vendas</a>
+            {% endif %}
         </div>
     </div>
 
@@ -37,6 +39,7 @@
                             {% if perms.venda.add_venda %}
                             <form method="post" class="checkout-add-form">
                                 {% csrf_token %}
+                                {% if perms.catalogo.view_produto %}
                                 <input type="hidden" name="acao" value="adicionar">
                                 <input type="hidden" name="tipo" value="produto">
                                 <label for="produto-selecionado" class="form-label">Buscar produto</label>
@@ -51,6 +54,7 @@
                                     </select>
                                     <button type="submit" class="btn btn-outline-primary">Adicionar</button>
                                 </div>
+                                {% endif %}
                             </form>
                             {% endif %}
                         </div>
@@ -58,6 +62,7 @@
                             {% if perms.venda.add_venda %}
                             <form method="post" class="checkout-add-form">
                                 {% csrf_token %}
+                                {% if perms.catalogo.view_servico %}
                                 <input type="hidden" name="acao" value="adicionar">
                                 <input type="hidden" name="tipo" value="servico">
                                 <label for="servico-selecionado" class="form-label">Buscar serviço</label>
@@ -72,6 +77,7 @@
                                     </select>
                                     <button type="submit" class="btn btn-outline-primary">Adicionar</button>
                                 </div>
+                                {% endif %}
                             </form>
                             {% endif %}
                         </div>
@@ -143,6 +149,7 @@
                 </div>
             </section>
 
+            {% if perms.venda.view_venda %}
             <section class="card checkout-panel shadow-sm">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-2">
@@ -179,6 +186,7 @@
                     {% endfor %}
                 </div>
             </section>
+            {% endif %}
         </div>
 
         <div class="col-12 col-xl-4">
