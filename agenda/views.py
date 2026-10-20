@@ -8,7 +8,7 @@ from .forms import AgendamentoForm, horarios_disponiveis
 from .models import Agendamento, HorarioAgendado
 from usuario.models import Usuario
 
-@login_required
+# Funções privadas/auxiliares da view
 def obter_horarios(data_selecionada, funcionario_id=None, descricao_agendar_para=None, agendamento=None, selecionados=None):
     horarios_ocupados = HorarioAgendado.objects.filter(
         agendamento__data = data_selecionada
@@ -59,7 +59,6 @@ def obter_horarios(data_selecionada, funcionario_id=None, descricao_agendar_para
 
     return resultado
 
-@login_required
 def recurso_selecionado(request, agendamento=None):
     dados = request.POST if request.method == 'POST' else request.GET
 
@@ -101,7 +100,6 @@ def recurso_selecionado(request, agendamento=None):
 
     return None, None
    
-@login_required
 def _valores_filtro_agenda(request, form):
     if request.method == "POST":
         dados = request.POST
@@ -117,11 +115,11 @@ def _valores_filtro_agenda(request, form):
         form["descricao_agendar_para"].value() or "",
     )
 
-@login_required
 def _data_selecionada(valor, fallback):
     data = parse_date(valor or "")
     return data or fallback
 
+# Funções principais da view
 @login_required
 def listar_agendamento(request):
     agendamentos = Agendamento.objects.select_related("funcionario").prefetch_related(
