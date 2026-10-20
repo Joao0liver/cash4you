@@ -28,20 +28,16 @@ CART_SESSION_KEY = "venda_cart"
 class EstoqueInsuficiente(Exception):
     pass
 
-@login_required
 def formatar_moeda(valor):
     return f"{valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
-@login_required
 def carrinho_sessao(request):
     return dict(request.session.get(CART_SESSION_KEY, {}))
 
-@login_required
 def salvar_carrinho(request, carrinho):
     request.session[CART_SESSION_KEY] = carrinho
     request.session.modified = True
 
-@login_required
 def obter_item(tipo, item_id):
     if tipo == 'produto':
         return Produto.objects.filter(id=item_id).first()
@@ -51,8 +47,6 @@ def obter_item(tipo, item_id):
     
     return None
 
-@login_required
-@permission_required("venda.add_venda", raise_exception=True)
 def montar_carrinho(request):
     carrinho = carrinho_sessao(request)
 
@@ -116,8 +110,6 @@ def montar_carrinho(request):
 
     return linhas, total, invalido
 
-@login_required
-@permission_required("venda.add_venda", raise_exception=True)
 def render_caixa(request, form=None):
     linhas, total, invalido = montar_carrinho(request)
 
