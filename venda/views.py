@@ -272,7 +272,7 @@ def caixa(request):
 
                             if item is None:
                                 raise ValueError(
-                                    f'O item "{linha['descricao']}" '
+                                    f'O item "{linha["descricao"]}" '
                                     'não existe mais no catálogo.'
                                 )
 
