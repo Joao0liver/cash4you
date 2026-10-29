@@ -2,125 +2,428 @@
 
 {% block content %}
 
-<div class="container-fluid py-4">
-
-    <!-- Cabeçalho -->
-    <div class="mb-4">
-        <h1 class="h2 mb-1">Dashboard</h1>
-        <p class="text-body-secondary mb-0">
-            Visão geral do sistema
-        </p></br>
-
-        <h2 class="h4 mb-3">
-            Bem-vindo, {{ request.user.nome }}!
-        </h2>
-
-        {% for grupo in request.user.groups.all %}
-            <span class="badge text-bg-primary me-1 mb-1">
-                {{ grupo.name }}
-            </span>
-        {% empty %}
-            <span class="badge text-bg-secondary">
-                Sem perfil definido
-            </span>
-        {% endfor %}
+<div class="container-fluid">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div>
+            <h1 class="h3 mb-1">Home</h1>
+            <p class="text-muted mb-0">Indicadores do dia e acompanhamento do negócio.</p>
+        </div>
+        <a href="{% url 'caixa' %}" class="btn btn-primary">Abrir caixa</a>
     </div>
 
-    <!-- Indicadores -->
-    <div class="row g-4 mb-4">
-
-        <!-- Usuários -->
-        <div class="col-12 col-md-6 col-xl-4">
-            <div class="card h-100 shadow-sm border-0">
-                <div class="card-body">
-                    <h6 class="card-subtitle mb-2 text-body-secondary">
-                        Clientes
-                    </h6>
-
-                    <h2 class="card-title mb-0">
-                        {{ total_clientes }}
-                    </h2>
+    <section class="card shadow-sm border-0 mb-4" aria-labelledby="calendario-titulo">
+        <div class="card-body">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+                <div>
+                    <h2 id="calendario-titulo" class="h5 mb-1">{{ titulo_calendario }}</h2>
+                    <p class="text-muted small mb-0">Agenda e gastos a pagar.</p>
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="?visao={{ visao_calendario }}&data={{ data_anterior }}&periodo={{ periodo }}" class="btn btn-outline-secondary btn-sm" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Exibir o mês anterior no calendário" aria-label="Período anterior">‹</a>
+                    <a href="{% url 'criar_agendamento' %}" class="btn btn-outline-primary btn-sm">Novo agendamento</a>
+                    <a href="#" class="btn btn-outline-primary btn-sm">Novo gasto</a>
+                    <a href="?visao={{ visao_calendario }}&data={{ data_proxima }}&periodo={{ periodo }}" class="btn btn-outline-secondary btn-sm" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Exibir o próximo mês no calendário" aria-label="Próximo período">›</a>
                 </div>
             </div>
-        </div>
 
-        <!-- Clientes -->
-        <div class="col-12 col-md-6 col-xl-4">
-            <div class="card h-100 shadow-sm border-0">
-                <div class="card-body">
-                    <h6 class="card-subtitle mb-2 text-body-secondary">
-                        Produtos
-                    </h6>
-
-                    <h2 class="card-title mb-0">
-                        {{ total_produtos }}
-                    </h2>
+            <form method="get" class="row g-2 align-items-end mb-3">
+                <input type="hidden" name="periodo" value="{{ periodo }}">
+                <div class="col-auto">
+                    <label for="visao-calendario" class="form-label mb-1">Exibição</label>
+                    <select id="visao-calendario" name="visao" class="form-select form-select-sm">
+                        <option value="dia" {% if visao_calendario == "dia" %}selected{% endif %}>Dia</option>
+                        <option value="semana" {% if visao_calendario == "semana" %}selected{% endif %}>Semana</option>
+                        <option value="mes" {% if visao_calendario == "mes" %}selected{% endif %}>Mês</option>
+                    </select>
                 </div>
-            </div>
-        </div>
-
-        <!-- Operações -->
-        <div class="col-12 col-md-6 col-xl-4">
-            <div class="card h-100 shadow-sm border-0">
-                <div class="card-body">
-                    <h6 class="card-subtitle mb-2 text-body-secondary">
-                        Vendas
-                    </h6>
-
-                    <h2 class="card-title mb-0">
-                        {{ total_vendas }}
-                    </h2>
+                <div class="col-auto">
+                    <label for="data-calendario-home" class="form-label mb-1">Data</label>
+                    <input id="data-calendario-home" type="date" name="data" class="form-control form-control-sm" value="{{ data_referencia|date:'Y-m-d' }}">
                 </div>
-            </div>
-        </div>
-
-    </div>
-
-    <!-- Conteúdo -->
-    <div class="row g-4">
-
-        <!-- Resumo -->
-        <div class="col-12 col-xl-8">
-            <div class="card h-100 shadow-sm border-0">
-                <div class="card-body">
-                    <h2 class="h5 card-title">
-                        Resumo
-                    </h2>
-
-                    <p class="card-text text-body-secondary">
-                        Os indicadores da dashboard serão disponibilizados
-                        aqui conforme os módulos do sistema forem implementados.
-                    </p>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary btn-sm">Exibir</button>
                 </div>
+                <div class="col-auto">
+                    <a href="{% url 'dashboard:home' %}?periodo={{ periodo }}" class="btn btn-outline-secondary btn-sm">Hoje</a>
+                </div>
+            </form>
+
+            <div class="d-flex flex-wrap gap-3 small mb-3">
+                <span><span class="badge text-bg-danger me-1">F</span>Feriado nacional</span>
+                <span><span class="badge text-bg-info me-1">P</span>Ponto facultativo</span>
+                <span><span class="badge text-bg-primary me-1">A</span>Agendamento</span>
+                <span><span class="badge text-bg-warning me-1">R$</span>Conta pendente</span>
+                <span><span class="badge text-bg-success me-1">✓</span>Conta paga</span>
+                <a href="#" class="ms-auto">Gerenciar gastos a pagar</a>
             </div>
-        </div>
 
-        <!-- Acesso rápido -->
-        <div class="col-12 col-xl-4">
-            <div class="card h-100 shadow-sm border-0">
-                <div class="card-body">
-                    <h2 class="h5 card-title">
-                        Acesso rápido
-                    </h2>
-
-                    <div class="d-grid gap-2">
-                        <a href="#" class="btn btn-primary">
-                            {% for grupo in request.user.groups.all %}
-                                <span>
-                                    {{ grupo.name }}
-                                </span>
-                            {% empty %}
-                                <span>
-                                    Sem perfil definido
-                                </span>
+            <div class="table-responsive">
+                <table class="table table-bordered align-middle mb-0" style="table-layout: fixed; min-width: {% if visao_calendario == 'dia' %}280px{% else %}840px{% endif %}">
+                    <thead>
+                        <tr>
+                            {% for dia_semana in dias_semana %}
+                            <th scope="col" class="text-center">{{ dia_semana }}</th>
                             {% endfor %}
-                        </a>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for semana in semanas_calendario %}
+                        <tr>
+                            {% for dia in semana %}
+                            <td class="p-2 {% if not dia.no_mes %}text-muted opacity-50{% endif %}{% if dia.hoje %} border border-primary border-2{% endif %}" style="height: {% if visao_calendario == 'dia' %}280px{% else %}112px{% endif %}; vertical-align: top">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="small fw-semibold">{{ dia.data.day }}</span>
+                                    {% if dia.no_mes %}
+                                    <a href="{{ dia.url_novo_agendamento }}" class="small text-decoration-none" aria-label="Novo agendamento em {{ dia.data|date:'d/m/Y' }}">+</a>
+                                    {% endif %}
+                                </div>
+                                {% if dia.feriado %}
+                                <div class="small text-danger-emphasis fw-semibold text-truncate mb-1" title="{{ dia.feriado }}">
+                                    {{ dia.feriado }}
+                                </div>
+                                {% endif %}
+                                {% if dia.ponto_facultativo %}
+                                <div class="small text-info-emphasis fw-semibold text-truncate mb-1" title="{{ dia.ponto_facultativo }}">
+                                    {{ dia.ponto_facultativo }}
+                                </div>
+                                {% endif %}
+                                {% for agendamento in dia.agendamentos %}
+                                <a href="{{ agendamento.url }}" class="d-block text-decoration-none text-truncate small rounded px-1 mb-1 bg-primary bg-opacity-25" title="{{ agendamento.nome }}{% if agendamento.agendar_para != '—' %} — {{ agendamento.agendar_para }}{% endif %}{% if agendamento.horarios %} — {{ agendamento.horarios }}{% endif %}">
+                                    <span class="fw-semibold">{{ agendamento.horarios }}</span> {{ agendamento.nome }}{% if agendamento.agendar_para != '—' %} · {{ agendamento.agendar_para }}{% endif %}
+                                </a>
+                                {% endfor %}
+                                {% for conta in dia.contas %}
+                                <a href="#" class="d-block text-decoration-none text-truncate small rounded px-1 mb-1 {% if conta.paga %}bg-success bg-opacity-25{% elif conta.vencimento < hoje %}bg-danger bg-opacity-25{% else %}bg-warning bg-opacity-25{% endif %}" title="{{ conta.descricao }} — R$ {{ conta.valor|floatformat:2 }}{% if conta.paga %} — Paga{% else %} — Pendente{% endif %}">
+                                    R$ {{ conta.valor|floatformat:2 }} {{ conta.descricao }}
+                                </a>
+                                {% endfor %}
+                            </td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <div class="row g-3 mb-3">
+        <div class="col-6 col-xl-3">
+            <a href="{% url 'listar_vendas' %}" class="card shadow-sm border-0 h-100 text-decoration-none" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Acesse o histórico para consultar as vendas e seus detalhes.">
+                <div class="card-body py-3">
+                    <div class="small text-muted">Vendas hoje</div>
+                    <div class="h5 mb-0 mt-1">R$ {{ total_vendas_hoje|floatformat:2 }}</div>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-xl-3">
+            <a href="{% url 'listar_vendas' %}" class="card shadow-sm border-0 h-100 text-decoration-none" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Acesse o histórico para consultar a quantidade e os detalhes das vendas.">
+                <div class="card-body py-3">
+                    <div class="small text-muted">Nº de vendas hoje</div>
+                    <div class="h5 mb-0 mt-1">{{ vendas_hoje }}</div>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-xl-3">
+            <a href="{% url 'listar_cliente' %}" class="card shadow-sm border-0 h-100 text-decoration-none" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Acesse Cadastrar → Carteira de Clientes para consultar e gerenciar os clientes.">
+                <div class="card-body py-3">
+                    <div class="small text-muted">Carteira de Clientes</div>
+                    <div class="h5 mb-0 mt-1">{{ total_clientes }}</div>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-xl-3">
+            <a href="{% url 'listar_produto' %}" class="card shadow-sm border-warning h-100 text-decoration-none" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Acesse Cadastrar → Produtos no Estoque para consultar e atualizar o estoque.">
+                <div class="card-body py-3">
+                    <div class="small text-muted">Estoque baixo</div>
+                    <div class="h5 mb-0 mt-1">{{ quantidade_estoque_baixo }} produto(s)</div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-md-6">
+            <a href="#" class="card shadow-sm border-warning h-100 text-decoration-none" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Acesse Cadastrar → Gastos a pagar para consultar e atualizar os gastos pendentes.">
+                <div class="card-body py-3">
+                    <div class="small text-muted">Gastos a pagar (pendentes)</div>
+                    <div class="h5 mb-0 mt-1">R$ {{ total_contas_pendentes|floatformat:2 }}</div>
+                    <div class="small text-muted mt-1">{{ quantidade_contas_pendentes }} conta(s)</div>
+                </div>
+            </a>
+        </div>
+        <div class="col-12 col-md-6">
+            <a href="#" class="card shadow-sm border-success h-100 text-decoration-none" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Acesse Cadastrar → Gastos a pagar para consultar o histórico de gastos pagos.">
+                <div class="card-body py-3">
+                    <div class="small text-muted">Contas pagas</div>
+                    <div class="h5 mb-0 mt-1">R$ {{ total_contas_pagas|floatformat:2 }}</div>
+                    <div class="small text-muted mt-1">{{ quantidade_contas_pagas }} conta(s)</div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-xl-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <h2 class="h6 mb-3">Produtos mais vendidos hoje</h2>
+                    {% for produto in produtos_mais_vendidos_hoje %}
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <span class="small text-truncate flex-shrink-0" style="width: 28%">{{ produto.descricao }}</span>
+                        <div class="progress flex-grow-1" role="progressbar" aria-label="{{ produto.descricao }}" aria-valuenow="{{ produto.percentual }}" aria-valuemin="0" aria-valuemax="100" style="height: 12px">
+                            <div class="progress-bar" style="width: {{ produto.percentual }}%"></div>
+                        </div>
+                        <span class="small text-muted text-nowrap">{{ produto.quantidade }} un.</span>
                     </div>
+                    {% empty %}
+                    <p class="small text-muted mb-0">Nenhum produto vendido hoje.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-xl-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <h2 class="h6 mb-3">Formas de pagamento (hoje)</h2>
+                    {% for pagamento in formas_pagamento_hoje %}
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <span class="small text-truncate flex-shrink-0" style="width: 22%">{{ pagamento.forma }}</span>
+                        <div class="progress flex-grow-1" role="progressbar" aria-label="{{ pagamento.forma }}" aria-valuenow="{{ pagamento.percentual }}" aria-valuemin="0" aria-valuemax="100" style="height: 12px">
+                            <div class="progress-bar" style="width: {{ pagamento.percentual }}%"></div>
+                        </div>
+                        <span class="small text-muted text-nowrap">R$ {{ pagamento.total|floatformat:2 }}</span>
+                    </div>
+                    {% empty %}
+                    <p class="small text-muted mb-0">Nenhum pagamento registrado hoje.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <div class="col-12">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    {% if produtos_baixo_estoque %}
+                    <div class="alert alert-warning mb-0 py-2">
+                        <strong>Repor estoque (abaixo de 5 un.):</strong>
+                        <span class="ms-md-2">
+                            {% for produto in produtos_baixo_estoque %}
+                            {{ produto.descricao }}: {{ produto.quantidade }} un.{% if not forloop.last %} · {% endif %}
+                            {% endfor %}
+                        </span>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-success mb-0 py-2">Nenhum produto com estoque abaixo de 5 unidades.</div>
+                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
 
+    <h2 class="h5 mb-3">Análises detalhadas</h2>
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-xl-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <h3 class="h6">Produtos mais vendidos (geral)</h3>
+                    <p class="text-muted small">Classificação pela quantidade total de unidades vendidas.</p>
+                    <div style="height: 240px"><canvas id="produtos-chart" aria-label="Gráfico dos três produtos mais vendidos"></canvas></div>
+                    {% if not produtos_mais_vendidos %}<p class="text-muted mb-0">Ainda não há produtos vendidos.</p>{% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-xl-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <h3 class="h6">Serviços mais prestados</h3>
+                    <p class="text-muted small">Classificação pela quantidade total de serviços vendidos.</p>
+                    <div style="height: 240px"><canvas id="servicos-chart" aria-label="Gráfico dos três serviços mais prestados"></canvas></div>
+                    {% if not servicos_mais_vendidos %}<p class="text-muted mb-0">Ainda não há serviços vendidos.</p>{% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-xl-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <h3 class="h6">Principais formas de pagamento (geral)</h3>
+                    <p class="text-muted small">As três formas com maior valor total de vendas.</p>
+                    <div style="height: 240px"><canvas id="pagamentos-chart" aria-label="Gráfico das três principais formas de pagamento"></canvas></div>
+                    {% if not pagamentos_labels %}<p class="text-muted mb-0">Ainda não há pagamentos registrados.</p>{% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-xl-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <h3 class="h6">Status do estoque</h3>
+                    <p class="text-muted small">Produtos com menos de 5 unidades são considerados com estoque baixo.</p>
+                    <div style="height: 200px"><canvas id="estoque-chart" aria-label="Gráfico do status do estoque de produtos"></canvas></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+                        <div>
+                            <h2 class="h5 mb-1">Comparativo de valores do caixa</h2>
+                            <p class="text-muted small mb-0">Total de vendas concluídas em cada período.</p>
+                        </div>
+                        <form method="get">
+                            <input type="hidden" name="visao" value="{{ visao_calendario }}">
+                            <input type="hidden" name="data" value="{{ data_referencia|date:'Y-m-d' }}">
+                            <label for="periodo" class="visually-hidden">Período do comparativo</label>
+                            <select id="periodo" name="periodo" class="form-select" onchange="this.form.submit()">
+                                <option value="dias" {% if periodo == "dias" %}selected{% endif %}>Últimos 3 dias</option>
+                                <option value="semanas" {% if periodo == "semanas" %}selected{% endif %}>Últimas 3 semanas</option>
+                                <option value="meses" {% if periodo == "meses" %}selected{% endif %}>Últimos 3 meses</option>
+                            </select>
+                        </form>
+                    </div>
+                    <div style="height: 320px"><canvas id="caixa-chart" aria-label="Gráfico comparativo dos valores do caixa"></canvas></div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
+{{ produtos_mais_vendidos|json_script:"produtos-mais-vendidos-data" }}
+{{ servicos_mais_vendidos|json_script:"servicos-mais-vendidos-data" }}
+{{ pagamentos_labels|json_script:"pagamentos-labels-data" }}
+{{ pagamentos_valores|json_script:"pagamentos-valores-data" }}
+{{ quantidade_estoque_baixo|json_script:"estoque-baixo-data" }}
+{{ quantidade_estoque_normal|json_script:"estoque-normal-data" }}
+{{ periodo_labels|json_script:"periodo-labels-data" }}
+{{ periodo_valores|json_script:"periodo-valores-data" }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    (function () {
+        const lerDados = function (id) {
+            return JSON.parse(document.getElementById(id).textContent);
+        };
+        const paleta = ["#3B82F6", "#22C55E", "#F59E0B"];
+        const opcoesBarras = {
+            responsive: true,
+            maintainAspectRatio: false,
+            indexAxis: "y",
+            plugins: { legend: { display: false } },
+            scales: { x: { beginAtZero: true, ticks: { precision: 0 } } }
+        };
+
+        function criarGraficoBarras(id, labels, valores, legenda) {
+            new Chart(document.getElementById(id), {
+                type: "bar",
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: legenda,
+                        data: valores,
+                        backgroundColor: paleta,
+                        borderRadius: 5
+                    }]
+                },
+                options: opcoesBarras
+            });
+        }
+
+        const produtos = lerDados("produtos-mais-vendidos-data");
+        const servicos = lerDados("servicos-mais-vendidos-data");
+        const pagamentosLabels = lerDados("pagamentos-labels-data");
+        const pagamentosValores = lerDados("pagamentos-valores-data");
+        const estoqueBaixo = lerDados("estoque-baixo-data");
+        const estoqueNormal = lerDados("estoque-normal-data");
+        const periodoLabels = lerDados("periodo-labels-data");
+        const periodoValores = lerDados("periodo-valores-data");
+
+        criarGraficoBarras(
+            "produtos-chart",
+            produtos.map(function (item) { return item.descricao; }),
+            produtos.map(function (item) { return item.quantidade; }),
+            "Unidades vendidas"
+        );
+        criarGraficoBarras(
+            "servicos-chart",
+            servicos.map(function (item) { return item.descricao; }),
+            servicos.map(function (item) { return item.quantidade; }),
+            "Serviços vendidos"
+        );
+
+        new Chart(document.getElementById("pagamentos-chart"), {
+            type: "doughnut",
+            data: {
+                labels: pagamentosLabels,
+                datasets: [{ data: pagamentosValores, backgroundColor: paleta }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: "bottom" },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                return context.label + ": " + new Intl.NumberFormat("pt-BR", {
+                                    style: "currency", currency: "BRL"
+                                }).format(context.raw);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        new Chart(document.getElementById("estoque-chart"), {
+            type: "doughnut",
+            data: {
+                labels: ["Abaixo de 5 unidades", "Estoque adequado"],
+                datasets: [{
+                    data: [estoqueBaixo, estoqueNormal],
+                    backgroundColor: ["#EF4444", "#22C55E"]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: "bottom" } }
+            }
+        });
+
+        new Chart(document.getElementById("caixa-chart"), {
+            type: "bar",
+            data: {
+                labels: periodoLabels,
+                datasets: [{
+                    label: "Vendas (R$)",
+                    data: periodoValores,
+                    backgroundColor: "#3B82F6",
+                    borderRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                return new Intl.NumberFormat("pt-BR", {
+                                    style: "currency", currency: "BRL"
+                                }).format(context.raw);
+                            }
+                        }
+                    }
+                },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+    })();
+</script>
+<script>
+    if (window.bootstrap && window.bootstrap.Tooltip) {
+        document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (elemento) {
+            new window.bootstrap.Tooltip(elemento);
+        });
+    }
+</script>
 {% endblock %}
