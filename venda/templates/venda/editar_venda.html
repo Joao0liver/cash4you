@@ -10,6 +10,7 @@
         <p class="text-muted mb-0">Informe as quantidades finais. Os preços são atualizados conforme o cadastro atual; o estoque vendido anteriormente será considerado disponível nesta edição.</p>
     </div>
 
+    {% if perms.venda.change_venda %}
     <form method="post">
         {% csrf_token %}
         {{ form.non_field_errors }}
@@ -111,6 +112,7 @@
             <a href="{% url 'detalhe_venda' venda.pk %}" class="btn btn-outline-secondary">Cancelar</a>
         </div>
     </form>
+    {% endif %}
 </div>
 
 <script>

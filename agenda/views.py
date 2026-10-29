@@ -2,10 +2,13 @@ from datetime import date, datetime, timedelta
 from django.db import IntegrityError, transaction
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.dateparse import parse_date
+from django.contrib.auth.decorators import login_required, permission_required
+
 from .forms import AgendamentoForm, horarios_disponiveis
 from .models import Agendamento, HorarioAgendado
 from usuario.models import Usuario
 
+# Funções privadas/auxiliares da view
 def obter_horarios(data_selecionada, funcionario_id=None, descricao_agendar_para=None, agendamento=None, selecionados=None):
     horarios_ocupados = HorarioAgendado.objects.filter(
         agendamento__data = data_selecionada
@@ -96,7 +99,7 @@ def recurso_selecionado(request, agendamento=None):
             return None, agendamento.descricao_agendar_para.strip()
 
     return None, None
-            
+   
 def _valores_filtro_agenda(request, form):
     if request.method == "POST":
         dados = request.POST
@@ -116,6 +119,8 @@ def _data_selecionada(valor, fallback):
     data = parse_date(valor or "")
     return data or fallback
 
+# Funções principais da view
+@login_required
 def listar_agendamento(request):
     agendamentos = Agendamento.objects.select_related("funcionario").prefetch_related(
         "servicos", "horarios"
@@ -123,6 +128,7 @@ def listar_agendamento(request):
     
     return render(request, "agenda/listar_agendamento.html", {"agendamentos": agendamentos})
 
+@login_required
 def criar_agendamento(request):
     data_selecionada = _data_selecionada(
         request.POST.get("data") if request.method == "POST" else request.GET.get("data"),
@@ -190,6 +196,7 @@ def criar_agendamento(request):
         },
     )
 
+@login_required
 def editar_agendamento(request, id):
     agendamento = get_object_or_404(Agendamento, id=id)
 
@@ -274,6 +281,7 @@ def editar_agendamento(request, id):
         },
     )
 
+@login_required
 def excluir_agendamento(request, id):
     agendamento = get_object_or_404(Agendamento, id=id)
 

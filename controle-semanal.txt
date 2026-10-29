@@ -1,3 +1,6 @@
 ============= Arquivo para Controle das Entregas Semanais da Disciplina de Backend =============
 
 Semana 1 - Concluída
+Semana 2 - Concluída
+Semana 3 (Saco Cheio) - Concluída
+Semana 4 - Concluída

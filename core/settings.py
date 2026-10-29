@@ -44,14 +44,15 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     # Apps do projeto
-    'cliente',
     'usuario',
+    'autenticacao',
+    'configuracao',
+    'venda',
+    'vendaitem',
+    'cliente',
     'dashboard',
     'catalogo',
-    'vendaitem',
     'agenda',
-    'venda',
-    'configuracao',
 ]
 
 MIDDLEWARE = [
@@ -138,3 +139,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Usuário personalizado para o sistema
 AUTH_USER_MODEL = "usuario.Usuario"
+
+# Autenticação de usuário
+LOGIN_URL = "autenticacao:login"
+LOGIN_REDIRECT_URL = "home"
+LOGOUT_REDIRECT_URL = "autenticacao:login"

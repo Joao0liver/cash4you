@@ -5,7 +5,7 @@ from cliente.models import Cliente
 from catalogo.models import Produto
 from venda.models import Venda
 
-# @login_required
+@login_required
 def dashboard(request):
     total_clientes = Cliente.objects.count();
     total_produtos = Produto.objects.count();
