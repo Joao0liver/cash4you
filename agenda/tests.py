@@ -4,7 +4,7 @@ from django.test import TestCase
 from django.urls import reverse
 
 from conta_pagar.models import Funcionario
-from servico.models import Servico
+from catalogo.models import Servico
 
 from .forms import horarios_disponiveis
 from .models import Agendamento, HorarioAgendado

@@ -9,7 +9,6 @@
             <h1 class="h3 mb-1">Dados do estabelecimento</h1>
             <p class="text-muted mb-0">Informações opcionais exibidas nos comprovantes enviados pelo WhatsApp.</p>
         </div>
-        <a href="{% url 'caixa' %}" class="btn btn-outline-secondary">Voltar ao caixa</a>
     </div>
 
     {% if messages %}
@@ -43,7 +42,7 @@
                     <div class="form-text">Teto para a soma das contas a pagar pendentes. Deixe em branco para não definir um limite.</div>
                     {% if form.limite_gastos.errors %}<div class="text-danger">{{ form.limite_gastos.errors }}</div>{% endif %}
                 </div>
-                <button type="submit" class="btn btn-primary">Salvar dados do estabelecimento</button>
+                <button type="submit" class="btn btn-primary">Salvar</button>
             </form>
         </div>
     </div>
