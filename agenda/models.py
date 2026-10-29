@@ -64,13 +64,13 @@ class HorarioAgendado(models.Model):
         if not self.agendamento_id:
             return
 
-        # Se o usuário não for do Group Funcionário
-        if self.funcionario_id:
-            if not self.funcionario.groups.filter(name='Funcionário').exists():
-                raise ValidationError({
-                    'funcionario':
-                        'O usuário selecionado não pertence ao grupo Funcionário.'
-                })
+        # Valida o funcionário associado ao agendamento, quando houver.
+        funcionario = self.agendamento.funcionario
+        if funcionario and not funcionario.groups.filter(name='Funcionário').exists():
+            raise ValidationError({
+                'agendamento':
+                    'O usuário selecionado não pertence ao grupo Funcionário.'
+            })
 
         inicio = datetime.combine(self.agendamento.data, self.inicio)
         fim = datetime.combine(self.agendamento.data, self.fim)

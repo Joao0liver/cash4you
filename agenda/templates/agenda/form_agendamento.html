@@ -50,13 +50,13 @@
                     {% for error in form.tipo_agendar_para.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
                 </fieldset>
             </div>
-            <div class="col-12 col-md-6" data-agendar-para-campo="funcionario">
+            <div class="col-12 col-md-6 {% if form.tipo_agendar_para.value != 'funcionario' %}d-none{% endif %}" data-agendar-para-campo="funcionario">
                 <label for="{{ form.funcionario.id_for_label }}" class="form-label">{{ form.funcionario.label }}</label>
                 {{ form.funcionario }}
                 {% if form.funcionario.help_text %}<div class="form-text">{{ form.funcionario.help_text }}</div>{% endif %}
                 {% for error in form.funcionario.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
             </div>
-            <div class="col-12 col-md-6" data-agendar-para-campo="manual">
+            <div class="col-12 col-md-6 {% if form.tipo_agendar_para.value != 'manual' %}d-none{% endif %}" data-agendar-para-campo="manual">
                 <label for="{{ form.descricao_agendar_para.id_for_label }}" class="form-label">{{ form.descricao_agendar_para.label }}</label>
                 {{ form.descricao_agendar_para }}
                 {% if form.descricao_agendar_para.help_text %}<div class="form-text">{{ form.descricao_agendar_para.help_text }}</div>{% endif %}
@@ -153,6 +153,7 @@
             campos.forEach(function (campo) {
                 const ativo = selecionado && campo.dataset.agendarParaCampo === selecionado.value;
                 campo.hidden = !ativo;
+                campo.classList.toggle("d-none", !ativo);
                 campo.querySelector("input, select").disabled = !ativo;
             });
         }
