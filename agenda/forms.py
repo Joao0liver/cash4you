@@ -190,20 +190,22 @@ class AgendamentoForm(forms.ModelForm):
         return agendamento
 
     def clean_horarios(self):
-        horarios = self.cleaned_data["horarios"]
+        horarios = self.cleaned_data.get("horarios", [])
         data = self.cleaned_data.get("data")
 
-        if data is None:
+        if not horarios or data is None:
             return horarios
 
-        tipo = self.cleaned_data.get('tipo_agendar_para')
-        funcionario = self.cleaned_data.get('funcionario')
-        descricao = self.cleaned_data.get('descricao_agendar_para', '').strip()
+        tipo = self.cleaned_data.get("tipo_agendar_para")
+        funcionario = self.cleaned_data.get("funcionario")
+        descricao = (self.cleaned_data.get("descricao_agendar_para") or "").strip()
 
-        # Começa procurando os horários da data selecionada
+        # A disponibilidade é sempre específica para a data selecionada.
+        # Nunca verificar apenas funcionário + horário, pois isso bloquearia
+        # o mesmo horário em dias diferentes.
         consulta = HorarioAgendado.objects.filter(
-            agendamento__data = data,
-            inicio__in = horarios,
+            agendamento__data=data,
+            inicio__in=horarios,
         )
 
         # Filtra pelo funcionario

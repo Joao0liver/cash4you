@@ -143,40 +143,66 @@
 </div>
 <script>
     (function () {
-        const radios = document.querySelectorAll('input[name="tipo_agendar_para"]');
-        const campos = document.querySelectorAll("[data-agendar-para-campo]");
         const formularioDisponibilidade = document.querySelector('form[method="get"]');
         const formularioAgendamento = document.querySelector('form[method="post"]');
+        if (!formularioDisponibilidade || !formularioAgendamento) return;
+
+        const radios = document.querySelectorAll('input[name="tipo_agendar_para"]');
+        const campos = document.querySelectorAll("[data-agendar-para-campo]");
+        const dataCalendario = formularioDisponibilidade.elements.data;
+        const dataOculta = formularioAgendamento.elements.data;
+        const tipoFiltro = formularioDisponibilidade.elements.tipo_agendar_para;
+        const funcionarioFiltro = formularioDisponibilidade.elements.funcionario;
+        const descricaoFiltro = formularioDisponibilidade.elements.descricao_agendar_para;
+        const tipoFuncionario = formularioAgendamento.elements.tipo_agendar_para;
+        const funcionario = formularioAgendamento.elements.funcionario;
+        const descricao = formularioAgendamento.elements.descricao_agendar_para;
+
+        function tipoSelecionado() {
+            return document.querySelector('input[name="tipo_agendar_para"]:checked');
+        }
 
         function atualizarCampos() {
-            const selecionado = document.querySelector('input[name="tipo_agendar_para"]:checked');
+            const selecionado = tipoSelecionado();
             campos.forEach(function (campo) {
-                const ativo = selecionado && campo.dataset.agendarParaCampo === selecionado.value;
+                const ativo = !!selecionado && campo.dataset.agendarParaCampo === selecionado.value;
+                campo.classList.toggle("d-none", !ativo);
                 campo.hidden = !ativo;
-                campo.querySelector("input, select").disabled = !ativo;
+                const controle = campo.querySelector("input, select");
+                if (controle) controle.disabled = !ativo;
             });
         }
 
         function sincronizarFiltros() {
-            const selecionado = document.querySelector('input[name="tipo_agendar_para"]:checked');
-            formularioDisponibilidade.elements.tipo_agendar_para.value = selecionado ? selecionado.value : "";
-            formularioDisponibilidade.elements.funcionario.value = formularioAgendamento.elements.funcionario.value;
-            formularioDisponibilidade.elements.descricao_agendar_para.value = formularioAgendamento.elements.descricao_agendar_para.value;
+            const selecionado = tipoSelecionado();
+            tipoFiltro.value = selecionado ? selecionado.value : "";
+            funcionarioFiltro.value = funcionario ? funcionario.value : "";
+            descricaoFiltro.value = descricao ? descricao.value : "";
+            if (dataOculta && dataCalendario) dataOculta.value = dataCalendario.value;
         }
 
         function atualizarDisponibilidade() {
             sincronizarFiltros();
-            formularioDisponibilidade.submit();
+            formularioDisponibilidade.requestSubmit();
         }
 
         radios.forEach(function (radio) {
-            radio.addEventListener("change", atualizarCampos);
-            radio.addEventListener("change", atualizarDisponibilidade);
+            radio.addEventListener("change", function () {
+                atualizarCampos();
+                atualizarDisponibilidade();
+            });
         });
-        formularioAgendamento.elements.funcionario.addEventListener("change", atualizarDisponibilidade);
-        formularioAgendamento.elements.descricao_agendar_para.addEventListener("change", atualizarDisponibilidade);
-        formularioDisponibilidade.elements.data.addEventListener("change", atualizarDisponibilidade);
+
+        if (funcionario) funcionario.addEventListener("change", atualizarDisponibilidade);
+        if (descricao) descricao.addEventListener("change", atualizarDisponibilidade);
+        if (dataCalendario) dataCalendario.addEventListener("change", atualizarDisponibilidade);
+
+        formularioAgendamento.addEventListener("submit", function () {
+            sincronizarFiltros();
+        });
+
         atualizarCampos();
+        sincronizarFiltros();
     })();
 </script>
 {% endblock %}
