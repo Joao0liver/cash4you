@@ -1,0 +1,6 @@
+/* Configurações do estabelecimento */
+.configuracao-panel { max-width: 900px; border: 1px solid var(--md-outline); border-radius: 18px; background: var(--md-surface); box-shadow: var(--md-shadow-1); }
+.configuracao-panel .card-body { padding: clamp(1.25rem, 3vw, 2rem); }
+
+
+.app-configuracao-page .card { max-width: 900px; }

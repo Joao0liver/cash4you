@@ -1,0 +1,10 @@
+/* Agenda e agendamentos */
+.agenda-slot, .horario-disponivel { border: 1px solid var(--md-outline); border-radius: 10px; padding: .55rem .8rem; transition: background .18s, border-color .18s; }
+.agenda-slot:hover, .horario-disponivel:hover { background: var(--md-primary-container); border-color: var(--md-primary); }
+.horario-ocupado, .agenda-slot:disabled { color: #777; background: #f0f2ef; text-decoration: line-through; cursor: not-allowed; opacity: .7; }
+.agenda-evento { border-left: 4px solid var(--md-primary); border-radius: 8px; background: var(--md-primary-container); padding: .75rem 1rem; }
+
+
+.app-agenda-page > .d-flex:first-child { margin-bottom: 1.5rem; }
+.app-agenda-page .table-responsive { border-radius: 14px; }
+.app-agenda-page .form-control, .app-agenda-page .form-select { background-color: #fff; }

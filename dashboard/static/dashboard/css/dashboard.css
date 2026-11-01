@@ -1,0 +1,12 @@
+/* Dashboard: calendário, indicadores e visão geral */
+.dashboard-kpi { border: 1px solid var(--md-outline); border-radius: 18px; background: var(--md-surface); padding: 1.25rem; height: 100%; box-shadow: var(--md-shadow-1); }
+.dashboard-kpi .kpi-value { color: var(--md-primary); font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 700; letter-spacing: -.04em; }
+.dashboard-kpi .kpi-label { color: var(--md-muted); font-size: .875rem; }
+.dashboard-calendar { overflow: hidden; border: 1px solid var(--md-outline); border-radius: 16px; }
+.dashboard-calendar .table { margin: 0; }
+.dashboard-calendar .table thead th { background: var(--md-primary-container); color: var(--md-on-primary-container); border-color: var(--md-outline); }
+.dashboard-calendar .table td { min-height: 5rem; background: var(--md-surface); border-color: var(--md-outline); }
+
+
+.app-dashboard-page .table-responsive { border: 1px solid var(--md-outline); border-radius: 14px; }
+.app-dashboard-page .card { overflow: hidden; }

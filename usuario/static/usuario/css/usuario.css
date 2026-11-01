@@ -1,0 +1,4 @@
+/* Usuários e permissões */
+.usuario-permissao { border: 1px solid var(--md-outline); border-radius: 12px; padding: 1rem; background: var(--md-surface); }
+.usuario-grupo { color: var(--md-primary); font-weight: 700; }
+

@@ -1,0 +1,4 @@
+/* Itens associados às vendas */
+.vendaitem-linha { border-bottom: 1px solid var(--md-outline); padding: .75rem 0; }
+.vendaitem-quantidade { color: var(--md-muted); font-variant-numeric: tabular-nums; }
+

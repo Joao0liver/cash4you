@@ -1,0 +1,7 @@
+/* Cadastro e listagem de clientes */
+.cliente-avatar { width: 40px; height: 40px; display: inline-grid; place-items: center; border-radius: 50%; color: var(--md-primary); background: var(--md-primary-container); font-weight: 700; }
+.cliente-dados-secundarios { color: var(--md-muted); font-size: .875rem; }
+
+
+.app-cliente-page .table-responsive { border: 1px solid var(--md-outline); border-radius: 14px; }
+.app-cliente-page .table tbody tr:hover { background: #f2f8f3; }
