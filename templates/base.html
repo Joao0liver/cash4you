@@ -62,29 +62,23 @@
                         </a>
 
                         <ul class="dropdown-menu">
+                            {% if perms.cliente.view_cliente %}
                             <li>
-                                {% if perms.cliente.view_cliente %}
-                                <a class="dropdown-item" href="{% url 'listar_cliente' %}">
-                                    Clientes
-                                </a>
-                                {% endif %}
+                                <a class="dropdown-item" href="{% url 'listar_cliente' %}">Clientes</a>
                             </li>
+                            {% endif %}
 
+                            {% if perms.catalogo.view_produto %}
                             <li>
-                                {% if perms.catalogo.view_produto %}
-                                <a class="dropdown-item" href="{% url 'listar_produto' %}">
-                                    Produtos
-                                </a>
-                                {% endif %}
+                                <a class="dropdown-item" href="{% url 'listar_produto' %}">Produtos</a>
                             </li>
+                            {% endif %}
 
+                            {% if perms.catalogo.view_servico %}
                             <li>
-                                {% if perms.catalogo.view_servico %}
-                                <a class="dropdown-item" href="{% url 'listar_servico' %}">
-                                    Serviços
-                                </a>
-                                {% endif %}
+                                <a class="dropdown-item" href="{% url 'listar_servico' %}">Serviços</a>
                             </li>
+                            {% endif %}
                         </ul>
                     </li>
 
