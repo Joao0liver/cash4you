@@ -1,0 +1,7 @@
+/* Catálogo de produtos e serviços */
+.catalogo-thumb { width: 44px; height: 44px; display: inline-grid; place-items: center; border-radius: 12px; color: var(--md-primary); background: var(--md-primary-container); }
+.catalogo-preco { color: var(--md-primary); font-weight: 700; font-variant-numeric: tabular-nums; }
+
+
+.app-catalogo-page .table-responsive { border: 1px solid var(--md-outline); border-radius: 14px; }
+.app-catalogo-page .table tbody tr { transition: background .15s; }

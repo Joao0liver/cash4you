@@ -1,0 +1,9 @@
+/* Caixa, vendas e comprovantes */
+.venda-total { color: var(--md-primary); font-size: clamp(1.6rem, 4vw, 2.25rem); font-weight: 800; font-variant-numeric: tabular-nums; }
+.venda-resumo { border: 1px solid var(--md-outline); border-radius: 16px; padding: 1.25rem; background: var(--md-surface); }
+.caixa-produto { border: 1px solid var(--md-outline); border-radius: 14px; transition: border-color .18s, box-shadow .18s; }
+.caixa-produto:hover { border-color: var(--md-primary); box-shadow: var(--md-shadow-1); }
+
+
+.app-venda-page .table-responsive { border: 1px solid var(--md-outline); border-radius: 14px; }
+.app-venda-page .table tbody td { vertical-align: middle; }

@@ -98,7 +98,7 @@ class ServicoForm(forms.ModelForm):
         widgets = {
             'descricao': forms.TextInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'Nome do produto'
+                'placeholder': 'Nome do serviço'
             }),
 
             'preco_venda': forms.NumberInput(attrs={
