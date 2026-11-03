@@ -18,8 +18,8 @@ class PagamentoVenda(models.Model):
 
     class FormaPagamento(models.TextChoices):
         DINHEIRO = "dinheiro", "Dinheiro"
-        CREDITO = "credito", "Cartão de crédito"
-        DEBITO = "debito", "Cartão de débito"
+        CREDITO = "credito", "Crédito"
+        DEBITO = "debito", "Débito"
         PIX = "pix", "Pix"
 
     venda = models.ForeignKey(Venda, related_name="pagamentos", on_delete=models.CASCADE)
