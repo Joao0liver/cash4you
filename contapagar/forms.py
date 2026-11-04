@@ -35,14 +35,14 @@ class ContaPagarForm(forms.ModelForm):
         if valor is None or paga:
             return cleaned_data
 
-        configuracao = DadosEstabelecimento.objects.filter(pk=1).first()
+        configuracao = DadosEstabelecimento.objects.filter(id=1).first()
         limite = configuracao.limite_gastos if configuracao else None
         if limite is None:
             return cleaned_data
 
         pendentes = ContaPagar.objects.filter(paga=False)
-        if self.instance.pk:
-            pendentes = pendentes.exclude(pk=self.instance.pk)
+        if self.instance.id:
+            pendentes = pendentes.exclude(id=self.instance.id)
         total_pendente = pendentes.aggregate(total=Sum("valor"))["total"] or 0
         if total_pendente + valor > limite:
             self.add_error(

@@ -75,14 +75,14 @@
                         </td>
                         <td class="text-center">
                             <div class="c4y-actions">
-                            <form method="post" action="{% url 'contapagar:alternar_status_conta' conta.pk %}" class="d-inline">
+                            <form method="post" action="{% url 'contapagar:alternar_status_conta' conta.id %}" class="d-inline">
                                 {% csrf_token %}
                                 <button type="submit" class="btn btn-sm btn-outline-success">
                                     {% if conta.paga %}Reabrir{% else %}Marcar paga{% endif %}
                                 </button>
                             </form>
-                            <a href="{% url 'contapagar:editar_conta_pagar' conta.pk %}" class="btn btn-sm btn-outline-primary">Editar</a>
-                            <a href="{% url 'contapagar:excluir_conta_pagar' conta.pk %}" class="btn btn-sm btn-outline-danger">Excluir</a>
+                            <a href="{% url 'contapagar:editar_conta_pagar' conta.id %}" class="btn btn-sm btn-outline-primary">Editar</a>
+                            <a href="{% url 'contapagar:excluir_conta_pagar' conta.id %}" class="btn btn-sm btn-outline-danger">Excluir</a>
                             </div>
                         </td>
                     </tr>
