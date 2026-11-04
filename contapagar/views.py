@@ -44,6 +44,8 @@ def listar_contas(request):
         }
     )
 
+@login_required
+@permission_required("contapagar.add_contapagar", raise_exception=True)
 def criar_conta(request):
 
     form = ContaPagarForm(request.POST or None)
@@ -59,6 +61,8 @@ def criar_conta(request):
     
     return render(request, "contapagar/form_conta.html", {"form": form, "titulo": "Nova conta a pagar", "botao": "Cadastrar conta"})
 
+@login_required
+@permission_required("contapagar.change_contapagar", raise_exception=True)
 def editar_conta(request, id):
 
     conta = get_object_or_404(ContaPagar, id=id)
@@ -75,6 +79,8 @@ def editar_conta(request, id):
     
     return render(request, "contapagar/form_conta.html", {"form": form, "titulo": "Editar conta a pagar", "botao": "Salvar alterações"})
 
+@login_required
+@permission_required("contapagar.change_contapagar", raise_exception=True)
 def alternar_status_conta(request, id):
 
     conta = get_object_or_404(ContaPagar, id=id)
@@ -103,6 +109,8 @@ def alternar_status_conta(request, id):
 
     return redirect("contapagar:listar_contas_pagar")
 
+@login_required
+@permission_required("contapagar.delete_contapagar", raise_exception=True)
 def excluir_conta(request, id):
 
     conta = get_object_or_404(ContaPagar, id=id)

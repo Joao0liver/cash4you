@@ -19,8 +19,12 @@
             </div>
             <form method="post" class="d-flex flex-wrap gap-2">
                 {% csrf_token %}
+                {% if perms.contapagar.delete_contapagar %}
                 <button type="submit" class="btn btn-danger">Confirmar exclusão</button>
+                {% endif %}
+                {% if perms.contapagar.view_contapagar %}
                 <a href="{% url 'contapagar:listar_contas_pagar' %}" class="btn btn-outline-secondary">Cancelar</a>
+                {% endif %}
             </form>
         </div>
     </div>

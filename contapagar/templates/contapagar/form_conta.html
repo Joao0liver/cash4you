@@ -17,10 +17,13 @@
             <h1 class="h3 mb-1">{{ titulo }}</h1>
             <p class="text-secondary mb-0">Informe a descrição, o valor e a data de vencimento.</p>
         </div>
+        {% if perms.contapagar.view_contapagar %}
         <a href="{% url 'contapagar:listar_contas_pagar' %}" class="btn btn-outline-secondary">Voltar às contas</a>
+        {% endif %}
     </div>
     <div class="card c4y-form-card shadow-sm">
         <div class="card-body">
+            {% if perms.contapagar.add_contapagar %}
             <form method="post">
                 {% csrf_token %}
                 {% if form.non_field_errors %}<div class="alert alert-danger" role="alert">{{ form.non_field_errors }}</div>{% endif %}
@@ -43,6 +46,7 @@
                 </div>
                 <button type="submit" class="btn btn-primary mt-4">{{ botao }}</button>
             </form>
+            {% endif %}
         </div>
     </div>
 </div>

@@ -3,20 +3,16 @@
 {% block title %}Gastos a pagar | Cash4You{% endblock %}
 
 {% block content %}
-<style>
-    .c4y-table-card { background: var(--c4y-panel); border: 1px solid var(--c4y-line) !important; }
-    .c4y-table-card thead th { color: var(--c4y-ink-soft); border-bottom-color: var(--c4y-line); font-size: .8rem; }
-    .c4y-table-card tbody td { color: var(--c4y-ink); border-color: var(--c4y-line); }
-    .c4y-actions { display: inline-flex; flex-wrap: wrap; justify-content: center; gap: .4rem; }
-    .c4y-empty { color: var(--c4y-ink-soft) !important; }
-</style>
+
 <div class="container-fluid">
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
         <div>
             <h1 class="h3 mb-1">Gastos a pagar</h1>
             <p class="text-secondary mb-0">Cadastre vencimentos e acompanhe pagamentos.</p>
         </div>
-        <a href="{% url 'contapagar:criar_conta_pagar' %}" class="btn btn-primary">Novo gasto</a>
+        {% if perms.contapagar.add_contapagar %}
+        <a href="{% url 'contapagar:criar_conta_pagar' %}" class="btn btn-primary">+ Novo gasto</a>
+        {% endif %}
     </div>
 
     {% if messages %}
@@ -25,6 +21,7 @@
     {% endfor %}
     {% endif %}
 
+    {% if perms.contapagar.view_contapagar %}
     <div class="row g-3 mb-4">
         <div class="col-12 col-md-6">
             <section class="card c4y-table-card shadow-sm h-100" aria-label="Quantidade total de contas">
@@ -77,17 +74,23 @@
                             <div class="c4y-actions">
                             <form method="post" action="{% url 'contapagar:alternar_status_conta' conta.id %}" class="d-inline">
                                 {% csrf_token %}
+                                {% if perms.contapagar.change_contapagar %}
                                 <button type="submit" class="btn btn-sm btn-outline-success">
                                     {% if conta.paga %}Reabrir{% else %}Marcar paga{% endif %}
                                 </button>
+                                {% endif %}
                             </form>
+                            {% if perms.contapagar.change_contapagar %}
                             <a href="{% url 'contapagar:editar_conta_pagar' conta.id %}" class="btn btn-sm btn-outline-primary">Editar</a>
+                            {% endif %}
+                            {% if perms.contapagar.delete_contapagar %}
                             <a href="{% url 'contapagar:excluir_conta_pagar' conta.id %}" class="btn btn-sm btn-outline-danger">Excluir</a>
+                            {% endif %}
                             </div>
                         </td>
                     </tr>
                     {% empty %}
-                    <tr><td colspan="6" class="text-center c4y-empty py-5">Nenhuma conta cadastrada. Use <strong>Nova conta</strong> para incluir o primeiro vencimento.</td></tr>
+                    <tr><td colspan="6" class="text-center c4y-empty py-5">Nenhuma conta cadastrada. Use <strong>+ Nova conta</strong> para incluir o primeiro vencimento.</td></tr>
                     {% endfor %}
                 </tbody>
             </table>
@@ -109,11 +112,14 @@
             {% endif %}
         </div>
     </section>
+    {% endif %}
 
 </div>
+
 {% if limite_gastos and dados_grafico_percentis %}
 {{ dados_grafico_percentis|json_script:"contas-percentil-dados" }}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <script>
     const percentisContas = JSON.parse(document.getElementById("contas-percentil-dados").textContent);
     new Chart(document.getElementById("contas-percentil-chart"), {
@@ -141,4 +147,5 @@
     });
 </script>
 {% endif %}
+
 {% endblock %}
