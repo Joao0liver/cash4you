@@ -17,8 +17,8 @@
 }
 
 .app-dashboard-page .dashboard-status-card.dashboard-status-warning {
-    background-color: #fff8e1 !important;
-    border-color: #e6bd45 !important;
+    background-color: #fff0f0 !important;
+    border-color: #dc8f8f !important;
 }
 
 .app-dashboard-page .dashboard-status-card.dashboard-status-danger {
