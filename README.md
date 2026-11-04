@@ -1,6 +1,6 @@
 # Cash4You 💸
 
-Sistema de gestão desenvolvido para auxiliar no gerenciamento de estabelecimentos comerciais, reunindo funcionalidades de controle de clientes, produtos, vendas, estoque e financeiro em uma única plataforma.
+Sistema de gestão desenvolvido para auxiliar no gerenciamento de estabelecimentos comerciais de pequeno porte (MEIs e Autônomos), reunindo funcionalidades de controle de clientes, produtos, vendas, estoque e financeiro em uma única plataforma.
 
 O Cash4You é uma evolução do projeto Cashly, desenvolvido utilizando Django e Python.
 
