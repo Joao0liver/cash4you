@@ -2,7 +2,7 @@ from django import forms
 from django.db.models import Sum
 
 from configuracao.models import DadosEstabelecimento
-from .models import ContaPagar, Funcionario
+from .models import ContaPagar
 
 class ContaPagarForm(forms.ModelForm):
     class Meta:
@@ -51,20 +51,3 @@ class ContaPagarForm(forms.ModelForm):
                 f"Contas pendentes somam R$ {total_pendente:.2f}.",
             )
         return cleaned_data
-
-class FuncionarioForm(forms.ModelForm):
-    class Meta:
-        model = Funcionario
-        fields = ("nome", "funcao")
-        labels = {
-            "nome": "Nome",
-            "funcao": "Função na empresa",
-        }
-        widgets = {
-            "nome": forms.TextInput(
-                attrs={"class": "form-control", "autocomplete": "name"}
-            ),
-            "funcao": forms.TextInput(
-                attrs={"class": "form-control", "autocomplete": "organization-title"}
-            ),
-        }

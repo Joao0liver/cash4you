@@ -7,8 +7,8 @@ from django.utils import timezone
 
 from configuracao.models import DadosEstabelecimento
 
-from .forms import ContaPagarForm, FuncionarioForm
-from .models import ContaPagar, Funcionario
+from .forms import ContaPagarForm
+from .models import ContaPagar
 
 def listar_contas(request):
     contas = ContaPagar.objects.all()
@@ -37,25 +37,6 @@ def listar_contas(request):
             "limite_gastos": limite_gastos,
             "dados_grafico_percentis": dados_grafico_percentis,
         },
-    )
-
-def listar_funcionarios(request):
-    return render(
-        request,
-        "contapagar/listar_funcionarios.html",
-        {"funcionarios": Funcionario.objects.all()},
-    )
-
-def criar_funcionario(request):
-    form = FuncionarioForm(request.POST or None)
-    if request.method == "POST" and form.is_valid():
-        form.save()
-        messages.success(request, "Funcionário cadastrado.")
-        return redirect("contapagar:listar_funcionarios")
-    return render(
-        request,
-        "contapagar/form_funcionario.html",
-        {"form": form},
     )
 
 def criar_conta(request):
