@@ -51,7 +51,7 @@ def criar_funcionario(request):
     if request.method == "POST" and form.is_valid():
         form.save()
         messages.success(request, "Funcionário cadastrado.")
-        return redirect("listar_funcionarios")
+        return redirect("contapagar:listar_funcionarios")
     return render(
         request,
         "contapagar/form_funcionario.html",
@@ -63,7 +63,7 @@ def criar_conta(request):
     if request.method == "POST" and form.is_valid():
         form.save()
         messages.success(request, "Conta a pagar cadastrada.")
-        return redirect("listar_contas_pagar")
+        return redirect("contapagar:listar_contas_pagar")
     return render(
         request,
         "contapagar/form_conta.html",
@@ -76,7 +76,7 @@ def editar_conta(request, pk):
     if request.method == "POST" and form.is_valid():
         form.save()
         messages.success(request, "Conta a pagar atualizada.")
-        return redirect("listar_contas_pagar")
+        return redirect("contapagar:listar_contas_pagar")
     return render(
         request,
         "contapagar/form_conta.html",
@@ -86,7 +86,7 @@ def editar_conta(request, pk):
 def alternar_status_conta(request, pk):
     conta = get_object_or_404(ContaPagar, pk=pk)
     if request.method != "POST":
-        return redirect("listar_contas_pagar")
+        return redirect("contapagar:listar_contas_pagar")
     if conta.paga:
         configuracao = DadosEstabelecimento.objects.filter(pk=1).first()
         limite = configuracao.limite_gastos if configuracao else None
@@ -102,12 +102,12 @@ def alternar_status_conta(request, pk):
             return redirect("listar_contas_pagar")
     conta.paga = not conta.paga
     conta.save(update_fields=["paga"])
-    return redirect("listar_contas_pagar")
+    return redirect("contapagar:listar_contas_pagar")
 
 def excluir_conta(request, pk):
     conta = get_object_or_404(ContaPagar, pk=pk)
     if request.method == "POST":
         conta.delete()
         messages.success(request, "Conta a pagar excluída.")
-        return redirect("listar_contas_pagar")
+        return redirect("contapagar:listar_contas_pagar")
     return render(request, "contapagar/confirmar_exclusao.html", {"conta": conta})

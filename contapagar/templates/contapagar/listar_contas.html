@@ -75,7 +75,7 @@
                         </td>
                         <td class="text-center">
                             <div class="c4y-actions">
-                            <form method="post" action="{% url 'alternar_status_conta' conta.pk %}" class="d-inline">
+                            <form method="post" action="{% url 'contapagar:alternar_status_conta' conta.pk %}" class="d-inline">
                                 {% csrf_token %}
                                 <button type="submit" class="btn btn-sm btn-outline-success">
                                     {% if conta.paga %}Reabrir{% else %}Marcar paga{% endif %}
