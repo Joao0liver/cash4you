@@ -31,6 +31,17 @@ def listar_contas(request):
         if conta.percentil_teto is not None:
             dados_grafico_percentis.append({"descricao": conta.descricao, "percentil": float(conta.percentil_teto)})
 
+    # A última barra representa a soma de todas as contas cadastradas.
+    if limite_gastos is not None and limite_gastos > 0 and contas.exists():
+        total_percentil = (
+            (resumo["total"] or Decimal("0.00")) / limite_gastos * Decimal("100")
+        ).quantize(Decimal("0.01"))
+        dados_grafico_percentis.append({
+            "descricao": "Total de gastos",
+            "percentil": float(total_percentil),
+            "total": True,
+        })
+
     return render(
         request,
         "contapagar/listar_contas.html",

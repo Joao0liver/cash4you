@@ -126,22 +126,51 @@
         type: "bar",
         data: {
             labels: percentisContas.map(conta => conta.descricao),
-            datasets: [{
-                label: "% da margem máxima",
-                data: percentisContas.map(conta => conta.percentil),
-                backgroundColor: [
-                    "#0d6efd", "#198754", "#ffc107", "#dc3545", "#6f42c1",
-                    "#0dcaf0", "#fd7e14", "#20c997", "#d63384", "#6c757d"
-                ],
-                borderColor: "#ffffff",
-                borderWidth: 1
-            }]
+            datasets: [
+                {
+                    type: "bar",
+                    label: "% da margem máxima",
+                    data: percentisContas.map(conta => conta.percentil),
+                    backgroundColor: contexto => {
+                        const conta = percentisContas[contexto.dataIndex];
+                        if (conta.total) return "#198754";
+                        const cores = [
+                            "#0d6efd", "#198754", "#ffc107", "#dc3545", "#6f42c1",
+                            "#0dcaf0", "#fd7e14", "#20c997", "#d63384", "#6c757d"
+                        ];
+                        return cores[contexto.dataIndex % cores.length];
+                    },
+                    borderColor: "#ffffff",
+                    borderWidth: 1
+                },
+                {
+                    type: "line",
+                    label: "Teto de gastos (100%)",
+                    data: percentisContas.map(() => 100),
+                    borderColor: "#dc3545",
+                    borderWidth: 2,
+                    borderDash: [8, 6],
+                    pointRadius: 0,
+                    pointHitRadius: 0,
+                    fill: false
+                }
+            ]
         },
         options: {
             maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: { display: true, text: "% do teto de gastos" }
+                }
+            },
             plugins: {
-                legend: { display: false },
-                tooltip: { callbacks: { label: contexto => `${contexto.label}: ${contexto.raw.toFixed(2)}% do teto` } }
+                legend: { display: true, position: "bottom" },
+                tooltip: {
+                    callbacks: {
+                        label: contexto => `${contexto.dataset.label}: ${contexto.raw.toFixed(2)}% do teto`
+                    }
+                }
             }
         }
     });
