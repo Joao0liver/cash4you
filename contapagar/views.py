@@ -1,6 +1,7 @@
 from decimal import Decimal
 
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required, permission_required
 from django.db.models import Count, Sum
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
@@ -10,6 +11,8 @@ from configuracao.models import DadosEstabelecimento
 from .forms import ContaPagarForm
 from .models import ContaPagar
 
+@login_required
+@permission_required("contapagar.view_contapagar", raise_exception=True)
 def listar_contas(request):
 
     contas = ContaPagar.objects.all()

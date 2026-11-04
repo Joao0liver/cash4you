@@ -10,8 +10,8 @@ class ContaPagar(models.Model):
 
     class Meta:
         ordering = ("vencimento", "descricao", "id")
-        verbose_name = "conta a pagar"
-        verbose_name_plural = "contas a pagar"
+        verbose_name = "contapagar"
+        verbose_name_plural = "contaspagar"
 
     def __str__(self):
         return self.descricao
