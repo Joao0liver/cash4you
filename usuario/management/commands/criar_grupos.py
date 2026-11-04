@@ -48,6 +48,7 @@ class Command(BaseCommand):
                     "venda",
                     "vendaitem",
                     "agenda",
+                    "contapagar",
                 ]
             )
         )
@@ -61,6 +62,7 @@ class Command(BaseCommand):
                     "agenda",
                     "venda",
                     "vendaitem",
+                    "contapagar",
                 ]
             )
         )

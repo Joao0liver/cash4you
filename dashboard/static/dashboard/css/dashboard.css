@@ -7,6 +7,30 @@
 .dashboard-calendar .table thead th { background: var(--md-primary-container); color: var(--md-on-primary-container); border-color: var(--md-outline); }
 .dashboard-calendar .table td { min-height: 5rem; background: var(--md-surface); border-color: var(--md-outline); }
 
-
 .app-dashboard-page .table-responsive { border: 1px solid var(--md-outline); border-radius: 14px; }
 .app-dashboard-page .card { overflow: hidden; }
+
+/* Estados visuais condicionais dos cards do dashboard */
+.app-dashboard-page .dashboard-status-card {
+    border: 1px solid var(--md-outline, #dee2e6) !important;
+    transition: background-color .2s ease, border-color .2s ease, box-shadow .2s ease;
+}
+
+.app-dashboard-page .dashboard-status-card.dashboard-status-warning {
+    background-color: #fff0f0 !important;
+    border-color: #dc8f8f !important;
+}
+
+.app-dashboard-page .dashboard-status-card.dashboard-status-danger {
+    background-color: #fff8e1 !important;
+    border-color: #e6bd45 !important;
+}
+
+.app-dashboard-page .dashboard-status-card.dashboard-status-success {
+    background-color: #edf7ef !important;
+    border-color: #8fbd98 !important;
+}
+
+.app-dashboard-page .dashboard-status-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, .10);
+}

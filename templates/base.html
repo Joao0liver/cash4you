@@ -31,7 +31,7 @@
             <!-- Logo / Nome do sistema -->
             <div class="app-brand">
                 <a href="{% url 'dashboard:home' %}" class="app-brand-link">
-                    <span class="app-brand-mark" aria-hidden="true">C</span>
+                    <span class="app-brand-mark" aria-hidden="true">💸</span>
                     <span class="app-brand-name">Cash4You</span>
                 </a>
                 <small class="app-brand-caption">Painel administrativo</small>
@@ -44,21 +44,29 @@
 
                     <li class="nav-item">
                         <a href="{% url 'dashboard:home' %}" class="nav-link text-white {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
-                            <span class="app-nav-icon" aria-hidden="true">⌂</span><span>Dashboard</span>
+                            <span class="app-nav-icon" aria-hidden="true">📊</span><span>Dashboard</span>
                         </a>
                     </li>
                     
                     <li class="nav-item">
                         {% if perms.venda.add_venda %}
                         <a href="{% url 'caixa' %}" class="nav-link text-white {% if request.resolver_match.url_name == 'caixa' %}active{% endif %}">
-                            <span class="app-nav-icon" aria-hidden="true">＄</span><span>Caixa</span>
+                            <span class="app-nav-icon" aria-hidden="true">💲</span><span>Caixa</span>
+                        </a>
+                        {% endif %}
+                    </li>
+
+                    <li class="nav-item">
+                        {% if perms.contapagar.view_contapagar %}
+                        <a href="{% url 'contapagar:listar_contas_pagar' %}" class="nav-link text-white {% if request.resolver_match.url_name == 'listar_contas_pagar' %}active{% endif %}">
+                            <span class="app-nav-icon" aria-hidden="true">💰</span><span>Contas</span>
                         </a>
                         {% endif %}
                     </li>
 
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle text-white {% if request.resolver_match.url_name == 'listar_cliente' or request.resolver_match.url_name == 'listar_produto' or request.resolver_match.url_name == 'listar_servico' %}active{% endif %}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <span class="app-nav-icon" aria-hidden="true">▦</span><span>Cadastros</span>
+                            <span class="app-nav-icon" aria-hidden="true">📝</span><span>Cadastros</span>
                         </a>
 
                         <ul class="dropdown-menu">
@@ -85,7 +93,7 @@
                     <li class="nav-item">
                         {% if perms.venda.view_venda %}
                         <a href="{% url 'listar_vendas' %}" class="nav-link text-white {% if request.resolver_match.url_name == 'listar_vendas' or request.resolver_match.url_name == 'detalhe_venda' or request.resolver_match.url_name == 'editar_venda' %}active{% endif %}">
-                            <span class="app-nav-icon" aria-hidden="true">▤</span><span>Vendas</span>
+                            <span class="app-nav-icon" aria-hidden="true">🏷️</span><span>Vendas</span>
                         </a>
                         {% endif %}
                     </li>
@@ -93,14 +101,14 @@
                     <li class="nav-item">
                         {% if perms.agenda.view_agendamento %}
                         <a href="{% url 'listar_agendamento' %}" class="nav-link text-white {% if request.resolver_match.url_name == 'listar_agendamento' or request.resolver_match.url_name == 'form_agendamento' %}active{% endif %}">
-                            <span class="app-nav-icon" aria-hidden="true">▦</span><span>Agenda</span>
+                            <span class="app-nav-icon" aria-hidden="true">📆</span><span>Agenda</span>
                         </a>
                         {% endif %}
                     </li>
 
                     <li class="nav-item">
                         <a href="#" class="nav-link text-white">
-                            <span class="app-nav-icon" aria-hidden="true">▥</span><span>Relatórios</span>
+                            <span class="app-nav-icon" aria-hidden="true">📋</span><span>Relatórios</span>
                         </a>
                     </li>
 

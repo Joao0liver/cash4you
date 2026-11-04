@@ -2,7 +2,7 @@
 
 {% block content %}
 
-<div class="container-fluid">
+<div class="container-fluid app-dashboard-page">
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
         <div>
             <h1 class="h3 mb-1">Home</h1>
@@ -20,7 +20,7 @@
                 <div class="d-flex flex-wrap gap-2">
                     <a href="?visao={{ visao_calendario }}&data={{ data_anterior }}&periodo={{ periodo }}" class="btn btn-outline-secondary btn-sm" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Exibir o mês anterior no calendário" aria-label="Período anterior">‹</a>
                     <a href="{% url 'criar_agendamento' %}" class="btn btn-outline-primary btn-sm">Novo agendamento</a>
-                    <a href="#" class="btn btn-outline-primary btn-sm">Novo gasto</a>
+                    <a href="{% url 'contapagar:criar_conta_pagar' %}" class="btn btn-outline-primary btn-sm">Novo gasto</a>
                     <a href="?visao={{ visao_calendario }}&data={{ data_proxima }}&periodo={{ periodo }}" class="btn btn-outline-secondary btn-sm" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Exibir o próximo mês no calendário" aria-label="Próximo período">›</a>
                 </div>
             </div>
@@ -53,7 +53,7 @@
                 <span><span class="badge text-bg-primary me-1">A</span>Agendamento</span>
                 <span><span class="badge text-bg-warning me-1">R$</span>Conta pendente</span>
                 <span><span class="badge text-bg-success me-1">✓</span>Conta paga</span>
-                <a href="#" class="ms-auto">Gerenciar gastos a pagar</a>
+                <a href="{% url 'contapagar:listar_contas_pagar' %}" class="ms-auto">Gerenciar gastos a pagar</a>
             </div>
 
             <div class="table-responsive">
@@ -92,7 +92,7 @@
                                 </a>
                                 {% endfor %}
                                 {% for conta in dia.contas %}
-                                <a href="#" class="d-block text-decoration-none text-truncate small rounded px-1 mb-1 {% if conta.paga %}bg-success bg-opacity-25{% elif conta.vencimento < hoje %}bg-danger bg-opacity-25{% else %}bg-warning bg-opacity-25{% endif %}" title="{{ conta.descricao }} — R$ {{ conta.valor|floatformat:2 }}{% if conta.paga %} — Paga{% else %} — Pendente{% endif %}">
+                                <a href="{{ conta.url }}" class="d-block text-decoration-none text-truncate small rounded px-1 mb-1 {% if conta.paga %}bg-success bg-opacity-25{% elif conta.vencimento < hoje %}bg-danger bg-opacity-25{% else %}bg-warning bg-opacity-25{% endif %}" title="{{ conta.descricao }} — R$ {{ conta.valor|floatformat:2 }}{% if conta.paga %} — Paga{% else %} — Pendente{% endif %}">
                                     R$ {{ conta.valor|floatformat:2 }} {{ conta.descricao }}
                                 </a>
                                 {% endfor %}
@@ -132,7 +132,7 @@
             </a>
         </div>
         <div class="col-6 col-xl-3">
-            <a href="{% url 'listar_produto' %}" class="card shadow-sm border-warning h-100 text-decoration-none" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Acesse Cadastrar → Produtos no Estoque para consultar e atualizar o estoque.">
+            <a href="{% url 'listar_produto' %}" class="card shadow-sm h-100 text-decoration-none dashboard-status-card {% if quantidade_estoque_baixo > 0 %}dashboard-status-warning{% endif %}" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Acesse Cadastrar → Produtos no Estoque para consultar e atualizar o estoque.">
                 <div class="card-body py-3">
                     <div class="small text-muted">Estoque baixo</div>
                     <div class="h5 mb-0 mt-1">{{ quantidade_estoque_baixo }} produto(s)</div>
@@ -143,7 +143,7 @@
 
     <div class="row g-3 mb-4">
         <div class="col-12 col-md-6">
-            <a href="#" class="card shadow-sm border-warning h-100 text-decoration-none" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Acesse Cadastrar → Gastos a pagar para consultar e atualizar os gastos pendentes.">
+            <a href="{% url 'contapagar:listar_contas_pagar' %}" class="card shadow-sm h-100 text-decoration-none dashboard-status-card {% if quantidade_contas_pendentes > 0 %}dashboard-status-danger{% endif %}" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Acesse Cadastrar → Gastos a pagar para consultar e atualizar os gastos pendentes.">
                 <div class="card-body py-3">
                     <div class="small text-muted">Gastos a pagar (pendentes)</div>
                     <div class="h5 mb-0 mt-1">R$ {{ total_contas_pendentes|floatformat:2 }}</div>
@@ -152,7 +152,7 @@
             </a>
         </div>
         <div class="col-12 col-md-6">
-            <a href="#" class="card shadow-sm border-success h-100 text-decoration-none" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Acesse Cadastrar → Gastos a pagar para consultar o histórico de gastos pagos.">
+            <a href="{% url 'contapagar:listar_contas_pagar' %}" class="card shadow-sm h-100 text-decoration-none dashboard-status-card {% if quantidade_contas_pagas > 0 %}dashboard-status-success{% endif %}" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Acesse Cadastrar → Gastos a pagar para consultar o histórico de gastos pagos.">
                 <div class="card-body py-3">
                     <div class="small text-muted">Contas pagas</div>
                     <div class="h5 mb-0 mt-1">R$ {{ total_contas_pagas|floatformat:2 }}</div>

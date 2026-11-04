@@ -15,6 +15,7 @@ from catalogo.models import Produto, Servico
 from venda.models import Venda, PagamentoVenda
 from vendaitem.models import VendaItem
 from agenda.models import Agendamento
+from contapagar.models import ContaPagar
 
 def obter_calendario(data_referencia, visao):
 
@@ -75,6 +76,28 @@ def obter_calendario(data_referencia, visao):
             ),
         })
 
+    # Contas a pagar no período exibido
+    contas = ContaPagar.objects.filter(
+        vencimento__range=(inicio, fim)
+    ).order_by("vencimento", "descricao")
+
+    contas_por_data = {}
+
+    for conta in contas:
+        contas_por_data.setdefault(
+            conta.vencimento, []
+        ).append({
+            "id": conta.id,
+            "descricao": conta.descricao,
+            "valor": conta.valor,
+            "vencimento": conta.vencimento,
+            "paga": conta.paga,
+            "url": reverse(
+                "contapagar:editar_conta_pagar",
+                kwargs={"id": conta.id}
+            ),
+        })
+
     semanas_calendario = []
     semana_atual = []
     dia = inicio
@@ -91,7 +114,7 @@ def obter_calendario(data_referencia, visao):
             "feriado": None,
             "ponto_facultativo": None,
             "agendamentos": agendamentos_por_data.get(dia, []),
-            "contas": [],
+            "contas": contas_por_data.get(dia, []),
             "url_novo_agendamento": (
                 f"{reverse('criar_agendamento')}?data={dia.isoformat()}"
             ),
@@ -321,6 +344,40 @@ def dashboard(request):
         for p in pagamentos_gerais
     ]
 
+    # CONTAS A PAGAR
+
+    # Contas pendentes
+    resumo_pendentes = ContaPagar.objects.filter(
+        paga=False
+    ).aggregate(
+        total=Sum("valor"),
+        quantidade=Count("id"),
+    )
+
+    total_contas_pendentes = (
+        resumo_pendentes["total"] or Decimal("0.00")
+    )
+
+    quantidade_contas_pendentes = (
+        resumo_pendentes["quantidade"]
+    )
+
+    # Contas pagas
+    resumo_pagas = ContaPagar.objects.filter(
+        paga=True
+    ).aggregate(
+        total=Sum("valor"),
+        quantidade=Count("id"),
+    )
+
+    total_contas_pagas = (
+        resumo_pagas["total"] or Decimal("0.00")
+    )
+
+    quantidade_contas_pagas = (
+        resumo_pagas["quantidade"]
+    )
+
     # COMPARATIVO DO CAIXA
     periodo_labels = []
     periodo_valores = []
@@ -427,10 +484,10 @@ def dashboard(request):
         "hoje": hoje,
 
         # Contas a pagar: aguardando implementação do model.
-        "total_contas_pendentes": None,
-        "quantidade_contas_pendentes": None,
-        "total_contas_pagas": None,
-        "quantidade_contas_pagas": None,
+        "total_contas_pendentes": total_contas_pendentes,
+        "quantidade_contas_pendentes": quantidade_contas_pendentes,
+        "total_contas_pagas": total_contas_pagas,
+        "quantidade_contas_pagas": quantidade_contas_pagas,
     }
 
     return render(request, "dashboard/home.html", context)

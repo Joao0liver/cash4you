@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block title %}Gastos a pagar | Cash4You{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div>
+            <h1 class="h3 mb-1">Gastos a pagar</h1>
+            <p class="text-secondary mb-0">Cadastre vencimentos e acompanhe pagamentos.</p>
+        </div>
+        {% if perms.contapagar.add_contapagar %}
+        <a href="{% url 'contapagar:criar_conta_pagar' %}" class="btn btn-primary">+ Novo gasto</a>
+        {% endif %}
+    </div>
+
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags|default:'info' }}" role="alert">{{ message }}</div>
+    {% endfor %}
+    {% endif %}
+
+    {% if perms.contapagar.view_contapagar %}
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-md-6">
+            <section class="card c4y-table-card shadow-sm h-100" aria-label="Quantidade total de contas">
+                <div class="card-body">
+                    <div class="small text-muted">Contas cadastradas</div>
+                    <div class="h4 mb-0 mt-1">{{ quantidade_total_contas }}</div>
+                </div>
+            </section>
+        </div>
+        <div class="col-12 col-md-6">
+            <section class="card c4y-table-card shadow-sm h-100" aria-label="Valor total das contas">
+                <div class="card-body">
+                    <div class="small text-muted">Valor total dos gastos</div>
+                    <div class="h4 mb-0 mt-1">R$ {{ valor_total_contas|floatformat:2 }}</div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <div class="card c4y-table-card shadow-sm">
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th class="text-center">Descrição</th>
+                        <th class="text-center">Vencimento</th>
+                        <th class="text-center">Valor</th>
+                        <th class="text-center">Percentual do teto</th>
+                        <th class="text-center">Situação</th>
+                        <th class="text-center">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for conta in contas %}
+                    <tr>
+                        <td class="text-center">{{ conta.descricao }}</td>
+                        <td class="text-center">{{ conta.vencimento|date:"d/m/Y" }}</td>
+                        <td class="text-center">R$ {{ conta.valor|floatformat:2 }}</td>
+                        <td class="text-center">{% if conta.percentil_teto != None %}{{ conta.percentil_teto|floatformat:2 }}%{% else %}<span class="text-muted">—</span>{% endif %}</td>
+                        <td class="text-center">
+                            {% if conta.paga %}
+                            <span class="badge text-bg-success">Paga</span>
+                            {% elif conta.vencimento < hoje %}
+                            <span class="badge text-bg-danger">Atrasada</span>
+                            {% else %}
+                            <span class="badge text-bg-warning">Pendente</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            <div class="c4y-actions">
+                            <form method="post" action="{% url 'contapagar:alternar_status_conta' conta.id %}" class="d-inline">
+                                {% csrf_token %}
+                                {% if perms.contapagar.change_contapagar %}
+                                <button type="submit" class="btn btn-sm btn-outline-success">
+                                    {% if conta.paga %}Reabrir{% else %}Marcar paga{% endif %}
+                                </button>
+                                {% endif %}
+                            </form>
+                            {% if perms.contapagar.change_contapagar %}
+                            <a href="{% url 'contapagar:editar_conta_pagar' conta.id %}" class="btn btn-sm btn-outline-primary">Editar</a>
+                            {% endif %}
+                            {% if perms.contapagar.delete_contapagar %}
+                            <a href="{% url 'contapagar:excluir_conta_pagar' conta.id %}" class="btn btn-sm btn-outline-danger">Excluir</a>
+                            {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="6" class="text-center c4y-empty py-5">Nenhuma conta cadastrada. Use <strong>+ Nova conta</strong> para incluir o primeiro vencimento.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <section class="card c4y-table-card shadow-sm mt-4" aria-label="Percentual do teto por conta">
+        <div class="card-body">
+            <h2 class="h5 mb-1">Percentual gráfico correspondente</h2>
+            {% if limite_gastos is None %}
+            <p class="text-secondary mb-0"><a href="{% url 'configuracao:configurar_estabelecimento' %}" class="text-reset text-decoration-none">Defina a margem máxima de gastos em Configurações &gt; Dados do estabelecimento para visualizar o gráfico.</a></p>
+            {% elif limite_gastos == 0 %}
+            <p class="text-secondary mb-0">O teto está definido como R$ 0,00; não é possível calcular percentuais.</p>
+            {% elif not dados_grafico_percentis %}
+            <p class="text-secondary mb-0">Cadastre uma conta para visualizar o gráfico.</p>
+            {% else %}
+            <p class="text-secondary">Cada barra representa o valor da conta como percentual da margem máxima de R$ {{ limite_gastos|floatformat:2 }}.</p>
+            <div style="height: 320px"><canvas id="contas-percentil-chart" aria-label="Gráfico do percentual do teto representado por cada conta"></canvas></div>
+            {% endif %}
+        </div>
+    </section>
+    {% endif %}
+
+</div>
+
+{% if limite_gastos and dados_grafico_percentis %}
+{{ dados_grafico_percentis|json_script:"contas-percentil-dados" }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    const percentisContas = JSON.parse(document.getElementById("contas-percentil-dados").textContent);
+    new Chart(document.getElementById("contas-percentil-chart"), {
+        type: "bar",
+        data: {
+            labels: percentisContas.map(conta => conta.descricao),
+            datasets: [{
+                label: "% da margem máxima",
+                data: percentisContas.map(conta => conta.percentil),
+                backgroundColor: [
+                    "#0d6efd", "#198754", "#ffc107", "#dc3545", "#6f42c1",
+                    "#0dcaf0", "#fd7e14", "#20c997", "#d63384", "#6c757d"
+                ],
+                borderColor: "#ffffff",
+                borderWidth: 1
+            }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: { callbacks: { label: contexto => `${contexto.label}: ${contexto.raw.toFixed(2)}% do teto` } }
+            }
+        }
+    });
+</script>
+{% endif %}
+
+{% endblock %}
