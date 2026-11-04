@@ -53,7 +53,7 @@
                 <span><span class="badge text-bg-primary me-1">A</span>Agendamento</span>
                 <span><span class="badge text-bg-warning me-1">R$</span>Conta pendente</span>
                 <span><span class="badge text-bg-success me-1">✓</span>Conta paga</span>
-                <a href="#" class="ms-auto">Gerenciar gastos a pagar</a>
+                <a href="{% url 'contapagar:listar_contas_pagar' %}" class="ms-auto">Gerenciar gastos a pagar</a>
             </div>
 
             <div class="table-responsive">
@@ -92,7 +92,7 @@
                                 </a>
                                 {% endfor %}
                                 {% for conta in dia.contas %}
-                                <a href="#" class="d-block text-decoration-none text-truncate small rounded px-1 mb-1 {% if conta.paga %}bg-success bg-opacity-25{% elif conta.vencimento < hoje %}bg-danger bg-opacity-25{% else %}bg-warning bg-opacity-25{% endif %}" title="{{ conta.descricao }} — R$ {{ conta.valor|floatformat:2 }}{% if conta.paga %} — Paga{% else %} — Pendente{% endif %}">
+                                <a href="{{ conta.url }}" class="d-block text-decoration-none text-truncate small rounded px-1 mb-1 {% if conta.paga %}bg-success bg-opacity-25{% elif conta.vencimento < hoje %}bg-danger bg-opacity-25{% else %}bg-warning bg-opacity-25{% endif %}" title="{{ conta.descricao }} — R$ {{ conta.valor|floatformat:2 }}{% if conta.paga %} — Paga{% else %} — Pendente{% endif %}">
                                     R$ {{ conta.valor|floatformat:2 }} {{ conta.descricao }}
                                 </a>
                                 {% endfor %}
@@ -143,7 +143,7 @@
 
     <div class="row g-3 mb-4">
         <div class="col-12 col-md-6">
-            <a href="#" class="card shadow-sm border-warning h-100 text-decoration-none" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Acesse Cadastrar → Gastos a pagar para consultar e atualizar os gastos pendentes.">
+            <a href="{% url 'contapagar:listar_contas_pagar' %}" class="card shadow-sm border-warning h-100 text-decoration-none" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Acesse Cadastrar → Gastos a pagar para consultar e atualizar os gastos pendentes.">
                 <div class="card-body py-3">
                     <div class="small text-muted">Gastos a pagar (pendentes)</div>
                     <div class="h5 mb-0 mt-1">R$ {{ total_contas_pendentes|floatformat:2 }}</div>
@@ -152,7 +152,7 @@
             </a>
         </div>
         <div class="col-12 col-md-6">
-            <a href="#" class="card shadow-sm border-success h-100 text-decoration-none" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Acesse Cadastrar → Gastos a pagar para consultar o histórico de gastos pagos.">
+            <a href="{% url 'contapagar:listar_contas_pagar' %}" class="card shadow-sm border-success h-100 text-decoration-none" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Acesse Cadastrar → Gastos a pagar para consultar o histórico de gastos pagos.">
                 <div class="card-body py-3">
                     <div class="small text-muted">Contas pagas</div>
                     <div class="h5 mb-0 mt-1">R$ {{ total_contas_pagas|floatformat:2 }}</div>
