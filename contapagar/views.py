@@ -5,7 +5,7 @@ from django.db.models import Count, Sum
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
-from venda.models import DadosEstabelecimento
+from configuracao.models import DadosEstabelecimento
 
 from .forms import ContaPagarForm, FuncionarioForm
 from .models import ContaPagar, Funcionario
@@ -28,7 +28,7 @@ def listar_contas(request):
             )
     return render(
         request,
-        "conta_pagar/listar_contas.html",
+        "contapagar/listar_contas.html",
         {
             "contas": contas,
             "hoje": timezone.localdate(),
@@ -42,7 +42,7 @@ def listar_contas(request):
 def listar_funcionarios(request):
     return render(
         request,
-        "conta_pagar/listar_funcionarios.html",
+        "contapagar/listar_funcionarios.html",
         {"funcionarios": Funcionario.objects.all()},
     )
 
@@ -54,7 +54,7 @@ def criar_funcionario(request):
         return redirect("listar_funcionarios")
     return render(
         request,
-        "conta_pagar/form_funcionario.html",
+        "contapagar/form_funcionario.html",
         {"form": form},
     )
 
@@ -66,7 +66,7 @@ def criar_conta(request):
         return redirect("listar_contas_pagar")
     return render(
         request,
-        "conta_pagar/form_conta.html",
+        "contapagar/form_conta.html",
         {"form": form, "titulo": "Nova conta a pagar", "botao": "Cadastrar conta"},
     )
 
@@ -79,7 +79,7 @@ def editar_conta(request, pk):
         return redirect("listar_contas_pagar")
     return render(
         request,
-        "conta_pagar/form_conta.html",
+        "contapagar/form_conta.html",
         {"form": form, "titulo": "Editar conta a pagar", "botao": "Salvar alterações"},
     )
 
@@ -110,4 +110,4 @@ def excluir_conta(request, pk):
         conta.delete()
         messages.success(request, "Conta a pagar excluída.")
         return redirect("listar_contas_pagar")
-    return render(request, "conta_pagar/confirmar_exclusao.html", {"conta": conta})
+    return render(request, "contapagar/confirmar_exclusao.html", {"conta": conta})

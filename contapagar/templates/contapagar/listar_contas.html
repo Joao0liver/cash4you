@@ -16,7 +16,7 @@
             <h1 class="h3 mb-1">Gastos a pagar</h1>
             <p class="text-secondary mb-0">Cadastre vencimentos e acompanhe pagamentos.</p>
         </div>
-        <a href="{% url 'criar_conta_pagar' %}" class="btn btn-primary">Novo gasto</a>
+        <a href="{% url 'contapagar:criar_conta_pagar' %}" class="btn btn-primary">Novo gasto</a>
     </div>
 
     {% if messages %}
@@ -81,8 +81,8 @@
                                     {% if conta.paga %}Reabrir{% else %}Marcar paga{% endif %}
                                 </button>
                             </form>
-                            <a href="{% url 'editar_conta_pagar' conta.pk %}" class="btn btn-sm btn-outline-primary">Editar</a>
-                            <a href="{% url 'excluir_conta_pagar' conta.pk %}" class="btn btn-sm btn-outline-danger">Excluir</a>
+                            <a href="{% url 'contapagar:editar_conta_pagar' conta.pk %}" class="btn btn-sm btn-outline-primary">Editar</a>
+                            <a href="{% url 'contapagar:excluir_conta_pagar' conta.pk %}" class="btn btn-sm btn-outline-danger">Excluir</a>
                             </div>
                         </td>
                     </tr>
@@ -98,7 +98,7 @@
         <div class="card-body">
             <h2 class="h5 mb-1">Percentual gráfico correspondente</h2>
             {% if limite_gastos is None %}
-            <p class="text-secondary mb-0"><a href="{% url 'configurar_estabelecimento' %}" class="text-reset text-decoration-none">Defina a margem máxima de gastos em Configurações &gt; Dados do estabelecimento para visualizar o gráfico.</a></p>
+            <p class="text-secondary mb-0"><a href="{% url 'configuracao:configurar_estabelecimento' %}" class="text-reset text-decoration-none">Defina a margem máxima de gastos em Configurações &gt; Dados do estabelecimento para visualizar o gráfico.</a></p>
             {% elif limite_gastos == 0 %}
             <p class="text-secondary mb-0">O teto está definido como R$ 0,00; não é possível calcular percentuais.</p>
             {% elif not dados_grafico_percentis %}

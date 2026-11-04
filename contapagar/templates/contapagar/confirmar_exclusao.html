@@ -20,7 +20,7 @@
             <form method="post" class="d-flex flex-wrap gap-2">
                 {% csrf_token %}
                 <button type="submit" class="btn btn-danger">Confirmar exclusão</button>
-                <a href="{% url 'listar_contas_pagar' %}" class="btn btn-outline-secondary">Cancelar</a>
+                <a href="{% url 'contapagar:listar_contas_pagar' %}" class="btn btn-outline-secondary">Cancelar</a>
             </form>
         </div>
     </div>

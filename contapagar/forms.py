@@ -1,7 +1,7 @@
 from django import forms
 from django.db.models import Sum
 
-from venda.models import DadosEstabelecimento
+from configuracao.models import DadosEstabelecimento
 from .models import ContaPagar, Funcionario
 
 class ContaPagarForm(forms.ModelForm):

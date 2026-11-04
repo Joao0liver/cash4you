@@ -12,4 +12,5 @@ urlpatterns = [
     path('agenda/', include("agenda.urls")),
     path('venda/', include("venda.urls")),
     path('configuracao/', include("configuracao.urls")),
+    path('contas-a-pagar/', include("contapagar.urls")),
 ]
